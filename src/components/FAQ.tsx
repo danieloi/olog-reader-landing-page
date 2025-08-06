@@ -6,36 +6,36 @@ import {
 } from "./ui/accordion";
 
 const faqs = [
-  {
-    question: "Is there an offline mode?",
-    answer:
-      "Yes! Once you've processed a PDF, you can download the audiobook for offline listening. Perfect for commutes or areas with poor internet connectivity.",
-  },
-  {
-    question: "Is my data secure?",
-    answer:
-      "Absolutely. Your documents are processed securely and we never store your personal files longer than necessary. We use enterprise-grade encryption and follow strict privacy protocols.",
-  },
+  // {
+  //   question: "Is there an offline mode?",
+  //   answer:
+  //     "Yes! Once you've processed a PDF, you can download the audiobook for offline listening. Perfect for commutes or areas with poor internet connectivity.",
+  // },
+  // {
+  //   question: "Is my data secure?",
+  //   answer:
+  //     "Absolutely. Your documents are processed securely and we never store your personal files longer than necessary. We use enterprise-grade encryption and follow strict privacy protocols.",
+  // },
   {
     question: "Does it support other file types besides PDF?",
     answer:
-      "Currently we support PDFs, but EPUB and DOCX support is coming in Q2 2025. We're constantly expanding format compatibility based on user feedback.",
+      "Currently we support PDFs, but EPUB and DOCX support is coming in Q3 2025. We're constantly expanding format compatibility based on user feedback.",
   },
   {
     question: "How natural do the AI voices sound?",
     answer:
-      "Our AI voices use advanced neural text-to-speech technology that sounds remarkably natural. You can choose from multiple voice options and adjust speaking speed to your preference.",
+      "Our AI voices use advanced neural text-to-speech technology that sounds remarkably natural.",
   },
   {
     question: "Can I use it on both iOS and Android?",
     answer:
       "Yes! Olog Reader is available on both iOS and Android. Your audiobooks sync across all your devices so you can start listening on one device and continue on another.",
   },
-  {
-    question: "What happens after my free trial?",
-    answer:
-      "After your 7-day free trial, you'll be charged $5/month to continue using all features. You can cancel anytime without penalty, and there are no hidden fees or complicated tiers.",
-  },
+  // {
+  //   question: "What happens after my free trial?",
+  //   answer:
+  //     "After your 7-day free trial, you'll be charged $5/month to continue using all features. You can cancel anytime without penalty, and there are no hidden fees or complicated tiers.",
+  // },
   {
     question: "How long does it take to convert a PDF?",
     answer:
