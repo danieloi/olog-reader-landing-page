@@ -1,157 +1,81 @@
-"use client";
+import { Zap, Smartphone, Volume2, Navigation } from "lucide-react";
+import { Button } from "./ui/button";
 
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+export function SimpleFeatures() {
+  const features = [
+    {
+      icon: Zap,
+      title: "One-tap Upload",
+      description:
+        "Turn any book, article, or document into an audiobook in minutes.",
+    },
+    {
+      icon: Volume2,
+      title: "Perfect Listening",
+      description:
+        "Crystal clear narration with customizable speed for your reading style.",
+    },
+    {
+      icon: Navigation,
+      title: "Smart Navigation",
+      description:
+        "Jump between chapters, bookmark favorites, and never lose your place.",
+    },
+    {
+      icon: Smartphone,
+      title: "Anywhere Access",
+      description:
+        "Listen while commuting, exercising, or relaxing - your library goes with you.",
+    },
+  ];
 
-// Import figma assets
-import appHomeImage from "figma:asset/980c1aa18781a2fcbc4f69e4f6519b66e9669953.png";
-import appLibraryImage from "figma:asset/4ca8a421f8a0ec2b28231661c7b275c93c8cec3a.png";
-import appSpeedControlImage from "figma:asset/9a41e18f1e9f6584febdd61da27750468a83066d.png";
-import appContentsImage from "figma:asset/cd1f14c81dc97db1ad779066dd5df0da17038ebe.png";
-import appReadingImage from "figma:asset/7f92a8cca19f761c38a2b3c893c09caec3f8d3ed.png";
-
-const features = [
-  {
-    image: "/home-tab.png",
-    title: "One-Tap Upload",
-    description:
-      "Simply upload any PDF from your device and start listening instantly. No complex setup required.",
-  },
-  {
-    image: "/speed-picker.png",
-    title: "Smart Playback",
-    description:
-      "Adjust speed from 0.5x to 3x, with intelligent pacing that adapts to your learning style.",
-  },
-  {
-    image: "/Screenshot_20250729-130300_olog-reader (1).jpg",
-    title: "Intelligent Navigation",
-    description:
-      "Auto-generated table of contents lets you jump to any section with a single tap.",
-  },
-  {
-    image: "/library-tab.png",
-    title: "Background Play",
-    description:
-      "Continue listening while using other apps or when your screen is locked.",
-  },
-  {
-    image: "/reader-screen.png",
-    title: "Mobile Optimized",
-    description:
-      "Native iOS and Android apps designed specifically for on-the-go learning.",
-  },
-];
-
-export function ProductFeatures() {
   return (
-    <section
-      id="features"
-      className="py-24 px-4 bg-white"
-      aria-labelledby="features-heading"
-    >
-      <div className="container mx-auto max-w-7xl">
-        <div className="text-center space-y-6 mb-20">
-          <h2
-            id="features-heading"
-            className="text-3xl sm:text-4xl md:text-5xl max-w-3xl mx-auto"
-          >
-            Everything you need for effortless listening
+    <section id="features" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl lg:text-4xl font-bold text-text-primary mb-4">
+            For everyone who loves books
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Five powerful features that transform how you consume written
-            content.
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+            Whether you're a busy reader, audiobook lover, or just want to
+            consume more content - we've made listening effortless.
           </p>
         </div>
 
-        {/* Feature grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* First two features side by side */}
-          <div className="lg:col-span-2 grid sm:grid-cols-2 gap-8">
-            {features.slice(0, 2).map((feature, index) => (
-              <article
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <div
                 key={index}
-                className="group space-y-6"
-                aria-labelledby={`feature-${index}-title`}
+                className="text-center group p-6 rounded-2xl border border-gray-100 bg-white shadow-soft hover:shadow-medium hover:-translate-y-1 transition-all"
               >
-                <div className="aspect-[9/16] overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                  <ImageWithFallback
-                    src={feature.image}
-                    alt={`${feature.title} interface`}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                  />
+                <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-100 transition-colors">
+                  <Icon className="w-8 h-8 text-primary-500 transition-transform group-hover:scale-110" />
                 </div>
-                <div className="space-y-3">
-                  <h3
-                    id={`feature-${index}-title`}
-                    className="text-xl font-semibold text-slate-900"
-                  >
-                    {feature.title}
-                  </h3>
-                  <p className="text-slate-600 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* Third feature takes full height */}
-          <div className="space-y-6">
-            <article
-              className="group space-y-6"
-              aria-labelledby="feature-2-title"
-            >
-              <div className="aspect-[9/16] overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                <ImageWithFallback
-                  src={features[2].image}
-                  alt={`${features[2].title} interface`}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="space-y-3">
-                <h3
-                  id="feature-2-title"
-                  className="text-xl font-semibold text-slate-900"
-                >
-                  {features[2].title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed">
-                  {features[2].description}
-                </p>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        {/* Bottom two features */}
-        <div className="grid sm:grid-cols-2 gap-8 mt-8 max-w-4xl mx-auto">
-          {features.slice(3).map((feature, index) => (
-            <article
-              key={index + 3}
-              className="group space-y-6"
-              aria-labelledby={`feature-${index + 3}-title`}
-            >
-              <div className="aspect-[9/16] overflow-hidden rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                <ImageWithFallback
-                  src={feature.image}
-                  alt={`${feature.title} interface`}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="space-y-3">
-                <h3
-                  id={`feature-${index + 3}-title`}
-                  className="text-xl font-semibold text-slate-900"
-                >
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-slate-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                <p className="text-text-secondary">{feature.description}</p>
               </div>
-            </article>
-          ))}
+            );
+          })}
         </div>
+
+        {/* CTA */}
+        {/* <div className="text-center mt-16">
+          <div className="bg-brand-blue-50 rounded-2xl p-8 max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold text-text-primary mb-2">
+              Ready to listen to your next great book?
+            </h3>
+            <p className="text-text-secondary mb-6">
+              Join thousands of book lovers who've made the switch to audio.
+            </p>
+            <Button className="btn-primary px-8 py-3">
+              Start Listening Free
+            </Button>
+          </div>
+        </div> */}
       </div>
     </section>
   );

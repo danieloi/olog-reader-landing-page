@@ -1,32 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Barriecito, Georama } from "next/font/google";
 import "./globals.css";
 import SkipToContent from "@/components/ui/SkipToContent";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const georama = Georama({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-georama",
+});
+
 export const metadata: Metadata = {
-  title: "Olog Reader - Turn any PDF into an audiobook",
-  description:
-    "Transform any PDF into an audiobook with AI voices. Study hands-free, reduce eye strain, and save time. Just $5/month.",
-  keywords:
-    "PDF to audiobook, AI voices, text to speech, study tools, accessibility, mobile reading",
-  openGraph: {
-    title: "Olog Reader - Turn any PDF into an audiobook",
-    description:
-      "Transform any PDF into an audiobook with AI voices. Study hands-free, reduce eye strain, and save time. Just $5/month.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Olog Reader - Turn any PDF into an audiobook",
-    description:
-      "Transform any PDF into an audiobook with AI voices. Study hands-free, reduce eye strain, and save time. Just $5/month.",
-  },
+  title: "Olog Reader",
+  description: "Turn any PDF into an audio book",
   icons: {
     icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
   },
 };
 
@@ -37,9 +27,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.className} antialiased`}>
-        <SkipToContent />
-        {children}
+      <body className={`${inter.className} ${georama.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+        >
+          <SkipToContent />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
