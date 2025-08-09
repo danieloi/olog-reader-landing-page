@@ -42,11 +42,28 @@ export function IntroSplash() {
       tl.to(wrap, { opacity: 0, ease: "none" }, 0.75);
     }, wrap);
 
-    return () => ctx.revert();
+    const section = wrap; // the splash <section>
+
+    const activeST = ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "+=120%",
+      onEnter: () => section.classList.add("is-active"),
+      onEnterBack: () => section.classList.add("is-active"),
+      onLeave: () => section.classList.remove("is-active"),
+      onLeaveBack: () => section.classList.remove("is-active"),
+    });
+
+    return () => {
+      activeST.kill();
+      section.classList.remove("is-active");
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
+      id="intro-splash"
       ref={wrapRef}
       className="relative z-[60] h-screen bg-transparent text-text-primary overflow-hidden"
       aria-label="Intro"

@@ -568,3 +568,13 @@ html {
 .caret-blink {
   animation: caretBlink 1s step-end infinite;
 }
+
+/* Hide the fixed header only while the splash section is active */
+#intro-splash.is-active ~ header {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+header {
+  transition: opacity 200ms ease;
+}

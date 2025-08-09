@@ -11,7 +11,7 @@ export default function Home() {
         className="hero-radials fixed inset-0 pointer-events-none z-0 opacity-40"
       />
       <IntroSplash />
-      <Header />
+      {/* <Header /> */}
       <section id="hero" aria-label="Hero section">
         <Hero />
       </section>
