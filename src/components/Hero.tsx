@@ -3,11 +3,12 @@
 import { motion } from "framer-motion";
 import BlurText from "./BlurText";
 import TiltedCard from "@/components/TiltedCard";
+import { Button } from "@/components/ui/button";
+import ShinyText from "./ShineyText";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-white pt-16">
-      <div className="hero-radials" aria-hidden />
+    <section className="relative overflow-hidden bg-transparent pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-5 lg:px-6 w-full py-16 lg:py-24">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           {/* Left */}
@@ -34,6 +35,18 @@ export function Hero() {
                 articles, and documents into high‑quality audiobooks and listen
                 anywhere, anytime.
               </p>
+
+              <div className="pt-2">
+                <Button
+                  asChild
+                  variant="link"
+                  className="px-0 h-auto leading-none text-lg sm:text-xl font-semibold text-primary no-underline hover:no-underline cta-underline"
+                >
+                  <a href="#beta" aria-label="Jump to beta signup">
+                    <ShinyText text="Get Beta Access" speed={5} />
+                  </a>
+                </Button>
+              </div>
             </div>
           </motion.div>
 
