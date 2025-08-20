@@ -1,13 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import BlurText from "./BlurText";
 import TiltedCard from "@/components/TiltedCard";
 import { Button } from "@/components/ui/button";
 import ShinyText from "./ShineyText";
+import { BetaSignupForm } from "./BetaSignupForm";
 
 export function Hero() {
+  const [showBetaForm, setShowBetaForm] = useState(false);
+
   return (
+    <>
+      {showBetaForm && (
+        <BetaSignupForm onClose={() => setShowBetaForm(false)} />
+      )}
     <section className="relative overflow-hidden bg-transparent pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-5 lg:px-6 w-full py-16 lg:py-24">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
@@ -38,13 +46,12 @@ export function Hero() {
 
               <div className="pt-2">
                 <Button
-                  asChild
                   variant="link"
                   className="px-0 h-auto leading-none text-lg sm:text-xl font-semibold text-primary no-underline hover:no-underline cta-underline"
+                  onClick={() => setShowBetaForm(true)}
+                  aria-label="Open beta signup form"
                 >
-                  <a href="#beta" aria-label="Jump to beta signup">
-                    <ShinyText text="Get Beta Access" speed={5} />
-                  </a>
+                  <ShinyText text="Get Beta Access" speed={5} />
                 </Button>
               </div>
             </div>
@@ -76,5 +83,6 @@ export function Hero() {
         </div>
       </div>
     </section>
+    </>
   );
 }
