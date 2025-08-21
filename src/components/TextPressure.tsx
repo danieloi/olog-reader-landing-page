@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useFontLoading } from "@/hooks/use-font-loading";
 
 interface TextPressureProps {
   text?: string;
@@ -16,6 +17,7 @@ interface TextPressureProps {
   strokeWidth?: number;
   className?: string;
   minFontSize?: number;
+  onFontLoaded?: (loaded: boolean) => void;
 }
 
 const TextPressure: React.FC<TextPressureProps> = ({
@@ -34,6 +36,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
   strokeWidth = 2,
   className = "",
   minFontSize = 24,
+  onFontLoaded,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
@@ -45,6 +48,20 @@ const TextPressure: React.FC<TextPressureProps> = ({
   const [fontSize, setFontSize] = useState(minFontSize);
   const [scaleY, setScaleY] = useState(1);
   const [lineHeight, setLineHeight] = useState(1);
+
+  // Load the font and track its loading state
+  const { isLoaded: fontLoaded } = useFontLoading({
+    fontFamily,
+    fontUrl,
+    timeout: 5000,
+  });
+
+  // Notify parent component when font is loaded
+  useEffect(() => {
+    if (onFontLoaded) {
+      onFontLoaded(fontLoaded);
+    }
+  }, [fontLoaded, onFontLoaded]);
 
   const chars = text.split("");
 
@@ -171,6 +188,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           font-family: '${fontFamily}';
           src: url('${fontUrl}');
           font-style: normal;
+          font-display: swap;
         }
         .stroke span {
           position: relative;
@@ -192,9 +210,13 @@ const TextPressure: React.FC<TextPressureProps> = ({
         ref={titleRef}
         className={`text-pressure-title ${className} ${
           flex ? "flex justify-between" : ""
-        } ${stroke ? "stroke" : ""} uppercase text-center`}
+        } ${
+          stroke ? "stroke" : ""
+        } uppercase text-center transition-opacity duration-300`}
         style={{
-          fontFamily,
+          fontFamily: fontLoaded
+            ? fontFamily
+            : "system-ui, -apple-system, sans-serif",
           fontSize: fontSize,
           lineHeight,
           transform: `scale(1, ${scaleY})`,
@@ -202,6 +224,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           margin: 0,
           fontWeight: 100,
           color: stroke ? undefined : textColor,
+          opacity: fontLoaded ? 1 : 0,
         }}
       >
         {chars.map((char, i) => (
