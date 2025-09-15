@@ -8,7 +8,6 @@ export default function Privacy() {
         aria-hidden
         className="hero-radials fixed inset-0 pointer-events-none z-0 opacity-40"
       />
-      <Header />
 
       <div className="relative px-4 sm:px-6 lg:px-8 py-16 max-w-4xl mx-auto">
         <div className="georama-text">
