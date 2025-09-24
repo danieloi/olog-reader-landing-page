@@ -18,6 +18,18 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.png",
   },
+  openGraph: {
+    title: "Olog Reader",
+    description: "Turn any PDF into an audio book",
+    images: [
+      {
+        url: "https://ologreader.com/ologLinkPreview2.png",
+        width: 1200,
+        height: 630,
+        alt: "Olog Reader - Turn any PDF into an audio book",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
