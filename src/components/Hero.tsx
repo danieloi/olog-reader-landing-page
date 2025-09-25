@@ -147,7 +147,7 @@ export function Hero() {
                   <img
                     src="/white.svg"
                     alt="Download on the App Store"
-                    className="h-8 w-auto"
+                    className="h-8 w-auto md:max-h-[50px]"
                   />
                 </button>
                 <button
