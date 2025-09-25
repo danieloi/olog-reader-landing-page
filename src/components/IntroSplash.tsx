@@ -13,15 +13,71 @@ export function IntroSplash() {
   const textWrapRef = useRef<HTMLDivElement>(null);
   const scrollCueRef = useRef<HTMLDivElement>(null);
   const [fontLoaded, setFontLoaded] = useState(false);
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const runningRef = useRef(false);
+  const animationIdRef = useRef<number | null>(null);
+  const startTimeoutRef = useRef<number | null>(null);
   const isMobile = useIsMobile();
+
+  // Detect real user interactions and stop the auto cursor animation
+  useEffect(() => {
+    if (userHasInteracted) return;
+
+    const handleRealInteraction = (event: Event) => {
+      if (!event.isTrusted) return; // ignore synthetic events
+      runningRef.current = false;
+      setUserHasInteracted(true);
+      if (animationIdRef.current != null) {
+        cancelAnimationFrame(animationIdRef.current);
+        animationIdRef.current = null;
+      }
+      if (startTimeoutRef.current != null) {
+        clearTimeout(startTimeoutRef.current);
+        startTimeoutRef.current = null;
+      }
+    };
+
+    window.addEventListener("pointerdown", handleRealInteraction, {
+      passive: true,
+    });
+    window.addEventListener("pointermove", handleRealInteraction, {
+      passive: true,
+    });
+    window.addEventListener("touchstart", handleRealInteraction, {
+      passive: true,
+    });
+    window.addEventListener("touchmove", handleRealInteraction, {
+      passive: true,
+    });
+    window.addEventListener("mousemove", handleRealInteraction, {
+      passive: true,
+    });
+    window.addEventListener("scroll", handleRealInteraction, { passive: true });
+    window.addEventListener("keydown", handleRealInteraction, {
+      passive: true,
+    });
+    window.addEventListener("click", handleRealInteraction, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", handleRealInteraction);
+      window.removeEventListener("pointermove", handleRealInteraction);
+      window.removeEventListener("touchstart", handleRealInteraction);
+      window.removeEventListener("touchmove", handleRealInteraction);
+      window.removeEventListener("mousemove", handleRealInteraction);
+      window.removeEventListener("scroll", handleRealInteraction);
+      window.removeEventListener("keydown", handleRealInteraction);
+      window.removeEventListener("click", handleRealInteraction);
+    };
+  }, [userHasInteracted]);
 
   // Auto cursor sweep for mobile devices - moves from O to R
   useEffect(() => {
-    if (!isMobile || !fontLoaded) return;
+    if (!isMobile || !fontLoaded || userHasInteracted) return;
 
-    let animationId: number;
     let startTime: number;
     const cycleDuration = 8000; // 8 seconds for complete back-and-forth cycle
+
+    runningRef.current = true;
 
     // Easing function for smooth movement
     const easeInOutCubic = (t: number): number => {
@@ -34,13 +90,16 @@ export function IntroSplash() {
     };
 
     const simulateCursorSweep = (timestamp: number) => {
+      if (!runningRef.current) return;
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
 
       // Get the text container bounds
       const textWrap = textWrapRef.current;
       if (!textWrap) {
-        animationId = requestAnimationFrame(simulateCursorSweep);
+        if (runningRef.current) {
+          animationIdRef.current = requestAnimationFrame(simulateCursorSweep);
+        }
         return;
       }
 
@@ -51,7 +110,9 @@ export function IntroSplash() {
       const characterSpans = textPressureElement?.querySelectorAll("span");
 
       if (!characterSpans || characterSpans.length === 0) {
-        animationId = requestAnimationFrame(simulateCursorSweep);
+        if (runningRef.current) {
+          animationIdRef.current = requestAnimationFrame(simulateCursorSweep);
+        }
         return;
       }
 
@@ -100,21 +161,30 @@ export function IntroSplash() {
 
       window.dispatchEvent(syntheticEvent);
 
-      animationId = requestAnimationFrame(simulateCursorSweep);
+      if (runningRef.current) {
+        animationIdRef.current = requestAnimationFrame(simulateCursorSweep);
+      }
     };
 
     // Start the animation after a short delay to ensure everything is rendered
-    const timeoutId = setTimeout(() => {
-      animationId = requestAnimationFrame(simulateCursorSweep);
+    startTimeoutRef.current = window.setTimeout(() => {
+      if (runningRef.current) {
+        animationIdRef.current = requestAnimationFrame(simulateCursorSweep);
+      }
     }, 1500); // Longer delay to ensure font and layout are ready
 
     return () => {
-      clearTimeout(timeoutId);
-      if (animationId) {
-        cancelAnimationFrame(animationId);
+      if (startTimeoutRef.current != null) {
+        clearTimeout(startTimeoutRef.current);
+        startTimeoutRef.current = null;
       }
+      if (animationIdRef.current != null) {
+        cancelAnimationFrame(animationIdRef.current);
+        animationIdRef.current = null;
+      }
+      runningRef.current = false;
     };
-  }, [isMobile, fontLoaded]);
+  }, [isMobile, fontLoaded, userHasInteracted]);
 
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
