@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     description: "Turn any PDF into an audio book",
     images: [
       {
-        url: "https://ologreader.com/ologLinkPreview2.png",
+        url: "https://ologreader.com/ologLinkPreview2.webp",
         width: 1200,
         height: 630,
         alt: "Olog Reader - Turn any PDF into an audio book",
