@@ -21,19 +21,17 @@ export function Hero() {
         >
           {/* Mobile Text Content - Now first */}
           <div className="space-y-4 sm:space-y-5 md:space-y-6">
-            <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-text-primary leading-tight max-w-[24ch] mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-text-primary leading-tight mx-auto text-center">
               <BlurText
-                text="Turn any Text into an audiobook"
+                text="Read anywhere. Listen everywhere."
                 as="span"
-                className="text-wrap justify-center"
+                className="whitespace-nowrap justify-center text-primary"
                 groupByWord
-                highlightFromIndex={17}
-                highlightClassName="text-primary"
               />
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-              Transform your favorite books, articles, and documents into
-              high‑quality audiobooks.
+              Let your favorite books and articles fit your day. Eyes busy?
+              Switch to ears and keep going.
             </p>
 
             {/* Mobile CTA - More prominent */}
@@ -117,20 +115,17 @@ export function Hero() {
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div className="space-y-4 md:space-y-5 lg:space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary max-w-[16ch] md:max-w-[14ch] leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-tight">
                 <BlurText
-                  text="Turn any Text into an Audio Book"
+                  text="Read anywhere. Listen everywhere."
                   as="span"
-                  className="text-wrap"
+                  className="whitespace-nowrap text-primary"
                   groupByWord
-                  highlightFromIndex={17}
-                  highlightClassName="text-primary"
                 />
               </h1>
               <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
-                Love reading but short on time? Transform your favorite books,
-                articles, and documents into high‑quality audiobooks and listen
-                anywhere, anytime.
+                Let your favorite books and articles fit your day. Eyes busy?
+                Switch to ears and keep going.
               </p>
 
               <div className="pt-4 md:pt-5 lg:pt-6 flex gap-4 md:gap-5">
