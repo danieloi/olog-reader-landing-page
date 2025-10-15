@@ -35,40 +35,45 @@ export function Hero() {
             </p>
 
             {/* Mobile CTA - More prominent */}
-            <div className="pt-4 sm:pt-5 md:pt-6 flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
-              <button
-                onClick={() =>
-                  window.open(
-                    "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                    "_blank"
-                  )
-                }
-                className="flex items-center justify-center hover:opacity-90 transition-opacity"
-                aria-label="Download on the App Store"
-              >
-                <img
-                  src="/white.svg"
-                  alt="Download on the App Store"
-                  className="h-10 w-auto sm:h-12 max-w-[120px]"
-                />
-              </button>
-              <button
-                onClick={() =>
-                  window.open(
-                    "https://play.google.com/store/apps/details?id=me.olog.reader",
-                    "_blank"
-                  )
-                }
-                className="flex items-center justify-center hover:opacity-90 transition-opacity"
-                aria-label="Get it on Google Play"
-              >
-                <img
-                  src="/GetItOnGooglePlay_Badge_Web_color_English.png"
-                  alt="Get it on Google Play"
-                  className="h-8 sm:h-10 w-auto object-contain max-w-[120px]"
-                  style={{ maxWidth: "135px" }}
-                />
-              </button>
+            <div className="pt-4 sm:pt-5 md:pt-6 space-y-3 sm:space-y-4">
+              <p className="text-base sm:text-lg font-semibold text-text-primary text-center">
+                Try Olog Reader
+              </p>
+              <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
+                <button
+                  onClick={() =>
+                    window.open(
+                      "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
+                      "_blank"
+                    )
+                  }
+                  className="flex items-center justify-center hover:opacity-90 transition-opacity"
+                  aria-label="Download on the App Store"
+                >
+                  <img
+                    src="/white.svg"
+                    alt="Download on the App Store"
+                    className="h-10 w-auto sm:h-12 max-w-[120px]"
+                  />
+                </button>
+                <button
+                  onClick={() =>
+                    window.open(
+                      "https://play.google.com/store/apps/details?id=me.olog.reader",
+                      "_blank"
+                    )
+                  }
+                  className="flex items-center justify-center hover:opacity-90 transition-opacity"
+                  aria-label="Get it on Google Play"
+                >
+                  <img
+                    src="/GetItOnGooglePlay_Badge_Web_color_English.png"
+                    alt="Get it on Google Play"
+                    className="h-8 sm:h-10 w-auto object-contain max-w-[120px]"
+                    style={{ maxWidth: "135px" }}
+                  />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -128,39 +133,44 @@ export function Hero() {
                 Switch to ears and keep going.
               </p>
 
-              <div className="pt-4 md:pt-5 lg:pt-6 flex gap-4 md:gap-5">
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                      "_blank"
-                    )
-                  }
-                  className="hover:opacity-90 transition-opacity"
-                  aria-label="Download on the App Store"
-                >
-                  <img
-                    src="/white.svg"
-                    alt="Download on the App Store"
-                    className="h-8 w-auto md:max-h-[50px]"
-                  />
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://play.google.com/store/apps/details?id=me.olog.reader",
-                      "_blank"
-                    )
-                  }
-                  className="hover:opacity-90 transition-opacity"
-                  aria-label="Get it on Google Play"
-                >
-                  <img
-                    src="/GetItOnGooglePlay_Badge_Web_color_English.png"
-                    alt="Get it on Google Play"
-                    className="h-8 w-auto md:max-h-[50px]"
-                  />
-                </button>
+              <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
+                <p className="text-base md:text-lg font-semibold text-text-primary">
+                  Try Olog Reader
+                </p>
+                <div className="flex gap-4 md:gap-5">
+                  <button
+                    onClick={() =>
+                      window.open(
+                        "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
+                        "_blank"
+                      )
+                    }
+                    className="hover:opacity-90 transition-opacity"
+                    aria-label="Download on the App Store"
+                  >
+                    <img
+                      src="/white.svg"
+                      alt="Download on the App Store"
+                      className="h-8 w-auto md:max-h-[50px]"
+                    />
+                  </button>
+                  <button
+                    onClick={() =>
+                      window.open(
+                        "https://play.google.com/store/apps/details?id=me.olog.reader",
+                        "_blank"
+                      )
+                    }
+                    className="hover:opacity-90 transition-opacity"
+                    aria-label="Get it on Google Play"
+                  >
+                    <img
+                      src="/GetItOnGooglePlay_Badge_Web_color_English.png"
+                      alt="Get it on Google Play"
+                      className="h-8 w-auto md:max-h-[50px]"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
