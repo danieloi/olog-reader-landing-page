@@ -30,14 +30,14 @@ export function Hero() {
               />
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-              Let your favorite books and articles fit your day. Eyes busy?
-              Switch to ears and keep going.
+              Take your stories, notes, and textbooks on the go, listen hands
+              free, anytime you want.
             </p>
 
             {/* Mobile CTA - More prominent */}
             <div className="pt-4 sm:pt-5 md:pt-6 space-y-3 sm:space-y-4">
               <p className="text-base sm:text-lg font-semibold text-text-primary text-center">
-                Try Olog Reader
+                Begin your first listen
               </p>
               <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
                 <button
@@ -51,7 +51,7 @@ export function Hero() {
                   aria-label="Download on the App Store"
                 >
                   <img
-                    src="/white.svg"
+                    src="/black.svg"
                     alt="Download on the App Store"
                     className="h-10 w-auto sm:h-12 max-w-[120px]"
                   />
@@ -119,7 +119,7 @@ export function Hero() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div className="space-y-4 md:space-y-5 lg:space-y-6">
+            <div className="space-y-4 md:space-y-2 lg:space-y-6">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-tight">
                 <BlurText
                   text="Read anywhere. Listen everywhere."
@@ -129,13 +129,13 @@ export function Hero() {
                 />
               </h1>
               <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
-                Let your favorite books and articles fit your day. Eyes busy?
-                Switch to ears and keep going.
+                Take your stories, notes, and textbooks on the go, listen hands
+                free, anytime you want.
               </p>
 
               <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
                 <p className="text-base md:text-lg font-semibold text-text-primary">
-                  Try Olog Reader
+                  Begin your first listen
                 </p>
                 <div className="flex gap-4 md:gap-5">
                   <button
@@ -149,7 +149,7 @@ export function Hero() {
                     aria-label="Download on the App Store"
                   >
                     <img
-                      src="/white.svg"
+                      src="/black.svg"
                       alt="Download on the App Store"
                       className="h-8 w-auto md:max-h-[50px]"
                     />
