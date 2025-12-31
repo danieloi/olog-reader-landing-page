@@ -14,6 +14,7 @@ const georama = Georama({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ologreader.com"),
   title: "Olog Reader",
   description: "Turn any PDF into an audio book",
   icons: {
@@ -24,12 +25,18 @@ export const metadata: Metadata = {
     description: "Turn any PDF into an audio book",
     images: [
       {
-        url: "https://ologreader.com/ologLinkPreview2.png",
+        url: "/LinkPreview.png",
         width: 1200,
         height: 630,
         alt: "Olog Reader - Turn any PDF into an audio book",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Olog Reader",
+    description: "Turn any PDF into an audio book",
+    images: ["/LinkPreview.png"],
   },
 };
 

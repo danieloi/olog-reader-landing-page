@@ -23,9 +23,9 @@ export function Hero() {
           <div className="space-y-4 sm:space-y-5 md:space-y-6">
             <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-text-primary leading-tight mx-auto text-center">
               <BlurText
-                text="Read anywhere. Listen everywhere."
+                text={"Read\u00A0anywhere. Listen\u00A0everywhere."}
                 as="span"
-                className="whitespace-nowrap justify-center text-primary"
+                className="justify-center text-primary"
                 groupByWord
               />
             </h1>
@@ -122,9 +122,9 @@ export function Hero() {
             <div className="space-y-4 md:space-y-2 lg:space-y-6">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-tight">
                 <BlurText
-                  text="Read anywhere. Listen everywhere."
+                  text={"Read\u00A0anywhere. Listen\u00A0everywhere."}
                   as="span"
-                  className="whitespace-nowrap text-primary"
+                  className="text-primary"
                   groupByWord
                 />
               </h1>
