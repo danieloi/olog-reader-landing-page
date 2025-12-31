@@ -28,10 +28,15 @@ export default function BlurText({
   highlightClassName,
 }: Props) {
   const Wrapper = as as any;
+  const wrapClass =
+    className.includes("flex-nowrap") || className.includes("whitespace-nowrap")
+      ? "flex-nowrap"
+      : "flex-wrap";
+
   if (!groupByWord) {
     return (
       <Wrapper
-        className={`inline-flex flex-wrap overflow-visible ${className}`}
+        className={`inline-flex ${wrapClass} overflow-visible ${className}`}
       >
         {Array.from(text).map((char, i) => (
           <motion.span
@@ -62,7 +67,7 @@ export default function BlurText({
   let globalIndex = 0;
 
   return (
-    <Wrapper className={`inline-flex flex-wrap overflow-visible ${className}`}>
+    <Wrapper className={`inline-flex ${wrapClass} overflow-visible ${className}`}>
       {words.map((word, wi) => (
         <span
           key={`word-${wi}`}
