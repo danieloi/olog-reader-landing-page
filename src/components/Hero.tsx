@@ -146,9 +146,10 @@ export function Hero() {
                   groupByWord
                 />
               </h1>
-              <p className="text-lg md:text-2xl lg:text-3xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
-                Take your stories, notes, and textbooks on the go, listen hands
-                free, anytime you want.
+              <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
+                Your AI reading assistant with the best sounding voices in the
+                world. Take your stories, notes, and textbooks on the go, listen
+                hands free, anytime you want.
               </p>
 
               <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
