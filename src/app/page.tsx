@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
@@ -14,7 +15,9 @@ export default function Home() {
       />
       {/* <Header /> */}
       <section id="hero" className="flex-1" aria-label="Hero section">
-        <Hero />
+        <Suspense>
+          <Hero />
+        </Suspense>
       </section>
       <Footer />
     </main>
