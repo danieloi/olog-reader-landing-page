@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.png",
   },
+  manifest: "/manifest.json",
   openGraph: {
     title: "Olog Reader",
     description: "Turn any PDF into an audio book",
@@ -37,6 +38,12 @@ export const metadata: Metadata = {
     title: "Olog Reader",
     description: "Turn any PDF into an audio book",
     images: ["/LinkPreview.png"],
+  },
+  itunes: {
+    appId: "6744651101",
+  },
+  other: {
+    "google-play-app": "app-id=me.olog.reader",
   },
 };
 
