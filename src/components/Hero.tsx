@@ -1,12 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import BlurText from "./BlurText";
 import TiltedCard from "@/components/TiltedCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const STORE_URLS = {
+  ios: "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
+  android:
+    "https://play.google.com/store/apps/details?id=me.olog.reader",
+} as const;
+
 export function Hero() {
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const referralCode = searchParams.get("referralCode");
+
+  const handleDownload = (platform: "ios" | "android") => {
+    if (referralCode) {
+      fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/referral/deferred/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referralCode,
+            platform,
+            userAgent: navigator.userAgent,
+          }),
+        }
+      ).catch(() => {});
+    }
+    window.open(STORE_URLS[platform], "_blank");
+  };
+  
 
   // Mobile Layout Component
   const MobileHeroLayout = () => (
@@ -41,12 +69,7 @@ export function Hero() {
               </p>
               <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
                 <button
-                  onClick={() =>
-                    window.open(
-                      "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                      "_blank"
-                    )
-                  }
+                  onClick={() => handleDownload("ios")}
                   className="flex items-center justify-center hover:opacity-90 transition-opacity"
                   aria-label="Download on the App Store"
                 >
@@ -57,12 +80,7 @@ export function Hero() {
                   />
                 </button>
                 <button
-                  onClick={() =>
-                    window.open(
-                      "https://play.google.com/store/apps/details?id=me.olog.reader",
-                      "_blank"
-                    )
-                  }
+                  onClick={() => handleDownload("android")}
                   className="flex items-center justify-center hover:opacity-90 transition-opacity"
                   aria-label="Get it on Google Play"
                 >
@@ -139,12 +157,7 @@ export function Hero() {
                 </p>
                 <div className="flex gap-4 md:gap-5">
                   <button
-                    onClick={() =>
-                      window.open(
-                        "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                        "_blank"
-                      )
-                    }
+                    onClick={() => handleDownload("ios")}
                     className="hover:opacity-90 transition-opacity"
                     aria-label="Download on the App Store"
                   >
@@ -155,12 +168,7 @@ export function Hero() {
                     />
                   </button>
                   <button
-                    onClick={() =>
-                      window.open(
-                        "https://play.google.com/store/apps/details?id=me.olog.reader",
-                        "_blank"
-                      )
-                    }
+                    onClick={() => handleDownload("android")}
                     className="hover:opacity-90 transition-opacity"
                     aria-label="Get it on Google Play"
                   >
