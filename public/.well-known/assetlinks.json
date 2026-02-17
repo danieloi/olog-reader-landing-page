@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "me.olog.reader",
+      "sha256_cert_fingerprints": [
+        "CC:A3:3B:49:3C:87:63:17:1F:92:0D:29:A8:E3:31:1C:9C:F2:94:77:DD:29:97:6A:D2:D6:A1:3B:E7:53:55:92"
+      ]
+    }
+  }
+]

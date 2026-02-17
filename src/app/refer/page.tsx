@@ -1,0 +1,59 @@
+"use client";
+
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
+
+const STORE_URLS = {
+  ios: "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
+  android:
+    "https://play.google.com/store/apps/details?id=me.olog.reader",
+} as const;
+
+function getPlatform(): "ios" | "android" | "desktop" {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/i.test(ua)) return "ios";
+  if (/Android/i.test(ua)) return "android";
+  return "desktop";
+}
+
+function ReferContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const referralCode = searchParams.get("referralCode") || searchParams.get("code");
+
+  useEffect(() => {
+    const platform = getPlatform();
+
+    if (platform === "desktop") {
+      router.replace("/");
+      return;
+    }
+
+    if (referralCode) {
+      fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/referral/deferred/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referralCode,
+            platform,
+            userAgent: navigator.userAgent,
+          }),
+        }
+      ).catch(() => {});
+    }
+
+    window.location.href = STORE_URLS[platform];
+  }, [referralCode, router]);
+
+  return null;
+}
+
+export default function ReferPage() {
+  return (
+    <Suspense>
+      <ReferContent />
+    </Suspense>
+  );
+}

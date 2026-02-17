@@ -19,6 +19,9 @@ export default $config({
 
     new sst.aws.Nextjs("MyWeb", {
       domain: domain,
+      environment: {
+        NEXT_PUBLIC_API_URL: "https://api.reader.olog.me/v1",
+      },
     });
   },
 });
