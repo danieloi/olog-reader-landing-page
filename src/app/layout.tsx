@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
+    type: "website",
+    siteName: "Olog Reader",
+    locale: "en_US",
+    url: "https://ologreader.com",
     title: "Olog Reader",
     description: "Turn any PDF into an audio book",
     images: [
