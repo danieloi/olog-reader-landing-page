@@ -29,7 +29,30 @@ function RedeemContent() {
       return;
     }
 
-    window.location.href = STORE_URLS[platform];
+    // Try to open the app directly via custom URL scheme
+    const params = code ? `?code=${encodeURIComponent(code)}` : "";
+    const deepLink = `ologreader://redeem${params}`;
+
+    let hidden = false;
+    const onVisibilityChange = () => {
+      if (document.hidden) hidden = true;
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    window.location.href = deepLink;
+
+    // Fall back to store if the app didn't open
+    const timeout = setTimeout(() => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (!hidden) {
+        window.location.href = STORE_URLS[platform];
+      }
+    }, 1500);
+
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [code, router]);
 
   return null;
