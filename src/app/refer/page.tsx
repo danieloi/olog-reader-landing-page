@@ -46,7 +46,7 @@ function ReferContent() {
 
     // Try to open the app directly via custom URL scheme
     const params = referralCode ? `?referralCode=${encodeURIComponent(referralCode)}` : "";
-    const deepLink = `ologreader://auth/register${params}`;
+    const deepLink = `olog-reader://auth/register${params}`;
 
     let hidden = false;
     const onVisibilityChange = () => {

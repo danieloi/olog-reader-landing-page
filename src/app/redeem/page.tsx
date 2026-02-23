@@ -31,7 +31,7 @@ function RedeemContent() {
 
     // Try to open the app directly via custom URL scheme
     const params = code ? `?code=${encodeURIComponent(code)}` : "";
-    const deepLink = `ologreader://redeem${params}`;
+    const deepLink = `olog-reader://redeem${params}`;
 
     let hidden = false;
     const onVisibilityChange = () => {
