@@ -85,7 +85,7 @@ export function Footer() {
                 <TikTokIcon />
               </a> */}
               <a
-                href="https://linkedin.com/company/ologreader"
+                href="https://www.linkedin.com/company/olog-me/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-text-secondary hover:text-text-primary transition-colors"
