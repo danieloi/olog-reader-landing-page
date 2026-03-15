@@ -1,14 +1,15 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "next-themes";
 
 const benefits = [
   {
     label: "Smart Highlighting",
     title: "Every word is highlighted as it's spoken so you stay focused and retain more",
-    screenshot: "/highlight_text_as_you_read.jpeg",
-    screenshotDark: "/highlight_text_as_you_read_dark.png",
+    video: "/highlight_as_you_read_light.mp4",
+    videoDark: "/highlight_as_you_read_dark.mp4",
   },
   {
     label: "Speed Control",
@@ -30,6 +31,101 @@ const benefits = [
   },
 ];
 
+function VolumeOnIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  );
+}
+
+function VolumeOffIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
+    </svg>
+  );
+}
+
+function VideoPlayer({ src, preloadSrc }: { src: string; preloadSrc?: string }) {
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const prevSrcRef = useRef(src);
+
+  // Preload the alternate theme video so it's cached before the switch
+  useEffect(() => {
+    if (!preloadSrc) return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "video";
+    link.href = preloadSrc;
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, [preloadSrc]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+
+    if (prevSrcRef.current !== src) {
+      const currentTime = video.currentTime;
+      const wasPlaying = !video.paused;
+      video.src = src;
+      video.currentTime = currentTime;
+      if (wasPlaying) video.play();
+      prevSrcRef.current = src;
+    } else if (!video.src) {
+      video.src = src;
+      video.play();
+    }
+  }, [src]);
+
+  return (
+    <div className="group/video absolute inset-0">
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted={isMuted}
+        playsInline
+        className="absolute inset-0 w-full h-full object-contain"
+      />
+      <button
+        onClick={() => setIsMuted((m) => !m)}
+        className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-black/50 text-primary backdrop-blur-sm md:opacity-0 md:group-hover/video:opacity-100 transition-opacity duration-200 hover:bg-primary/80 cursor-pointer"
+        aria-label={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
+      </button>
+    </div>
+  );
+}
+
 function BenefitCard({
   benefit: b,
   index,
@@ -40,6 +136,10 @@ function BenefitCard({
   isDark: boolean;
 }) {
   const imageSrc = isDark ? b.screenshotDark : b.screenshot;
+  const videoSrc = b.video ? (isDark && b.videoDark ? b.videoDark : b.video) : undefined;
+  const videoPreloadSrc = b.video && b.videoDark
+    ? (isDark ? b.video : b.videoDark)
+    : undefined;
 
   return (
     <motion.div
@@ -56,24 +156,23 @@ function BenefitCard({
         {b.title}
       </h3>
 
-      <div className="relative flex-1 min-h-[280px] md:min-h-[400px] rounded-xl overflow-hidden bg-background-white border border-border">
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={imageSrc}
-            src={imageSrc}
-            alt={`${b.title} screenshot`}
-            className="absolute inset-0 w-full h-full object-cover"
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            onError={(e) => {
-              if (isDark && e.currentTarget.src !== b.screenshot) {
-                e.currentTarget.src = b.screenshot;
-              }
-            }}
-          />
-        </AnimatePresence>
+      <div className="relative flex-1 min-h-[280px] md:min-h-[380px] rounded-xl overflow-hidden ">
+        {videoSrc ? (
+          <VideoPlayer src={videoSrc} preloadSrc={videoPreloadSrc} />
+        ) : (
+        
+            <img
+              key={imageSrc}
+              src={imageSrc}
+              alt={`${b.title} screenshot`}
+              className="absolute inset-0 w-full h-full object-contain "
+              onError={(e) => {
+                if (isDark && b.screenshot && e.currentTarget.src !== b.screenshot) {
+                  e.currentTarget.src = b.screenshot;
+                }
+              }}
+            />
+        )}
       </div>
     </motion.div>
   );
