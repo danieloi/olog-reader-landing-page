@@ -54,7 +54,7 @@ const premiumFeatures = [
   { text: "All 10+ file types", included: true },
   { text: "Premium AI voices", included: true },
   { text: "Real-time highlighting", included: true },
-  { text: "Offline downloads", included: true },
+  { text: "Offline Listening", included: true },
   { text: "Cross-device sync", included: true },
   { text: "Priority customer support", included: true },
   { text: "Cancel anytime", included: true },
@@ -75,7 +75,6 @@ function getPricingPlans(pricing: ReturnType<typeof useCountryPricing>) {
         { text: "Real-time highlighting", included: true },
         { text: "Unlimited listening", included: false },
         { text: "Unlimited uploads", included: false },
-        { text: "Premium voices", included: false },
         { text: "Priority support", included: false },
       ],
       highlighted: false,
@@ -309,12 +308,11 @@ export function PricingSection() {
               { text: "All file types" },
               { text: "Premium AI voices" },
               { text: "Real-time highlighting" },
-              { text: "Offline downloads" },
               { text: "Cross-device sync" },
               { text: "Priority support" },
               { text: "Cancel anytime" },
             ].map((f) => (
-              <li key={f.text} className="flex items-start gap-2">
+              <li key={f.text} className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-text-secondary/40 mt-0.5 shrink-0" />
                 <div className="flex-1 flex items-center justify-between gap-1">
                   <span className="text-sm text-text-secondary">

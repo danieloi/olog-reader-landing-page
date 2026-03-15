@@ -42,7 +42,7 @@ export function Hero() {
 
   if (isMobile) {
     return (
-      <section className="relative overflow-hidden bg-transparent min-h-[100svh] flex items-center">
+      <section className="relative overflow-hidden bg-transparent min-h-[100svh] flex items-center max-sm:mt-8">
         <div className="max-w-[360px] sm:max-w-[480px] md:max-w-[640px] mx-auto px-3 sm:px-4 md:px-5 w-full py-6 sm:py-7 md:py-8 text-center">
           <motion.div
             className="space-y-6 sm:space-y-7 md:space-y-8 georama-text flex flex-col items-center"
