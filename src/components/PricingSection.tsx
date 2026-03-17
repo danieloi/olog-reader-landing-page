@@ -160,11 +160,11 @@ export function PricingSection() {
           Simple, Honest Pricing
         </h2>
         <p className="text-text-secondary text-lg max-w-lg mx-auto">
-        Go Premium and enjoy full control of your listening.  Cancel anytime.
+        Go Premium and enjoy full control of your listening.  <br /> Cancel anytime.
         </p>
       </motion.div>
       {/* Billing period tabs */}
-      <div className="max-w-3xl mx-auto mb-8">
+      <div className="sticky top-[72px] z-20 md:relative md:top-auto max-w-3xl mx-auto mb-8 py-3 -mx-4 px-4" style={{ background: "color-mix(in srgb, var(--background) 80%, transparent)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
         <div className="flex rounded-lg bg-background-card p-1 max-w-xs mx-auto relative">
           {(["Weekly", "Monthly", "Yearly"] as const).map((tab) => (
             <button

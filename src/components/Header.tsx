@@ -6,9 +6,12 @@ import Image from "next/image";
 import ShinyText from "./ShineyText";
 import { ThemeToggle } from "./ThemeToggle";
 import { handleGetStarted } from "@/hooks/use-download";
+import { useTheme } from "next-themes";
 
 export function Header() {
   const [isFloating, setIsFloating] = useState(false);
+  const theme = useTheme();
+  const isDark = theme.resolvedTheme === "dark";
 
   useEffect(() => {
     const hero = document.getElementById("hero");
@@ -31,17 +34,17 @@ export function Header() {
       <header className="absolute top-0 inset-x-0 z-50 bg-transparent">
         <div className="max-w-7xl mx-auto h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <Image src="/icon.png" alt="Olog Reader" width={40} height={40} />
+            <Image src={isDark ? "/icon-dark.png" : "/icon.png"} alt="Olog Reader" width={80} height={80} />
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
-              <a href="#benefits" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+              <a href="#benefits" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
                 Features
               </a>
-              <a href="#pricing" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+              <a href="#pricing" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
                 Pricing
               </a>
-              <a href="#faq" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+              <a href="#faq" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
                 FAQ
               </a>
             </nav>
@@ -70,17 +73,17 @@ export function Header() {
           >
             <div className="max-w-5xl mx-auto h-10 flex items-center justify-between px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-2">
-                <Image src="/icon.png" alt="Olog Reader" width={40} height={40} />
+              <Image src={isDark ? "/icon-dark.png" : "/icon.png"} alt="Olog Reader" width={56} height={56} />
               </div>
 
               <nav className="hidden md:flex items-center gap-6">
-                <a href="#benefits" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <a href="#benefits" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
                   Features
                 </a>
-                <a href="#pricing" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <a href="#pricing" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
                   Pricing
                 </a>
-                <a href="#faq" className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <a href="#faq" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
                   FAQ
                 </a>
               </nav>
