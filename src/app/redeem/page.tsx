@@ -33,25 +33,44 @@ function RedeemContent() {
     const params = code ? `?code=${encodeURIComponent(code)}` : "";
     const deepLink = `olog-reader://redeem${params}`;
 
-    let hidden = false;
+    let dialogShown = false;
+    let appOpened = false;
+
     const onVisibilityChange = () => {
-      if (document.hidden) hidden = true;
+      if (document.hidden) appOpened = true;
     };
+    const onBlur = () => {
+      dialogShown = true;
+    };
+    const onFocus = () => {
+      // User returned to the page — they cancelled the dialog or the app closed quickly.
+      // If the page never went hidden, the app didn't actually open — redirect to store.
+      if (dialogShown && !appOpened) {
+        window.location.href = STORE_URLS[platform];
+      }
+    };
+
     document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
 
     window.location.href = deepLink;
 
-    // Fall back to store if the app didn't open
+    // Fall back to store if nothing happened at all (app not installed, no dialog)
     const timeout = setTimeout(() => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      if (!hidden) {
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+      if (!appOpened && !dialogShown) {
         window.location.href = STORE_URLS[platform];
       }
-    }, 1500);
+    }, 3500);
 
     return () => {
       clearTimeout(timeout);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
     };
   }, [code, router]);
 

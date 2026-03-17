@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { StatsSection } from "@/components/StatsSection";
 import { BenefitsSection } from "@/components/BenefitsSection";
+import { AccessibilitySection } from "@/components/AccessibilitySection";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { PricingSection } from "@/components/PricingSection";
 import { FaqSection } from "@/components/FaqSection";
@@ -29,6 +30,7 @@ export default function Home() {
         <section id="benefits" aria-label="Core benefits">
           <BenefitsSection />
         </section>
+        <AccessibilitySection />
         <TestimonialsSection />
         <PricingSection />
         <FaqSection />
