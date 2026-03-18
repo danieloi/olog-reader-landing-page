@@ -15,14 +15,14 @@ const benefits = [
   {
     label: "Speed Control",
     title: "Listen at your speed — slow down for complex content or speed up to breeze through",
-    screenshot: "/read_at_your_pace.jpeg",
-    screenshotDark: "/read_at_your_pace_dark.png",
+    screenshot: "/read_at_your_pace.webp",
+    screenshotDark: "/read_at_your_pace_dark.webp",
   },
   {
     label: "Sync Across Devices",
     title: "Pick up right where you left off on any device — your progress stays in sync",
-    screenshot: "/sync_progress.png",
-    screenshotDark: "/sync_progress_dark.png",
+    screenshot: "/sync_progress.webp",
+    screenshotDark: "/sync_progress_dark.webp",
   },
   {
     label: "Listen to Anything",
@@ -38,14 +38,14 @@ const benefits = [
   {
     label: "Natural Voices",
     title: "The best most natural sounding voices in the world — pick from a huge list of voices",
-    screenshot: "/most_natural_sounding_voices.png",
-    screenshotDark: "/most_natural_sounding_voices_dark.png",
+    screenshot: "/most_natural_sounding_voices.webp",
+    screenshotDark: "/most_natural_sounding_voices_dark.webp",
   },
   {
     label: "Light & Dark Mode",
     title: "Switch seamlessly between light and dark themes to match your preference",
-    screenshot: "/light_mode_pics.png",
-    screenshotDark: "/dark_mode_pics.png",
+    video: "/light_to_dark_video.mp4",
+    videoDark: "/light_to_dark_video.mp4",
   },
   {
     label: "Reflow Mode",
