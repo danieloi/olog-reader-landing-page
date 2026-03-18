@@ -20,7 +20,7 @@ export function Hero() {
   const referralCode = searchParams.get("referralCode");
 
   const appStoreBadge = resolvedTheme === "dark" ? "/white.svg" : "/black.svg";
-  const googlePlayBadge = resolvedTheme === "dark" ? "/google_play_white.png" : "/google_play_dark.png";
+  const googlePlayBadge = resolvedTheme === "dark" ? "/google_play_white.webp" : "/google_play_dark.webp";
 
   const handleDownload = (platform: "ios" | "android") => {
     if (referralCode) {
@@ -106,7 +106,7 @@ export function Hero() {
             >
               <div className="relative">
                 <TiltedCard
-                  imageSrc="/reader-screen.png"
+                  imageSrc="/reader-screen.webp"
                   altText="Olog Reader mobile app"
                   containerWidth={isMobile ? "180px" : "200px"}
                   containerHeight={isMobile ? "389px" : "432px"}
@@ -192,7 +192,7 @@ export function Hero() {
           >
             <div className="relative">
               <TiltedCard
-                imageSrc="/reader-screen.png"
+                imageSrc="/reader-screen.webp"
                 altText="Olog Reader mobile app"
                 containerWidth="220px"
                 containerHeight="475px"

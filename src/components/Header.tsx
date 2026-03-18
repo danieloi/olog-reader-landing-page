@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import ShinyText from "./ShineyText";
-import { ThemeToggle } from "./ThemeToggle";
 import { handleGetStarted } from "@/hooks/use-download";
 import { useTheme } from "next-themes";
 
@@ -55,7 +54,6 @@ export function Header() {
             >
               <ShinyText text="Get Started" speed={5} />
             </button>
-            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -95,7 +93,6 @@ export function Header() {
                 >
                   <ShinyText text="Get Started" speed={5} />
                 </button>
-                <ThemeToggle />
               </div>
             </div>
           </motion.header>
