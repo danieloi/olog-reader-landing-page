@@ -60,13 +60,13 @@ export function Hero() {
                   groupByWord
                 />
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
                 Take your stories, notes, and textbooks on the go, listen hands
                 free, anytime you want.
               </p>
 
               <div className="pt-4 sm:pt-5 md:pt-6 space-y-3 sm:space-y-4">
-                <p className="text-base sm:text-lg font-semibold text-text-primary text-center">
+                <p className="text-lg sm:text-xl md:text-2xl font-semibold text-text-primary text-center">
                   Begin your first listen
                 </p>
                 <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
@@ -146,13 +146,13 @@ export function Hero() {
                   groupByWord
                 />
               </h1>
-              <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
+              <p className="text-lg md:text-2xl lg:text-3xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
                 Take your stories, notes, and textbooks on the go, listen hands
                 free, anytime you want.
               </p>
 
               <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
-                <p className="text-base md:text-lg font-semibold text-text-primary">
+                <p className="text-lg md:text-xl lg:text-2xl font-semibold text-text-primary">
                   Begin your first listen
                 </p>
                 <div className="flex gap-4 md:gap-5">

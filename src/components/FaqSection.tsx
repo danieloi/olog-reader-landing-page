@@ -61,7 +61,7 @@ function FaqItem({
         className="w-full flex items-center justify-between py-5 text-left gap-4"
         aria-expanded={open}
       >
-        <span className="text-base md:text-lg font-medium text-text-primary">
+        <span className="text-lg md:text-xl font-medium text-text-primary">
           {question}
         </span>
         <motion.span
@@ -82,7 +82,7 @@ function FaqItem({
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <p className="pb-5 text-sm md:text-base text-text-secondary leading-relaxed">
+            <p className="pb-5 text-lg md:text-xl text-text-secondary leading-relaxed">
               {answer}
             </p>
           </motion.div>
@@ -102,10 +102,10 @@ export function FaqSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-3">
+        <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-3">
           Frequently Asked Questions
         </h2>
-        <p className="text-text-secondary text-lg max-w-lg mx-auto">
+        <p className="text-text-secondary text-lg md:text-xl max-w-lg mx-auto">
           Everything you need to know about Olog Reader.
         </p>
       </motion.div>

@@ -37,20 +37,20 @@ export function Header() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
-              <a href="#benefits" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
+              <a href="#benefits" className="text-lg md:text-xl font-medium text-text-secondary hover:text-text-primary transition-colors">
                 Features
               </a>
-              <a href="#pricing" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
+              <a href="#pricing" className="text-lg md:text-xl font-medium text-text-secondary hover:text-text-primary transition-colors">
                 Pricing
               </a>
-              <a href="#faq" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
+              <a href="#faq" className="text-lg md:text-xl font-medium text-text-secondary hover:text-text-primary transition-colors">
                 FAQ
               </a>
             </nav>
           <div className="flex items-center gap-3">
             <button
               onClick={handleGetStarted}
-              className="px-0 h-auto leading-none text-lg sm:text-xl font-semibold text-primary cta-underline"
+              className="px-0 h-auto leading-none text-lg sm:text-xl md:text-2xl font-semibold text-primary cta-underline"
             >
               <ShinyText text="Get Started" speed={5} />
             </button>
@@ -75,13 +75,13 @@ export function Header() {
               </div>
 
               <nav className="hidden md:flex items-center gap-6">
-                <a href="#benefits" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <a href="#benefits" className="text-lg md:text-xl font-medium text-text-secondary hover:text-text-primary transition-colors">
                   Features
                 </a>
-                <a href="#pricing" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <a href="#pricing" className="text-lg md:text-xl font-medium text-text-secondary hover:text-text-primary transition-colors">
                   Pricing
                 </a>
-                <a href="#faq" className="text-base font-medium text-text-secondary hover:text-text-primary transition-colors">
+                <a href="#faq" className="text-lg md:text-xl font-medium text-text-secondary hover:text-text-primary transition-colors">
                   FAQ
                 </a>
               </nav>
@@ -89,7 +89,7 @@ export function Header() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleGetStarted}
-                  className="px-0 h-auto leading-none text-lg sm:text-xl font-semibold text-primary cta-underline"
+                  className="px-0 h-auto leading-none text-lg sm:text-xl md:text-2xl font-semibold text-primary cta-underline"
                 >
                   <ShinyText text="Get Started" speed={5} />
                 </button>

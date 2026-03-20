@@ -157,11 +157,11 @@ function FileTypeIconGrid() {
         {fileTypeItems.map((item) => {
           const Icon = item.Icon;
           return (
-            <div key={item.label} className="flex flex-col items-center gap-2">
+            <div key={item.label} className="flex flex-col items-center gap-1 md:gap-2">
               <div className="w-14 h-14 md:w-18 md:h-18 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Icon className="w-7 h-7 md:w-9 md:h-9 text-primary" />
               </div>
-              <span className="text-xs md:text-sm font-medium text-text-secondary">
+              <span className="text-lg md:text-lg font-medium text-text-secondary">
                 {item.label}
               </span>
             </div>
@@ -195,10 +195,10 @@ function BenefitCard({
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: index * 0.08 }}
     >
-      <p className="text-sm md:text-base font-medium text-text-secondary mb-1 md:mb-2">
+      <p className="text-lg md:text-xl font-medium text-text-secondary mb-1 md:mb-2">
         {b.label}
       </p>
-      <h3 className="text-base md:text-xl font-semibold text-text-primary leading-snug mb-4 md:mb-6">
+      <h3 className="text-lg md:text-2xl font-semibold text-text-primary leading-snug mb-4 md:mb-6">
         {b.title}
       </h3>
 
@@ -238,10 +238,10 @@ export function BenefitsSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-3xl md:text-5xl font-bold text-text-primary leading-tight">
+        <h2 className="text-3xl md:text-6xl font-bold text-text-primary leading-tight">
           Work Harder? <span className="text-primary">Listen Smarter!</span>
         </h2>
-        <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
           Upload documents, paste links, or scan text. Our AI reads it aloud
           with the most natural sounding voices in the world while highlighting every word — so you never lose your place.
         </p>

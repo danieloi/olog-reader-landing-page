@@ -156,10 +156,10 @@ export function PricingSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-3">
+        <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-3">
           Simple, Honest Pricing
         </h2>
-        <p className="text-text-secondary text-lg max-w-lg mx-auto">
+        <p className="text-text-secondary text-lg md:text-xl max-w-lg mx-auto">
         Go Premium and enjoy full control of your listening.  <br /> Cancel anytime.
         </p>
       </motion.div>
@@ -170,7 +170,7 @@ export function PricingSection() {
             <button
               key={tab}
               onClick={() => animateToTab(tab)}
-              className="flex-1 py-2 text-sm font-semibold rounded-md relative z-10 transition-colors duration-300"
+              className="flex-1 py-2 text-lg md:text-lg font-semibold rounded-md relative z-10 transition-colors duration-300"
               style={{ color: activeTab === tab ? "#fff" : undefined }}
             >
               {activeTab === tab && (
@@ -196,27 +196,27 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45 }}
         >
-          <h3 className="text-lg font-semibold text-text-primary">
+          <h3 className="text-xl md:text-2xl font-semibold text-text-primary">
             {freePlan.name}
           </h3>
           <div className="mt-2 mb-1">
-            <span className="text-3xl font-bold text-text-primary">
+            <span className="text-3xl md:text-4xl font-bold text-text-primary">
               {freePlan.price}
             </span>
           </div>
-          <p className="text-xs text-text-secondary mb-5">
+          <p className="text-lg md:text-lg text-text-secondary mb-5">
             {freePlan.description}
           </p>
           <ul className="space-y-2.5 mb-6 flex-1">
             {freePlan.features.map((f) => (
               <li key={f.text} className="flex items-center gap-2">
                 {f.included ? (
-                  <Check className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                  <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
                 ) : (
-                  <X className="w-4 h-4 text-text-secondary/30 mt-0.5 shrink-0" />
+                  <X className="w-5 h-5 text-text-secondary/30 mt-0.5 shrink-0" />
                 )}
                 <span
-                  className={`text-sm ${
+                  className={`text-lg md:text-lg ${
                     f.included ? "text-text-primary" : "text-text-secondary/50"
                   }`}
                 >
@@ -225,7 +225,7 @@ export function PricingSection() {
               </li>
             ))}
           </ul>
-          <button onClick={handleGetStarted} className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors bg-background-card text-text-primary hover:bg-background-card/80">
+          <button onClick={handleGetStarted} className="w-full py-2.5 rounded-xl text-lg md:text-lg font-semibold transition-colors bg-background-card text-text-primary hover:bg-background-card/80">
             {freePlan.cta}
           </button>
         </motion.div>
@@ -238,7 +238,7 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.08 }}
         >
-          <h3 className="text-lg font-semibold text-text-primary">
+          <h3 className="text-xl md:text-2xl font-semibold text-text-primary">
             Premium
           </h3>
 
@@ -251,14 +251,14 @@ export function PricingSection() {
               transition={{ duration: 0.15 }}
             >
               <div className="mt-2 mb-1">
-                <span className="text-3xl font-bold text-text-primary">
+                <span className="text-3xl md:text-4xl font-bold text-text-primary">
                   {activePlan.price}
                 </span>
-                <span className="text-sm text-text-secondary">
+                <span className="text-lg md:text-lg text-text-secondary">
                   {activePlan.period}
                 </span>
               </div>
-              <p className="text-xs text-text-secondary mb-5">
+              <p className="text-lg md:text-lg text-text-secondary mb-5">
                 {activePlan.description}
               </p>
             </motion.div>
@@ -267,13 +267,13 @@ export function PricingSection() {
           <ul className="space-y-2.5 mb-6 flex-1">
             {premiumFeatures.map((f) => (
               <li key={f.text} className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                <span className="text-sm text-text-primary">{f.text}</span>
+                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+                <span className="text-lg md:text-lg text-text-primary">{f.text}</span>
               </li>
             ))}
           </ul>
 
-          <button onClick={handleGetStarted} className="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors bg-primary text-white hover:bg-button-hover-primary">
+          <button onClick={handleGetStarted} className="w-full py-2.5 rounded-xl text-lg md:text-lg font-semibold transition-colors bg-primary text-white hover:bg-button-hover-primary">
             {activePlan.cta}
           </button>
         </motion.div>
@@ -286,18 +286,18 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.16 }}
         >
-          <h3 className="text-lg font-semibold text-text-primary">
+          <h3 className="text-xl md:text-2xl font-semibold text-text-primary">
             Others
           </h3>
           <div className="mt-2 mb-1">
-            <span className="text-3xl font-bold text-text-secondary line-through decoration-2">
+            <span className="text-3xl md:text-4xl font-bold text-text-secondary line-through decoration-2">
               $139
             </span>
-            <span className="text-sm text-text-secondary">
+            <span className="text-lg md:text-lg text-text-secondary">
               /year avg.
             </span>
           </div>
-          <p className="text-xs text-text-secondary mb-5">
+          <p className="text-lg md:text-lg text-text-secondary mb-5">
             What competitors charge for the same features
           </p>
 
@@ -313,9 +313,9 @@ export function PricingSection() {
               { text: "Cancel anytime" },
             ].map((f) => (
               <li key={f.text} className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-text-secondary/40 mt-0.5 shrink-0" />
+                <Check className="w-5 h-5 text-text-secondary/40 mt-0.5 shrink-0" />
                 <div className="flex-1 flex items-center justify-between gap-1">
-                  <span className="text-sm text-text-secondary">
+                  <span className="text-lg md:text-lg text-text-secondary">
                     {f.text}
                   </span>
 
@@ -324,7 +324,7 @@ export function PricingSection() {
             ))}
           </ul>
 
-          <div className="w-full py-2.5 rounded-xl text-sm font-semibold text-center text-text-secondary bg-background-card">
+          <div className="w-full py-2.5 rounded-xl text-lg md:text-lg font-semibold text-center text-text-secondary bg-background-card">
             Overpriced
           </div>
         </motion.div>

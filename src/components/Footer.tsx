@@ -35,7 +35,7 @@ export function Footer() {
               </a>
             </div>
 
-            <div className="flex items-center gap-5 text-sm text-text-secondary">
+            <div className="flex items-center gap-5 text-lg md:text-lg text-text-secondary">
               <a
                 href="/privacy"
                 className="hover:text-text-primary transition-colors"
@@ -53,7 +53,7 @@ export function Footer() {
 
           {/* Social links */}
           <div className="border-t border-border py-4 flex items-center justify-between">
-            <p className="text-xs text-text-secondary">
+            <p className="text-lg md:text-lg text-text-secondary">
               &copy; {new Date().getFullYear()} Olog Reader. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
