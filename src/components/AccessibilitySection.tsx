@@ -37,14 +37,14 @@ export function AccessibilitySection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
       >
-        <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
+        <p className="text-lg md:text-xl font-semibold text-primary uppercase tracking-wider mb-3">
           Designed for everyone
         </p>
-        <h2 className="text-3xl md:text-5xl font-bold text-text-primary leading-tight mb-4">
+        <h2 className="text-3xl md:text-6xl font-bold text-text-primary leading-tight mb-4">
           Reading should be{" "}
           <span className="text-primary">accessible to all</span>
         </h2>
-        <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
           Olog helps you beat the limitations — so nothing stands between you
           and the content you love.
         </p>
@@ -65,13 +65,13 @@ export function AccessibilitySection() {
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                 <Icon className="w-6 h-6 text-primary" />
               </div>
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
+              <span className="text-lg md:text-lg font-semibold text-primary uppercase tracking-wider mb-2">
                 {a.label}
               </span>
-              <h3 className="text-xl md:text-2xl font-semibold text-text-primary mb-3">
+              <h3 className="text-xl md:text-3xl font-semibold text-text-primary mb-3">
                 {a.heading}
               </h3>
-              <p className="text-text-secondary leading-relaxed">
+              <p className="text-lg md:text-xl text-text-secondary leading-relaxed">
                 {a.description}
               </p>
             </motion.div>
