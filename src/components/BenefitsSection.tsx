@@ -195,10 +195,10 @@ function BenefitCard({
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, delay: index * 0.08 }}
     >
-      <p className="text-[10px] md:text-xs font-medium text-text-secondary mb-1 md:mb-2">
+      <p className="text-sm md:text-base font-medium text-text-secondary mb-1 md:mb-2">
         {b.label}
       </p>
-      <h3 className="text-sm md:text-xl font-semibold text-text-primary leading-snug mb-4 md:mb-6">
+      <h3 className="text-base md:text-xl font-semibold text-text-primary leading-snug mb-4 md:mb-6">
         {b.title}
       </h3>
 
