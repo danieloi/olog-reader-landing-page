@@ -8,7 +8,7 @@ import { fileTypeItems } from "./icons";
 const benefits = [
   {
     label: "Smart Highlighting",
-    title: "Every word is highlighted as it's spoken so you stay focused and retain more",
+    title: "Each word lights up in sync with the audio, helping you follow along and retain more",
     video: "/highlight_as_you_read_light.mp4",
     videoDark: "/highlight_as_you_read_dark.mp4",
   },
@@ -32,8 +32,8 @@ const benefits = [
   {
     label: "Offline Mode",
     title: "Listen to your documents anytime — even without an internet connection",
-    screenshot: "/offline_mode.png",
-    screenshotDark: "/offline_mode_dark.png",
+    screenshot: "/offline_mode.webp",
+    screenshotDark: "/offline_mode_dark.webp",
   },
   {
     label: "Natural Voices",
