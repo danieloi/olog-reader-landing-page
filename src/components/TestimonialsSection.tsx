@@ -31,15 +31,15 @@ export function TestimonialsSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-3">
+        <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-3">
           Loved by Readers, Students & Professionals
         </h2>
-        <p className="text-text-secondary text-lg max-w-lg mx-auto">
+        <p className="text-text-secondary text-lg md:text-xl max-w-lg mx-auto">
           See why thousands trust Olog Reader for their daily content.
         </p>
       </motion.div>
 
-      <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6">
         {testimonials.map((t, i) => (
           <motion.div
             key={t.name}
@@ -53,16 +53,16 @@ export function TestimonialsSection() {
               {Array.from({ length: 5 }).map((_, s) => (
                 <Star
                   key={s}
-                  className="w-4 h-4 fill-accent-500 text-accent-500"
+                  className="w-5 h-5 fill-accent-500 text-accent-500"
                 />
               ))}
             </div>
 
-            <p className="text-text-primary text-sm leading-relaxed mb-5 italic">
+            <p className="text-text-primary text-lg md:text-xl leading-relaxed mb-5 italic">
               &ldquo;{t.quote}&rdquo;
             </p>
 
-            <p className="text-sm font-semibold text-text-primary">
+            <p className="text-lg md:text-xl font-semibold text-text-primary">
               {t.name}
             </p>
           </motion.div>
