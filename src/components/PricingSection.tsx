@@ -18,9 +18,9 @@ function useCountryPricing() {
     fromPrice: string;
   }>({
     currency: "$",
-    weekly: "$2",
-    monthly: "$5",
-    yearly: "$55",
+    weekly: "$2.49",
+    monthly: "$4.99",
+    yearly: "$49.99",
     fromPrice: "$5/mo",
   });
 
