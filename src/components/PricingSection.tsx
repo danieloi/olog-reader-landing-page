@@ -187,7 +187,7 @@ export function PricingSection() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto grid sm:grid-cols-3 gap-6">
         {/* Free plan */}
         <motion.div
           className="relative rounded-2xl p-6 flex flex-col border border-border bg-background-white hover:shadow-soft transition-shadow duration-300"
