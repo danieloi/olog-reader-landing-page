@@ -33,7 +33,7 @@ const faqs = [
   {
     question: "Does it work offline?",
     answer:
-      "You can download content for offline listening. Once downloaded, you can listen anywhere without an internet connection.",
+      "There are a variety of offline voices you can pick from to enjoy the best offline experience.",
   },
 ];
 
