@@ -46,12 +46,14 @@ const benefits = [
     title: "Switch seamlessly between light and dark themes to match your preference",
     video: "/light_to_dark_video.mp4",
     videoDark: "/light_to_dark_video.mp4",
+    hideMuteButton: true,
   },
   {
     label: "Reflow Mode",
     title: "Text automatically adapts to your screen size for a comfortable reading experience",
     video: "/reflow-light.mp4",
     videoDark: "/reflow-mode-dark.mp4",
+    hideMuteButton: true,
   },
 ];
 
@@ -93,7 +95,7 @@ function VolumeOffIcon() {
   );
 }
 
-function VideoPlayer({ src, preloadSrc }: { src: string; preloadSrc?: string }) {
+function VideoPlayer({ src, preloadSrc, showMuteButton = true }: { src: string; preloadSrc?: string; showMuteButton?: boolean }) {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const prevSrcRef = useRef(src);
@@ -139,13 +141,15 @@ function VideoPlayer({ src, preloadSrc }: { src: string; preloadSrc?: string }) 
         playsInline
         className="absolute inset-0 w-full h-full object-contain"
       />
-      <button
-        onClick={() => setIsMuted((m) => !m)}
-        className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-black/50 text-primary backdrop-blur-sm md:opacity-0 md:group-hover/video:opacity-100 transition-opacity duration-200 hover:bg-primary/80 cursor-pointer"
-        aria-label={isMuted ? "Unmute" : "Mute"}
-      >
-        {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
-      </button>
+      {showMuteButton && (
+        <button
+          onClick={() => setIsMuted((m) => !m)}
+          className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-black/50 text-primary backdrop-blur-sm md:opacity-0 md:group-hover/video:opacity-100 transition-opacity duration-200 hover:bg-primary/80 cursor-pointer"
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
+        </button>
+      )}
     </div>
   );
 }
@@ -206,7 +210,7 @@ function BenefitCard({
         {b.iconGrid ? (
           <FileTypeIconGrid />
         ) : videoSrc ? (
-          <VideoPlayer src={videoSrc} preloadSrc={videoPreloadSrc} />
+          <VideoPlayer src={videoSrc} preloadSrc={videoPreloadSrc} showMuteButton={!b.hideMuteButton} />
         ) : (
             <img
               key={imageSrc}
