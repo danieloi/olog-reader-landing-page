@@ -61,8 +61,9 @@ export function Hero() {
                 />
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-                Take your stories, notes, and textbooks on the go, listen hands
-                free, anytime you want.
+                Your AI reading assistant with the best sounding voices in the
+                world. Take your stories, notes, and textbooks on the go, listen
+                hands free, anytime you want.
               </p>
 
               <div className="pt-4 sm:pt-5 md:pt-6 space-y-3 sm:space-y-4">
