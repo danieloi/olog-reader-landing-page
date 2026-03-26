@@ -50,7 +50,7 @@ export function AccessibilitySection() {
         </p>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6 md:gap-8">
+      <div className="max-w-[1440px] mx-auto grid md:grid-cols-3 gap-6 md:gap-8">
         {audiences.map((a, i) => {
           const Icon = a.icon;
           return (
