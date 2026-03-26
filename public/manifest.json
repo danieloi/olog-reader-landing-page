@@ -1,7 +1,7 @@
 {
   "name": "Olog Reader",
   "short_name": "Olog Reader",
-  "description": "Turn any PDF into an audio book",
+  "description": "Listen to your documents",
   "start_url": "/",
   "display": "browser",
   "icons": [

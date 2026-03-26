@@ -44,7 +44,49 @@ function ReferContent() {
       ).catch(() => {});
     }
 
-    window.location.href = STORE_URLS[platform];
+    // Try to open the app directly via custom URL scheme
+    const params = referralCode ? `?referralCode=${encodeURIComponent(referralCode)}` : "";
+    const deepLink = `olog-reader://auth/register${params}`;
+
+    let dialogShown = false;
+    let appOpened = false;
+
+    const onVisibilityChange = () => {
+      if (document.hidden) appOpened = true;
+    };
+    const onBlur = () => {
+      dialogShown = true;
+    };
+    const onFocus = () => {
+      // User returned to the page — they cancelled the dialog or the app closed quickly.
+      // If the page never went hidden, the app didn't actually open — redirect to store.
+      if (dialogShown && !appOpened) {
+        window.location.href = STORE_URLS[platform];
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+
+    window.location.href = deepLink;
+
+    // Fall back to store if nothing happened at all (app not installed, no dialog)
+    const timeout = setTimeout(() => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+      if (!appOpened && !dialogShown) {
+        window.location.href = STORE_URLS[platform];
+      }
+    }, 3500);
+
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [referralCode, router]);
 
   return null;

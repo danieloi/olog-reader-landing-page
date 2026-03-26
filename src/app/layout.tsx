@@ -16,7 +16,7 @@ const georama = Georama({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ologreader.com"),
   title: "Olog Reader",
-  description: "Turn any PDF into an audio book",
+  description: "Listen to your documents",
   icons: {
     icon: "/icon.png",
   },
@@ -27,20 +27,20 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://ologreader.com",
     title: "Olog Reader",
-    description: "Turn any PDF into an audio book",
+    description: "Listen to your documents",
     images: [
       {
         url: "/LinkPreview.png",
         width: 1200,
         height: 630,
-        alt: "Olog Reader - Turn any PDF into an audio book",
+        alt: "Olog Reader - Listen to your documents",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Olog Reader",
-    description: "Turn any PDF into an audio book",
+    description: "Listen to your documents",
     images: ["/LinkPreview.png"],
   },
   itunes: {
@@ -84,8 +84,8 @@ export default function RootLayout({
         
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
         >
           <SkipToContent />
           {children}

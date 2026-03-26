@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import TextPressure from "@/components/TextPressure";
+import { XIcon, InstagramIcon, LinkedInIcon } from "@/components/icons";
 
 export function Footer() {
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -34,7 +35,7 @@ export function Footer() {
               </a>
             </div>
 
-            <div className="flex items-center gap-5 text-sm text-text-secondary">
+            <div className="flex items-center gap-5 text-lg md:text-lg text-text-secondary">
               <a
                 href="/privacy"
                 className="hover:text-text-primary transition-colors"
@@ -46,6 +47,51 @@ export function Footer() {
                 className="hover:text-text-primary transition-colors"
               >
                 Support
+              </a>
+            </div>
+          </div>
+
+          {/* Social links */}
+          <div className="border-t border-border py-4 flex items-center justify-between">
+            <p className="text-lg md:text-lg text-text-secondary">
+              &copy; {new Date().getFullYear()} Olog Reader. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://x.com/OlogReader"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-secondary hover:text-text-primary transition-colors"
+                aria-label="X (Twitter)"
+              >
+                <XIcon />
+              </a>
+              <a
+                href="https://instagram.com/ologreader"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-secondary hover:text-text-primary transition-colors"
+                aria-label="Instagram"
+              >
+                <InstagramIcon />
+              </a>
+              {/* <a
+                href="https://tiktok.com/@ologreader"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-secondary hover:text-text-primary transition-colors"
+                aria-label="TikTok"
+              >
+                <TikTokIcon />
+              </a> */}
+              <a
+                href="https://www.linkedin.com/company/olog-me/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-secondary hover:text-text-primary transition-colors"
+                aria-label="LinkedIn"
+              >
+                <LinkedInIcon />
               </a>
             </div>
           </div>
