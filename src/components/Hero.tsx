@@ -58,8 +58,9 @@ export function Hero() {
               />
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-              Take your stories, notes, and textbooks on the go, listen hands
-              free, anytime you want.
+              Your AI reading assistant with the best sounding voices in the
+              world. Take your stories, notes, and textbooks on the go, listen
+              hands free, anytime you want.
             </p>
 
             {/* Mobile CTA - More prominent */}
@@ -147,8 +148,9 @@ export function Hero() {
                 />
               </h1>
               <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
-                Take your stories, notes, and textbooks on the go, listen hands
-                free, anytime you want.
+                Your AI reading assistant with the best sounding voices in the
+                world. Take your stories, notes, and textbooks on the go, listen
+                hands free, anytime you want.
               </p>
 
               <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
