@@ -43,8 +43,8 @@ function StatBlock({
         )}
         {suffix}
       </p>
-      <p className="text-sm sm:text-lg md:text-xl font-semibold text-text-primary mt-1">{label}</p>
-      <p className="text-xs sm:text-sm md:text-lg text-text-secondary mt-0.5 max-w-[160px] sm:max-w-[240px] mx-auto">
+      <p className="text-base sm:text-lg md:text-xl font-semibold text-text-primary mt-1">{label}</p>
+      <p className="text-base sm:text-sm md:text-lg text-text-secondary mt-0.5 max-w-[160px] sm:max-w-[240px] mx-auto">
         {sub}
       </p>
     </motion.div>
@@ -54,11 +54,11 @@ function StatBlock({
 export function StatsSection() {
   return (
     <section className="py-10 md:py-20 px-4 bg-background-card/50">
-      <div className="max-w-6xl mx-auto grid grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+      <div className="max-w-6xl mx-auto overflow-x-auto"><div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 min-w-[480px]">
         {stats.map((s, i) => (
           <StatBlock key={s.label} {...s} delay={i * 0.1} />
         ))}
-      </div>
+      </div></div>
     </section>
   );
 }
