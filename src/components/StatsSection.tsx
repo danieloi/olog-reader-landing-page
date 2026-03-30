@@ -35,7 +35,7 @@ function StatBlock({
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.5, delay }}
     >
-      <p className="text-2xl sm:text-3xl md:text-6xl font-bold text-primary">
+      <p className="text-2xl sm:text-3xl md:text-6xl font-bold text-primary ">
         {inView ? (
           <CountUp end={value} duration={2} delay={0.2} />
         ) : (
@@ -43,8 +43,8 @@ function StatBlock({
         )}
         {suffix}
       </p>
-      <p className="text-base sm:text-lg md:text-xl font-semibold text-text-primary mt-1">{label}</p>
-      <p className="text-base sm:text-sm md:text-lg text-text-secondary mt-0.5 max-w-[160px] sm:max-w-[240px] mx-auto">
+      <p className="text-lg sm:text-lg md:text-xl font-semibold text-text-primary mt-1">{label}</p>
+      <p className="text-lg sm:text-xl md:text-xl text-text-secondary mt-0.5 max-w-[240px] mx-auto">
         {sub}
       </p>
     </motion.div>
@@ -54,7 +54,7 @@ function StatBlock({
 export function StatsSection() {
   return (
     <section className="py-10 md:py-20 px-4 bg-background-card/50">
-      <div className="max-w-6xl mx-auto overflow-x-auto"><div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 min-w-[480px]">
+      <div className="max-w-6xl mx-auto overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}><div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 min-w-[480px]">
         {stats.map((s, i) => (
           <StatBlock key={s.label} {...s} delay={i * 0.1} />
         ))}
