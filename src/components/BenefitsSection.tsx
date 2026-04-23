@@ -243,7 +243,7 @@ export function BenefitsSection() {
         transition={{ duration: 0.6 }}
       >
         <h2 className="text-3xl md:text-6xl font-bold text-text-primary leading-tight">
-          Work Harder? <span className="text-primary">Listen Smarter!</span>
+          Work Harder? <br className="md:hidden" /> <span className="text-primary">Listen Smarter!</span>
         </h2>
         <p className="text-lg md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
           Upload documents, paste links, or scan text. Our AI reads it aloud
