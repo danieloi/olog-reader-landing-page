@@ -8,7 +8,7 @@ const faqs = [
   {
     question: "What file types does Olog Reader support?",
     answer:
-      "Olog Reader supports PDFs, EPUBs, PowerPoint files, Word documents, web links, scanned images, and plain text. We're constantly adding more formats.",
+      "Olog Reader supports PDFs, EPUBs, PowerPoint files, Word documents, web links, scanned images, and plain text. Honestly, we doubt there's a format left we don't support.",
   },
   {
     question: "How natural do the voices sound?",
@@ -20,10 +20,14 @@ const faqs = [
     answer:
       "Yes. Whether you upload a PDF, paste a link, or scan an image, the app highlights each word in real time as it's read aloud.",
   },
+  {                                                                                                                         
+    question: "Does Olog Reader support dark mode?",
+   answer:   "Yes. Olog Reader has both light and dark themes — switch between them anytime to match your preference or system settings.",
+   },   
   {
     question: "Can I sync my progress across devices?",
     answer:
-      "Absolutely. Your reading progress, bookmarks, and settings sync seamlessly across all your devices so you can pick up right where you left off.",
+      "Absolutely. Your reading progress, highlights, notes, and settings sync seamlessly across all your devices so you can pick up right where you left off.",
   },
   {
     question: "Is Olog Reader free to use?",
@@ -35,6 +39,7 @@ const faqs = [
     answer:
       "There are a variety of offline voices you can pick from to enjoy the best offline experience.",
   },
+                                                                                                                       
 ];
 
 function FaqItem({

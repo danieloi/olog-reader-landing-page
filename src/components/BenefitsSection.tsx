@@ -41,19 +41,19 @@ const benefits = [
     screenshot: "/most_natural_sounding_voices.webp",
     screenshotDark: "/most_natural_sounding_voices_dark.webp",
   },
-  {
-    label: "Light & Dark Mode",
-    title: "Switch seamlessly between light and dark themes to match your preference",
-    video: "/light_to_dark_video.mp4",
-    videoDark: "/light_to_dark_video.mp4",
-    hideMuteButton: true,
-  },
+  
   {
     label: "Reflow Mode",
     title: "Text automatically adapts to your screen size for a comfortable reading experience",
     video: "/reflow-light.mp4",
     videoDark: "/reflow-mode-dark.mp4",
     hideMuteButton: true,
+  },
+  {
+    label: "Highlights & Notes",
+    title: "Highlight passages and jot down notes as you listen — your thoughts stay attached to the text",
+    screenshot: "/annotation-light.webp",
+    screenshotDark: "/annotation-dark.webp",
   },
 ];
 
@@ -271,6 +271,7 @@ export function BenefitsSection() {
             <BenefitCard key={b.title} benefit={b} index={i + 6} isDark={isDark} />
           ))}
         </div>
+        
       </div>
     </section>
   );
