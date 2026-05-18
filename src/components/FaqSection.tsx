@@ -6,6 +6,11 @@ import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
+    question: "Where does the name “olog” come from?",
+    answer:
+      "Just like a blog is a web log and a vlog is a video log, an olog is an audio log — your reading, narrated.",
+  },
+  {
     question: "What file types does Olog Reader support?",
     answer:
       "Olog Reader supports PDFs, EPUBs, PowerPoint files, Word documents, web links, scanned images, and plain text. We're constantly adding more formats.",
