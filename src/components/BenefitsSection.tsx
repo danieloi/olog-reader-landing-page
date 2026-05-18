@@ -163,7 +163,7 @@ function FileTypeIconGrid() {
           return (
             <div key={item.label} className="flex flex-col items-center gap-1 md:gap-2">
               <div className="w-14 h-14 md:w-18 md:h-18 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Icon className="w-7 h-7 md:w-9 md:h-9 text-primary" />
+                <Icon className="w-7 h-7 md:w-9 md:h-9" />
               </div>
               <span className="text-lg md:text-lg font-medium text-text-secondary">
                 {item.label}
