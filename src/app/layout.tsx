@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
-import { Inter, Barriecito, Georama } from "next/font/google";
+import { Fraunces, Bricolage_Grotesque } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import SkipToContent from "@/components/ui/SkipToContent";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const inter = Inter({ subsets: ["latin"] });
-
-const georama = Georama({
-  weight: ["400", "700", "900"],
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-georama",
+  variable: "--font-fraunces",
+  display: "swap",
+  axes: ["opsz", "SOFT", "WONK"],
+});
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+  axes: ["opsz", "wdth"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +36,7 @@ export const metadata: Metadata = {
     description: "Listen to your documents",
     images: [
       {
-        url: "/LinkPreview.png",
+        url: "/LinkPreview.webp",
         width: 1200,
         height: 630,
         alt: "Olog Reader - Listen to your documents",
@@ -41,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Olog Reader",
     description: "Listen to your documents",
-    images: ["/LinkPreview.png"],
+    images: ["/LinkPreview.webp"],
   },
   itunes: {
     appId: "6744651101",
@@ -67,7 +73,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} ${georama.variable} antialiased`}>
+      <body className={`${bricolage.variable} ${fraunces.variable} antialiased`}>
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-G1J25G5MG0"
