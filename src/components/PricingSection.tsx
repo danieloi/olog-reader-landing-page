@@ -258,7 +258,7 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.08 }}
         >
-          <span className="absolute top-0 right-6 -translate-y-1/2 font-mono text-xs uppercase tracking-[0.22em] bg-accent text-text-light px-3 py-1 rounded-full">
+          <span className="absolute top-0 right-6 -translate-y-1/2 font-mono text-xs font-semibold uppercase tracking-[0.22em] bg-accent text-text-light px-3 py-1 rounded-full">
             Recommended
           </span>
           <p className="font-mono text-xs uppercase tracking-[0.22em] text-primary mb-2">
