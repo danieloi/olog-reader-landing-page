@@ -131,8 +131,26 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "General Sans", "sans-serif"],
-        serif: ["Georgia", "Times New Roman", "Times", "serif"],
+        sans: [
+          "var(--font-bricolage)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        serif: [
+          "var(--font-fraunces)",
+          "Georgia",
+          "Times New Roman",
+          "Times",
+          "serif",
+        ],
+        display: [
+          "var(--font-fraunces)",
+          "Georgia",
+          "Times New Roman",
+          "Times",
+          "serif",
+        ],
       },
       fontSize: {
         h1: [

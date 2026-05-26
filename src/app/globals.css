@@ -41,189 +41,189 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Primary Blue Colors */
-  --primary-50: #d9efff;
-  --primary-100: #b3e0ff;
-  --primary-200: #8cccff;
-  --primary-300: #66b2ff;
-  --primary-400: #3399ff;
+  /* Primary — iOS blue, kept for brand equity */
+  --primary-50: #dceeff;
+  --primary-100: #b6dbff;
+  --primary-200: #88c1ff;
+  --primary-300: #5aa6ff;
+  --primary-400: #2c8cff;
   --primary-500: #007aff;
-  --primary-600: #0066cc;
+  --primary-600: #0062d1;
   --primary-700: #0051b5;
-  --primary-800: #003d99;
-  --primary-900: #002766;
+  --primary-800: #003d8a;
+  --primary-900: #002a5e;
 
-  /* Accent Orange Colors */
-  --accent-50: #ffdab3;
-  --accent-100: #ffd19f;
-  --accent-200: #ffc07f;
-  --accent-300: #ffaf5f;
-  --accent-400: #ffa23f;
-  --accent-500: #ff9500;
-  --accent-600: #e68600;
-  --accent-700: #cc7a00;
-  --accent-800: #b36b00;
-  --accent-900: #995c00;
+  /* Accent — Deep mustard (replaces iOS orange) */
+  --accent-50: #fbf0d4;
+  --accent-100: #f5e0a3;
+  --accent-200: #ecca6b;
+  --accent-300: #dfb243;
+  --accent-400: #cf9c2d;
+  --accent-500: #b8851f;
+  --accent-600: #a07116;
+  --accent-700: #8b6014;
+  --accent-800: #6e4b0f;
+  --accent-900: #4f350a;
 
-  /* Gray Scale */
-  --gray-50: #f0f0f0;
-  --gray-100: #e0e0e0;
-  --gray-200: #cccccc;
-  --gray-300: #b3b3b3;
-  --gray-400: #999999;
-  --gray-500: #666666;
-  --gray-600: #4d4d4d;
-  --gray-700: #333333;
-  --gray-800: #1a1a1a;
-  --gray-900: #0a0a0a;
-  --gray-950: #f0f2f7;
+  /* Gray Scale — ink-blue-black tinged neutrals */
+  --gray-50: #f3f3ef;
+  --gray-100: #e5e5df;
+  --gray-200: #cbcdc5;
+  --gray-300: #a3a6a0;
+  --gray-400: #7c7f86;
+  --gray-500: #5b5f6b;
+  --gray-600: #3f424f;
+  --gray-700: #2a2d38;
+  --gray-800: #1a1c24;
+  --gray-900: #0c0d12;
+  --gray-950: #fafaf7;
 
   /* Semantic Colors */
-  --success: #22c55e;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --white: #ffffff;
-  --black: #000000;
+  --success: #4f8a4a;
+  --error: #c44545;
+  --warning: #b8851f;
+  --white: #fafaf7;
+  --black: #1a1c24;
 
-  /* Background Colors */
-  --background-hero: #d9efff;
+  /* Background Colors — warm off-paper */
+  --background-hero: #fafaf7;
   --background-header: #007aff;
-  --background-content: #ffffff;
-  --background-white: #ffffff;
-  --background-card: #f0f0f0;
+  --background-content: #fafaf7;
+  --background-white: #fafaf7;
+  --background-card: #efede5;
   --background-gradient-hero: linear-gradient(
     to bottom,
-    #d9efff 0%,
-    #ffffff 100%
+    #f4f7fb 0%,
+    #fafaf7 100%
   );
 
   /* Button Colors */
   --button-primary: #007aff;
-  --button-secondary: #ff9500;
+  --button-secondary: #b8851f;
   --button-hover-primary: #0051b5;
-  --button-hover-secondary: #cc7a00;
+  --button-hover-secondary: #8b6014;
 
-  /* Text Colors */
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-light: #ffffff;
+  /* Text Colors — ink blue-black on warm paper */
+  --text-primary: #1a1c24;
+  --text-secondary: #5b5f6b;
+  --text-light: #fafaf7;
 
   /* Legacy compatibility */
-  --background: #ffffff;
-  --foreground: #333333;
-  --card: #f0f0f0;
-  --card-foreground: #333333;
-  --popover: #ffffff;
-  --popover-foreground: #333333;
+  --background: #fafaf7;
+  --foreground: #1a1c24;
+  --card: #efede5;
+  --card-foreground: #1a1c24;
+  --popover: #fafaf7;
+  --popover-foreground: #1a1c24;
   --primary: #007aff;
-  --primary-foreground: #ffffff;
-  --secondary: #ff9500;
-  --secondary-foreground: #ffffff;
-  --muted: #f0f0f0;
-  --muted-foreground: #666666;
-  --accent: #ff9500;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --primary-foreground: #fafaf7;
+  --secondary: #b8851f;
+  --secondary-foreground: #fafaf7;
+  --muted: #efede5;
+  --muted-foreground: #5b5f6b;
+  --accent: #b8851f;
+  --accent-foreground: #fafaf7;
+  --destructive: #c44545;
+  --destructive-foreground: #fafaf7;
+  --border: rgba(26, 28, 36, 0.1);
   --input: transparent;
-  --input-background: #f0f0f0;
-  --switch-background: #cccccc;
+  --input-background: #efede5;
+  --switch-background: #cbcdc5;
   --ring: #007aff;
   --radius: 0.625rem;
 }
 
 .dark {
-  /* Primary Blue Colors - Dark Mode */
-  --primary-50: #0051b5;
-  --primary-100: #003d99;
-  --primary-200: #002766;
-  --primary-300: #1a56b3;
-  --primary-400: #3373d9;
-  --primary-500: #007aff;
-  --primary-600: #3399ff;
-  --primary-700: #0051b5;
-  --primary-800: #8cccff;
-  --primary-900: #b3e0ff;
+  /* Primary — Blue lifted for dark bg */
+  --primary-50: #002a5e;
+  --primary-100: #003d8a;
+  --primary-200: #0051b5;
+  --primary-300: #0062d1;
+  --primary-400: #007aff;
+  --primary-500: #2c8cff;
+  --primary-600: #5aa6ff;
+  --primary-700: #88c1ff;
+  --primary-800: #b6dbff;
+  --primary-900: #dceeff;
 
-  /* Accent Orange Colors - Dark Mode */
-  --accent-50: #995c00;
-  --accent-100: #b36b00;
-  --accent-200: #cc7a00;
-  --accent-300: #e68600;
-  --accent-400: #ff9500;
-  --accent-500: #ffa23f;
-  --accent-600: #ffaf5f;
-  --accent-700: #ffc07f;
-  --accent-800: #ffd19f;
-  --accent-900: #ffdab3;
+  /* Accent — Mustard lifted */
+  --accent-50: #4f350a;
+  --accent-100: #6e4b0f;
+  --accent-200: #8b6014;
+  --accent-300: #a07116;
+  --accent-400: #b8851f;
+  --accent-500: #dfb243;
+  --accent-600: #ecca6b;
+  --accent-700: #f5e0a3;
+  --accent-800: #fbf0d4;
+  --accent-900: #fef6e3;
 
   /* Gray Scale - Dark Mode */
-  --gray-50: #0a0a0a;
-  --gray-100: #1a1a1a;
-  --gray-200: #333333;
-  --gray-300: #000000;
-  --gray-400: #666666;
-  --gray-500: #999999;
-  --gray-600: #b3b3b3;
-  --gray-700: #cccccc;
-  --gray-800: #e0e0e0;
-  --gray-900: #f0f0f0;
-  --gray-950: #252a35;
+  --gray-50: #0c0d12;
+  --gray-100: #1a1c24;
+  --gray-200: #2a2d38;
+  --gray-300: #0a0b10;
+  --gray-400: #5b5f6b;
+  --gray-500: #7c7f86;
+  --gray-600: #a3a6a0;
+  --gray-700: #cbcdc5;
+  --gray-800: #e5e5df;
+  --gray-900: #f3f3ef;
+  --gray-950: #1f2129;
 
   /* Semantic Colors - Dark Mode */
-  --success: #4ade80;
-  --error: #f87171;
-  --warning: #fbbf24;
-  --white: #ffffff;
-  --black: #000000;
+  --success: #7eb377;
+  --error: #e89090;
+  --warning: #dfb243;
+  --white: #f3f3ef;
+  --black: #11141a;
 
-  /* Background Colors - Dark Mode */
-  --background-hero: #001a33;
+  /* Background Colors — late-night ink */
+  --background-hero: #14171f;
   --background-header: #0051b5;
-  --background-content: #121212;
-  --background-white: #181818;
-  --background-card: #222222;
+  --background-content: #11141a;
+  --background-white: #1a1c24;
+  --background-card: #1f2129;
   --background-gradient-hero: linear-gradient(
     to bottom,
-    #001a33 0%,
-    #121212 100%
+    #14171f 0%,
+    #11141a 100%
   );
 
   /* Button Colors - Dark Mode */
-  --button-primary: #007aff;
-  --button-secondary: #ffa23f;
-  --button-hover-primary: #3399ff;
-  --button-hover-secondary: #ffaf5f;
-  --button-preset: #252a35;
+  --button-primary: #2c8cff;
+  --button-secondary: #dfb243;
+  --button-hover-primary: #5aa6ff;
+  --button-hover-secondary: #ecca6b;
+  --button-preset: #1f2129;
 
   /* Text Colors - Dark Mode */
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --text-light: #ffffff;
+  --text-primary: #f3f3ef;
+  --text-secondary: #a3a6a0;
+  --text-light: #f3f3ef;
 
   /* Legacy compatibility - Dark Mode */
-  --background: #121212;
-  --foreground: #ffffff;
-  --card: #222222;
-  --card-foreground: #ffffff;
-  --popover: #222222;
-  --popover-foreground: #ffffff;
-  --primary: #007aff;
-  --primary-foreground: #ffffff;
-  --secondary: #ffa23f;
-  --secondary-foreground: #000000;
-  --muted: #222222;
-  --muted-foreground: #cccccc;
-  --accent: #ffa23f;
-  --accent-foreground: #000000;
-  --destructive: #f87171;
-  --destructive-foreground: #ffffff;
-  --border: #333333;
-  --input: #333333;
-  --input-background: #222222;
-  --switch-background: #666666;
-  --ring: #007aff;
+  --background: #11141a;
+  --foreground: #f3f3ef;
+  --card: #1f2129;
+  --card-foreground: #f3f3ef;
+  --popover: #1a1c24;
+  --popover-foreground: #f3f3ef;
+  --primary: #2c8cff;
+  --primary-foreground: #f3f3ef;
+  --secondary: #dfb243;
+  --secondary-foreground: #11141a;
+  --muted: #1f2129;
+  --muted-foreground: #a3a6a0;
+  --accent: #dfb243;
+  --accent-foreground: #11141a;
+  --destructive: #e89090;
+  --destructive-foreground: #11141a;
+  --border: rgba(243, 243, 239, 0.1);
+  --input: rgba(243, 243, 239, 0.1);
+  --input-background: #1f2129;
+  --switch-background: #5b5f6b;
+  --ring: #2c8cff;
 }
 
 @theme inline {
@@ -327,6 +327,9 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-bricolage), ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", sans-serif;
+    font-feature-settings: "ss01", "cv11";
   }
 }
 
@@ -336,19 +339,23 @@
 @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1 {
-      font-family: Georgia, "Times New Roman", Times, serif;
+      font-family: var(--font-fraunces), Georgia, "Times New Roman", Times,
+        serif;
       font-size: var(--text-h1);
       font-weight: var(--font-weight-semibold);
-      line-height: 1.2;
-      letter-spacing: -0.02em;
+      font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
     }
 
     h2 {
-      font-family: Georgia, "Times New Roman", Times, serif;
+      font-family: var(--font-fraunces), Georgia, "Times New Roman", Times,
+        serif;
       font-size: var(--text-h2);
       font-weight: var(--font-weight-medium);
-      line-height: 1.3;
-      letter-spacing: -0.01em;
+      font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
     }
 
     h3 {
@@ -469,7 +476,119 @@ html {
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Hero soft radial glows */
+/* Auto-rotating 3D phone for hero */
+.phone-3d-perspective {
+  position: relative;
+  perspective: 1600px;
+  perspective-origin: 50% 40%;
+  cursor: pointer;
+}
+
+/* Pointer-tilt layer — sits inside the perspective, wraps the auto-rotate stage */
+.phone-3d-tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.phone-3d-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: phone-rotate 11s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Pause the gentle auto-spin while the user is hovering/touching */
+.phone-3d-stage[data-interacting="true"] {
+  animation-play-state: paused;
+}
+
+@keyframes phone-rotate {
+  0% {
+    transform: rotateY(-14deg) rotateX(6deg) translateY(0);
+  }
+  50% {
+    transform: rotateY(14deg) rotateX(-4deg) translateY(-10px);
+  }
+  100% {
+    transform: rotateY(-14deg) rotateX(6deg) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-3d-stage {
+    animation: none;
+    transform: rotateY(-4deg) rotateX(2deg);
+  }
+}
+
+/* Receding plate behind the phone — the "stage" */
+.phone-3d-plate {
+  position: absolute;
+  inset: -10% -10% -8% -10%;
+  border-radius: 40px;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    transparent 70%
+  );
+  transform: translateZ(-160px);
+  filter: blur(2px);
+}
+
+/* Wireframe perspective frame around the phone */
+.phone-3d-frame {
+  position: absolute;
+  inset: -6% -6% -4% -6%;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 60%, transparent);
+  border-radius: 44px;
+  transform: translateZ(-60px);
+  box-shadow:
+    0 30px 60px -20px color-mix(in srgb, var(--primary) 45%, transparent),
+    inset 0 0 40px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.phone-3d-frame::before,
+.phone-3d-frame::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 50px;
+  pointer-events: none;
+}
+
+.phone-3d-frame::after {
+  inset: -18px;
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--primary) 18%, transparent);
+  border-radius: 56px;
+}
+
+/* The screen / image surface */
+.phone-3d-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  transform: translateZ(0);
+  box-shadow:
+    0 40px 80px -30px rgba(0, 0, 0, 0.45),
+    0 20px 40px -20px rgba(0, 0, 0, 0.25);
+}
+
+.dark .phone-3d-screen {
+  box-shadow:
+    0 40px 80px -30px rgba(0, 0, 0, 0.7),
+    0 20px 40px -20px rgba(0, 0, 0, 0.5);
+}
+
+/* Hero soft radial glows — iOS blue + mustard */
 .hero-radials {
   position: absolute;
   inset: 0;
@@ -480,10 +599,23 @@ html {
     ),
     radial-gradient(
       600px 300px at 90% 0%,
-      rgba(255, 149, 0, 0.12),
+      rgba(184, 133, 31, 0.12),
       transparent 70%
     );
   pointer-events: none;
+}
+
+.dark .hero-radials {
+  background: radial-gradient(
+      600px 300px at 10% 0%,
+      rgba(44, 140, 255, 0.20),
+      transparent 70%
+    ),
+    radial-gradient(
+      600px 300px at 90% 0%,
+      rgba(223, 178, 67, 0.14),
+      transparent 70%
+    );
 }
 
 /* Medium shadow used on elevated cards/phone frame */
@@ -513,11 +645,16 @@ html {
 }
 
 .georama-text {
-  font-family: var(--font-georama), sans-serif;
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
-  font-variation-settings: "wdth" 100;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", Times, serif;
+  font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+  letter-spacing: -0.02em;
 }
 
 /* Animated underline for link-like CTAs */

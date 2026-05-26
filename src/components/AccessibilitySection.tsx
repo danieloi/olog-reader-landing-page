@@ -1,82 +1,177 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, Eye, BookOpen } from "lucide-react";
 
-const audiences = [
+type Variant = "accent" | "primary";
+
+type Audience = {
+  numeral: string;
+  label: string;
+  heading: string;
+  description: string;
+  variant: Variant;
+  glyph: React.ReactNode;
+};
+
+function GlyphRipple() {
+  return (
+    <svg viewBox="0 0 120 120" fill="none" className="w-full h-full stroke-current">
+      <circle cx="60" cy="60" r="10" strokeWidth="1.5" />
+      <circle cx="60" cy="60" r="24" strokeWidth="1.2" opacity="0.7" />
+      <circle cx="60" cy="60" r="40" strokeWidth="1" opacity="0.45" />
+      <circle cx="60" cy="60" r="56" strokeWidth="0.8" opacity="0.2" />
+    </svg>
+  );
+}
+
+function GlyphFlow() {
+  return (
+    <svg viewBox="0 0 120 120" fill="none" className="w-full h-full stroke-current">
+      {[20, 38, 56, 74, 92].map((y, i) => (
+        <path
+          key={y}
+          d={`M 8 ${y} Q 30 ${y - 4 + i * 1.5} 60 ${y} T 112 ${y}`}
+          strokeWidth={i === 2 ? "1.8" : "1.2"}
+          opacity={i === 2 ? 1 : 0.4}
+          strokeLinecap="round"
+          fill="none"
+        />
+      ))}
+    </svg>
+  );
+}
+
+function GlyphWave() {
+  return (
+    <svg viewBox="0 0 120 120" fill="none" className="w-full h-full stroke-current">
+      {Array.from({ length: 18 }).map((_, i) => {
+        const x = 8 + i * 6;
+        const h = [14, 28, 18, 40, 22, 52, 30, 60, 36, 64, 42, 56, 28, 44, 20, 36, 14, 24][i];
+        return (
+          <line
+            key={i}
+            x1={x}
+            x2={x}
+            y1={60 - h / 2}
+            y2={60 + h / 2}
+            strokeWidth="2"
+            strokeLinecap="round"
+            opacity={i === 7 || i === 8 ? 1 : 0.55}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+const audiences: Audience[] = [
   {
-    icon: Brain,
+    numeral: "01",
     label: "ADHD",
     heading: "Stay focused, effortlessly",
     description:
-      "Word-by-word highlighting and audio narration work together to anchor your attention — so you absorb more without the mental strain of re-reading.",
+      "Audio narration works with real-time highlighting to anchor your gaze — so you absorb more without the mental strain of re-reading.",
+    variant: "accent",
+    glyph: <GlyphRipple />,
   },
   {
-    icon: BookOpen,
+    numeral: "02",
     label: "Dyslexia",
     heading: "Read without the struggle",
     description:
-      "Listen along while text is highlighted in real time. Reflow mode adapts text to your screen, reducing visual clutter and making every page approachable.",
+      "Hear text as it's highlighted in real time. Reflow mode reshapes pages to your screen, reducing visual clutter so every document feels approachable.",
+    variant: "primary",
+    glyph: <GlyphFlow />,
   },
   {
-    icon: Eye,
+    numeral: "03",
     label: "Visual Impairments",
     heading: "Your eyes can rest",
     description:
       "Natural-sounding voices turn any document into an audiobook. Adjustable speed, offline access, and dark mode let you consume content on your terms.",
+    variant: "accent",
+    glyph: <GlyphWave />,
   },
 ];
 
+const variantStyles: Record<Variant, { border: string; bg: string; text: string }> = {
+  accent: {
+    border: "border-accent/30",
+    bg: "bg-accent/8 dark:bg-accent/10",
+    text: "text-accent",
+  },
+  primary: {
+    border: "border-primary/30",
+    bg: "bg-primary/8 dark:bg-primary/10",
+    text: "text-primary",
+  },
+};
+
+function AudienceCard({ a, index }: { a: Audience; index: number }) {
+  const v = variantStyles[a.variant];
+  return (
+    <motion.article
+      className={`relative rounded-3xl border ${v.border} ${v.bg} p-4 md:p-6 flex flex-col overflow-hidden h-full`}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+    >
+      <div
+        aria-hidden
+        className={`absolute -right-6 -bottom-6 w-40 h-40 md:w-48 md:h-48 opacity-25 ${v.text}`}
+      >
+        {a.glyph}
+      </div>
+      <div className="relative z-10 flex flex-col">
+        <div className="flex items-baseline gap-3 mb-5 md:mb-6">
+          <span
+            className={`font-display text-5xl md:text-6xl leading-none tabular-nums ${v.text}`}
+          >
+            {a.numeral}
+          </span>
+          <span className="font-mono text-xs uppercase tracking-[0.22em] text-text-secondary">
+            {a.label}
+          </span>
+        </div>
+        <h3 className="font-display text-2xl md:text-3xl text-text-primary leading-tight tracking-tight mb-4">
+          {a.heading}
+        </h3>
+        <p className="text-base md:text-lg text-text-secondary leading-relaxed">
+          {a.description}
+        </p>
+      </div>
+    </motion.article>
+  );
+}
+
 export function AccessibilitySection() {
   return (
-    <section className="py-10 md:py-24 px-4">
+    <section className="py-12 md:py-28 px-4">
       <motion.div
-        className="max-w-7xl mx-auto text-center mb-10 md:mb-16"
+        className="max-w-7xl mx-auto mb-10 md:mb-16"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
       >
-        <p className="text-lg md:text-xl font-semibold text-primary uppercase tracking-wider mb-3">
+        <p className="font-mono text-xs md:text-sm font-semibold text-primary uppercase tracking-[0.22em] mb-4">
           Designed for everyone
         </p>
-        <h2 className="text-3xl md:text-6xl font-bold text-text-primary leading-tight mb-4">
+        <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-text-primary leading-[1.02] tracking-tight max-w-4xl">
           Reading should be{" "}
-          <span className="text-primary">accessible to all</span>
+          <em className="not-italic text-primary">accessible</em> to all.
         </h2>
-        <p className="text-lg md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-          Olog helps you beat the limitations — so nothing stands between you
-          and the content you love.
+        <p className="mt-6 text-lg md:text-xl text-text-secondary max-w-2xl leading-relaxed">
+          Olog helps you move past the limitations — so nothing stands between
+          you and the content you love.
         </p>
       </motion.div>
 
-      <div className="max-w-[1440px] mx-auto grid md:grid-cols-3 gap-6 md:gap-8">
-        {audiences.map((a, i) => {
-          const Icon = a.icon;
-          return (
-            <motion.div
-              key={a.label}
-              className="relative rounded-2xl md:rounded-3xl border border-border bg-background-card p-6 md:p-8 flex flex-col"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, delay: i * 0.1 }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                <Icon className="w-6 h-6 text-primary" />
-              </div>
-              <span className="text-lg md:text-lg font-semibold text-primary uppercase tracking-wider mb-2">
-                {a.label}
-              </span>
-              <h3 className="text-xl md:text-3xl font-semibold text-text-primary mb-3">
-                {a.heading}
-              </h3>
-              <p className="text-lg md:text-xl text-text-secondary leading-relaxed">
-                {a.description}
-              </p>
-            </motion.div>
-          );
-        })}
+      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6 md:gap-8 items-stretch">
+        {audiences.map((a, i) => (
+          <AudienceCard key={a.label} a={a} index={i} />
+        ))}
       </div>
     </section>
   );

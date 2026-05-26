@@ -9,6 +9,8 @@ import { handleGetStarted } from "@/hooks/use-download";
 /*  Country detection for pricing                                      */
 /* ------------------------------------------------------------------ */
 
+const COMPETITOR_USD = 139;
+
 function useCountryPricing() {
   const [pricing, setPricing] = useState<{
     currency: string;
@@ -16,27 +18,40 @@ function useCountryPricing() {
     monthly: string;
     yearly: string;
     fromPrice: string;
+    competitorPrice: string;
   }>({
     currency: "$",
     weekly: "$2.49",
     monthly: "$4.99",
     yearly: "$49.99",
     fromPrice: "$5/mo",
+    competitorPrice: `$${COMPETITOR_USD}`,
   });
 
   useEffect(() => {
     fetch("https://ipapi.co/json/")
       .then((res) => res.json())
-      .then((data) => {
-        if (data.country_code === "NG") {
-          setPricing({
-            currency: "\u20A6",
-            weekly: "\u20A62,000",
-            monthly: "\u20A65,000",
-            yearly: "\u20A655,000",
-            fromPrice: "\u20A65,000/mo",
-          });
-        }
+      .then(async (data) => {
+        if (data.country_code !== "NG") return;
+
+        let competitorPrice = `\u20A6${(COMPETITOR_USD * 1500).toLocaleString()}`;
+        try {
+          const fx = await fetch("https://open.er-api.com/v6/latest/USD").then((r) => r.json());
+          const rate = fx?.rates?.NGN;
+          if (typeof rate === "number" && rate > 0) {
+            const rounded = Math.round((COMPETITOR_USD * rate) / 1000) * 1000;
+            competitorPrice = `\u20A6${rounded.toLocaleString()}`;
+          }
+        } catch {}
+
+        setPricing({
+          currency: "\u20A6",
+          weekly: "\u20A62,000",
+          monthly: "\u20A65,000",
+          yearly: "\u20A655,000",
+          fromPrice: "\u20A65,000/mo",
+          competitorPrice,
+        });
       })
       .catch(() => {});
   }, []);
@@ -156,15 +171,20 @@ export function PricingSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-3">
-          Simple, Honest Pricing
+        <p className="font-mono text-xs md:text-sm uppercase tracking-[0.22em] text-primary mb-3">
+          Pricing
+        </p>
+        <h2 className="font-display text-4xl md:text-6xl text-text-primary leading-[1.05] tracking-tight mb-4">
+          Simple, honest{" "}
+          <em className="not-italic text-accent">pricing.</em>
         </h2>
         <p className="text-text-secondary text-lg md:text-xl max-w-lg mx-auto">
-        Go Premium and enjoy full control of your listening.  <br /> Cancel anytime.
+          Go Premium and enjoy full control of your listening. <br /> Cancel
+          anytime.
         </p>
       </motion.div>
       {/* Billing period tabs */}
-      <div className="sticky top-[72px] z-20 md:relative md:top-auto max-w-3xl mx-auto mb-8 py-3 -mx-4 px-4" style={{ background: "color-mix(in srgb, var(--background) 80%, transparent)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
+      <div className="sticky top-[72px] z-20 md:relative md:top-auto max-w-3xl mx-auto mb-2 py-3 -mx-4 px-4" style={{ background: "color-mix(in srgb, var(--background) 80%, transparent)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
         <div className="flex rounded-lg bg-background-card p-1 max-w-xs mx-auto relative">
           {(["Weekly", "Monthly", "Yearly"] as const).map((tab) => (
             <button
@@ -176,7 +196,7 @@ export function PricingSection() {
               {activeTab === tab && (
                 <motion.div
                   layoutId="pricing-tab-indicator"
-                  className="absolute inset-0 bg-neutral-700 rounded-md shadow-sm"
+                  className="absolute inset-0 bg-accent rounded-md shadow-sm"
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   style={{ zIndex: -1 }}
                 />
@@ -190,21 +210,21 @@ export function PricingSection() {
       <div className="max-w-[1440px] mx-auto grid sm:grid-cols-3 gap-6">
         {/* Free plan */}
         <motion.div
-          className="relative rounded-2xl p-6 flex flex-col border border-border bg-background-white hover:shadow-soft transition-shadow duration-300"
+          className="relative rounded-2xl p-2  md:p-6 flex flex-col border border-border bg-background-white hover:shadow-soft transition-shadow duration-300"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45 }}
         >
-          <h3 className="text-xl md:text-2xl font-semibold text-text-primary">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-text-secondary mb-2">
             {freePlan.name}
-          </h3>
-          <div className="mt-2 mb-1">
-            <span className="text-3xl md:text-4xl font-bold text-text-primary">
+          </p>
+          <div className="mt-1 mb-3 flex items-baseline gap-1">
+            <span className="font-display text-6xl md:text-7xl leading-none text-text-primary tabular-nums tracking-tight">
               {freePlan.price}
             </span>
           </div>
-          <p className="text-lg md:text-lg text-text-secondary mb-5">
+          <p className="text-base md:text-lg text-text-secondary mb-6">
             {freePlan.description}
           </p>
           <ul className="space-y-2.5 mb-6 flex-1">
@@ -232,15 +252,18 @@ export function PricingSection() {
 
         {/* Premium plan (active tab) */}
         <motion.div
-          className="relative rounded-2xl p-6 flex flex-col border border-primary shadow-medium bg-background-white"
+          className="relative rounded-2xl px-2 py-4 md:p-8 flex flex-col border-2 border-primary shadow-medium bg-background-white sm:scale-[1.02] sm:-translate-y-1"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.08 }}
         >
-          <h3 className="text-xl md:text-2xl font-semibold text-text-primary">
+          <span className="absolute top-0 right-6 -translate-y-1/2 font-mono text-xs font-semibold uppercase tracking-[0.22em] bg-accent text-text-light px-3 py-1 rounded-full">
+            Recommended
+          </span>
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-primary mb-2">
             Premium
-          </h3>
+          </p>
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -250,15 +273,15 @@ export function PricingSection() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="mt-2 mb-1">
-                <span className="text-3xl md:text-4xl font-bold text-text-primary">
+              <div className="mt-1 mb-3 flex items-baseline gap-1.5">
+                <span className="font-display text-6xl md:text-8xl leading-none text-text-primary tabular-nums tracking-tight">
                   {activePlan.price}
                 </span>
-                <span className="text-lg md:text-lg text-text-secondary">
+                <span className="font-mono text-sm md:text-base text-text-secondary">
                   {activePlan.period}
                 </span>
               </div>
-              <p className="text-lg md:text-lg text-text-secondary mb-5">
+              <p className="text-base md:text-lg text-text-secondary mb-6">
                 {activePlan.description}
               </p>
             </motion.div>
@@ -278,53 +301,50 @@ export function PricingSection() {
           </button>
         </motion.div>
 
-        {/* Competitors comparison */}
+        {/* Competitors comparison — visually defeated */}
         <motion.div
-          className="relative rounded-2xl p-6 flex flex-col border border-border bg-background-card/40 hover:shadow-soft transition-shadow duration-300"
+          className="relative rounded-2xl p-2 flex flex-col border border-dashed border-border bg-transparent opacity-60 hover:opacity-80 transition-opacity duration-300 sm:scale-[0.96] origin-top"
           initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 0.6, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.16 }}
         >
-          <h3 className="text-xl md:text-2xl font-semibold text-text-primary">
-            Others
-          </h3>
-          <div className="mt-2 mb-1">
-            <span className="text-3xl md:text-4xl font-bold text-text-secondary line-through decoration-2">
-              $139
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-secondary/70 mb-2">
+            Competitors
+          </p>
+          <div className="mt-1 mb-3 flex items-baseline gap-1.5">
+            <span className="font-display text-4xl md:text-5xl leading-none text-text-secondary line-through decoration-2 decoration-text-secondary/60 tabular-nums">
+              {pricing.competitorPrice}
             </span>
-            <span className="text-lg md:text-lg text-text-secondary">
-              /year avg.
+            <span className="font-mono text-xs text-text-secondary/70">
+              /yr avg.
             </span>
           </div>
-          <p className="text-lg md:text-lg text-text-secondary mb-5">
-            What competitors charge for the same features
+          <p className="text-sm md:text-base text-text-secondary/80 mb-5 leading-relaxed">
+            What others charge for the same features.
           </p>
 
-          <ul className="space-y-2.5 mb-6 flex-1">
+          <ul className="space-y-1.5 mb-5 flex-1">
             {[
-              { text: "Unlimited listening" },
-              { text: "Unlimited file uploads" },
-              { text: "All file types" },
-              { text: "Premium AI voices" },
-              { text: "Real-time highlighting" },
-              { text: "Cross-device sync" },
-              { text: "Priority support" },
-              { text: "Cancel anytime" },
-            ].map((f) => (
-              <li key={f.text} className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-text-secondary/40 mt-0.5 shrink-0" />
-                <div className="flex-1 flex items-center justify-between gap-1">
-                  <span className="text-lg md:text-lg text-text-secondary">
-                    {f.text}
-                  </span>
-
-                </div>
+              "Unlimited listening",
+              "Unlimited file uploads",
+              "All file types",
+              "Premium AI voices",
+              "Real-time highlighting",
+              "Cross-device sync",
+              "Priority support",
+              "Cancel anytime",
+            ].map((text) => (
+              <li key={text} className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-text-secondary/30 shrink-0" />
+                <span className="text-sm md:text-base text-text-secondary/70 line-through decoration-text-secondary/30">
+                  {text}
+                </span>
               </li>
             ))}
           </ul>
 
-          <div className="w-full py-2.5 rounded-xl text-lg md:text-lg font-semibold text-center text-text-secondary bg-background-card">
+          <div className="w-full py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-[0.22em] text-center text-text-secondary/80 border border-dashed border-text-secondary/30">
             Overpriced
           </div>
         </motion.div>

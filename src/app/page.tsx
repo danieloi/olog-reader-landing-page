@@ -12,7 +12,7 @@ import { Footer } from "@/components/Footer";
 export default function Home() {
   return (
     <main
-      className="relative z-10 min-h-[100svh] flex flex-col"
+      className="relative z-10 min-h-[100svh] flex flex-col overflow-x-clip"
       id="main-content"
     >
       <div
