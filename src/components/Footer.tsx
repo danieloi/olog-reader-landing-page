@@ -17,14 +17,14 @@ export function Footer() {
             <a href="/" className="flex items-center" aria-label="Olog Reader home">
               <Image
                 src="/icon.webp"
-                alt="Olog Reader"
+                alt=""
                 width={48}
                 height={48}
                 className="block dark:hidden"
               />
               <Image
                 src="/icon-dark.webp"
-                alt="Olog Reader"
+                alt=""
                 width={48}
                 height={48}
                 className="hidden dark:block"

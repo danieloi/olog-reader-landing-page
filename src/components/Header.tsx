@@ -25,14 +25,14 @@ function HeaderInner({ floating = false }: { floating?: boolean }) {
         <div className="flex items-center gap-2">
           <Image
             src="/icon.webp"
-            alt="Olog Reader"
+            alt="Olog Reader logo"
             width={logoSize}
             height={logoSize}
             className="block dark:hidden"
           />
           <Image
             src="/icon-dark.webp"
-            alt="Olog Reader"
+            alt="Olog Reader logo"
             width={logoSize}
             height={logoSize}
             className="hidden dark:block"
