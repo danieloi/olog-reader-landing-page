@@ -266,7 +266,7 @@ function VoiceShowcase({ voices }: { voices: Voice[] }) {
           >
             <img
               src={v.image}
-              alt={v.name}
+              alt={`${v.name} — ${v.description} AI voice in Olog Reader`}
               className="w-4 h-4 md:w-6 md:h-6 rounded-full object-cover shrink-0 bg-background-card"
               onError={(e) => {
                 e.currentTarget.style.visibility = "hidden";
@@ -370,7 +370,7 @@ function BenefitCard({
             <img
               key={imageSrc}
               src={imageSrc}
-              alt={`${b.title} screenshot`}
+              alt={`Olog Reader ${b.label} — ${b.title}`}
               className="absolute inset-0 w-full h-full object-contain "
               onError={(e) => {
                 if (isDark && b.screenshot && e.currentTarget.src !== b.screenshot) {

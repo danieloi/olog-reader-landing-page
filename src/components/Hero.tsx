@@ -130,7 +130,7 @@ export function Hero() {
           >
             <FloatingPhone
               imageSrc="/reader-screen.webp"
-              altText="Olog Reader mobile app"
+              altText="Olog Reader app on a smartphone, reading a document aloud with words highlighted in sync"
               reduced={isMobile}
             />
           </motion.div>
