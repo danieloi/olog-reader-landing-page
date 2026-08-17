@@ -177,6 +177,11 @@ module.exports = {
         semibold: "var(--font-weight-semibold)",
         bold: "var(--font-weight-bold)",
       },
+      transitionTimingFunction: {
+        // Stronger than the built-in `ease-out`, which is too soft to read as
+        // deliberate on short (<200ms) interaction transitions.
+        "out-strong": "cubic-bezier(0.23, 1, 0.32, 1)",
+      },
       animation: {
         float: "float 6s ease-in-out infinite",
         "fade-in": "fadeIn 0.8s ease-out",
