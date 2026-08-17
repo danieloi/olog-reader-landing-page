@@ -1,207 +1,141 @@
 "use client";
 
 import { motion } from "framer-motion";
-import BlurText from "./BlurText";
-import TiltedCard from "@/components/TiltedCard";
+import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FloatingPhone } from "@/components/FloatingPhone";
+
+const STORE_URLS = {
+  ios: "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
+  android: "https://play.google.com/store/apps/details?id=me.olog.reader",
+} as const;
 
 export function Hero() {
   const isMobile = useIsMobile();
+  const { resolvedTheme } = useTheme();
+  const searchParams = useSearchParams();
+  const referralCode = searchParams.get("referralCode");
 
-  // Mobile Layout Component
-  const MobileHeroLayout = () => (
-    <section className="relative overflow-hidden bg-transparent pt-6 sm:pt-7 md:pt-8">
-      <div className="max-w-[360px] sm:max-w-[480px] md:max-w-[640px] mx-auto px-3 sm:px-4 md:px-5 w-full py-6 sm:py-7 md:py-8 text-center">
-        <motion.div
-          className="space-y-6 sm:space-y-7 md:space-y-8 georama-text flex flex-col items-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          {/* Mobile Text Content - Now first */}
-          <div className="space-y-4 sm:space-y-5 md:space-y-6">
-            <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-text-primary leading-tight mx-auto text-center">
-              <BlurText
-                text={"Read\u00A0anywhere. Listen\u00A0everywhere."}
-                as="span"
-                className="justify-center text-primary"
-                groupByWord
-              />
+  const appStoreBadge = resolvedTheme === "dark" ? "/white.svg" : "/black.svg";
+  const googlePlayBadge =
+    resolvedTheme === "dark" ? "/google_play_white.webp" : "/google_play_dark.webp";
+
+  const handleDownload = (platform: "ios" | "android") => {
+    if (referralCode) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/referral/deferred/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          referralCode,
+          platform,
+          userAgent: navigator.userAgent,
+        }),
+      }).catch(() => {});
+    }
+    window.open(STORE_URLS[platform], "_blank");
+  };
+
+  return (
+    <section className="relative overflow-hidden bg-transparent min-h-[100svh] flex items-center pt-20 md:pt-24">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-6 lg:px-10 w-full py-8 md:py-12">
+        <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-10 lg:gap-1">
+          {/* Type-led headline column */}
+          <motion.div
+            id="beta"
+            className="flex-1 relative w-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+
+            <h1 className="font-display text-text-primary leading-[0.92] md:leading-[0.88] tracking-[-0.04em]">
+              <span
+                className="block"
+                style={{ fontSize: "clamp(4.25rem, 9vw, 8.5rem)" }}
+              >
+                Read
+              </span>
+              <span
+                className="block italic text-accent pl-[0.1em]"
+                style={{
+                  fontSize: "clamp(4rem, 8vw, 7.5rem)",
+                  fontVariationSettings: '"opsz" 144, "SOFT" 80, "WONK" 1',
+                }}
+              >
+                anywhere.
+              </span>
+              <span
+                className="block mt-1"
+                style={{ fontSize: "clamp(4.25rem, 9vw, 8.5rem)" }}
+              >
+                Listen
+              </span>
+              <span
+                className="block italic text-primary pl-[0.1em]"
+                style={{
+                  fontSize: "clamp(4rem, 8vw, 7.5rem)",
+                  fontVariationSettings: '"opsz" 144, "SOFT" 80, "WONK" 1',
+                }}
+              >
+                everywhere.
+              </span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-              Take your stories, notes, and textbooks on the go, listen hands
-              free, anytime you want.
-            </p>
 
-            {/* Mobile CTA - More prominent */}
-            <div className="pt-4 sm:pt-5 md:pt-6 space-y-3 sm:space-y-4">
-              <p className="text-base sm:text-lg font-semibold text-text-primary text-center">
-                Begin your first listen
+            <motion.div
+              className="mt-8 md:mt-12 max-w-xl"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+            >
+              <p className="text-lg md:text-xl lg:text-2xl text-text-secondary leading-relaxed">
+                Your AI reading assistant with the most natural voices in the
+                world. Take your stories, notes, and textbooks anywhere —
+                hands-free, any time.
               </p>
-              <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
+
+              <div className="mt-6 md:mt-10 flex items-center gap-3 md:gap-5">
                 <button
-                  onClick={() =>
-                    window.open(
-                      "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                      "_blank"
-                    )
-                  }
-                  className="flex items-center justify-center hover:opacity-90 transition-opacity"
+                  onClick={() => handleDownload("ios")}
+                  className="flex-1 md:flex-none min-w-0 hover:opacity-90 transition-opacity"
                   aria-label="Download on the App Store"
                 >
                   <img
-                    src="/black.svg"
+                    src={appStoreBadge}
                     alt="Download on the App Store"
-                    className="h-10 w-auto sm:h-12 max-w-[120px]"
+                    className="block w-full h-auto md:w-auto md:h-[52px]"
                   />
                 </button>
                 <button
-                  onClick={() =>
-                    window.open(
-                      "https://play.google.com/store/apps/details?id=me.olog.reader",
-                      "_blank"
-                    )
-                  }
-                  className="flex items-center justify-center hover:opacity-90 transition-opacity"
+                  onClick={() => handleDownload("android")}
+                  className="flex-1 md:flex-none min-w-0 hover:opacity-90 transition-opacity"
                   aria-label="Get it on Google Play"
                 >
                   <img
-                    src="/GetItOnGooglePlay_Badge_Web_color_English.png"
+                    src={googlePlayBadge}
                     alt="Get it on Google Play"
-                    className="h-8 sm:h-10 w-auto object-contain max-w-[120px]"
-                    style={{ maxWidth: "135px" }}
+                    className="block w-full h-auto md:w-auto md:h-[52px]"
                   />
                 </button>
               </div>
-            </div>
-          </div>
-
-          {/* Mobile Phone Mockup - Now second */}
-          <motion.div
-            className="flex justify-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-          >
-            <div className="relative">
-              <TiltedCard
-                imageSrc="/reader-screen.png"
-                altText="Olog Reader mobile app"
-                containerWidth={isMobile ? "180px" : "200px"}
-                containerHeight={isMobile ? "389px" : "432px"}
-                imageWidth={isMobile ? "180px" : "200px"}
-                imageHeight={isMobile ? "389px" : "432px"}
-                scaleOnHover={1.03}
-                rotateAmplitude={5}
-                showMobileWarning={false}
-                showTooltip={false}
-              />
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
-  );
-
-  // Desktop Layout Component (existing layout)
-  const DesktopHeroLayout = () => (
-    <section className="relative overflow-hidden bg-transparent pt-6 md:pt-8">
-      <div className="max-w-2xl md:max-w-4xl lg:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 w-full py-8 md:py-10 lg:py-12">
-        <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center">
-          {/* Left */}
-          <motion.div
-            id="beta"
-            className="space-y-6 md:space-y-7 lg:space-y-8 georama-text"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <div className="space-y-4 md:space-y-2 lg:space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-tight">
-                <BlurText
-                  text={"Read\u00A0anywhere. Listen\u00A0everywhere."}
-                  as="span"
-                  className="text-primary"
-                  groupByWord
-                />
-              </h1>
-              <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
-                Take your stories, notes, and textbooks on the go, listen hands
-                free, anytime you want.
-              </p>
-
-              <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
-                <p className="text-base md:text-lg font-semibold text-text-primary">
-                  Begin your first listen
-                </p>
-                <div className="flex gap-4 md:gap-5">
-                  <button
-                    onClick={() =>
-                      window.open(
-                        "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                        "_blank"
-                      )
-                    }
-                    className="hover:opacity-90 transition-opacity"
-                    aria-label="Download on the App Store"
-                  >
-                    <img
-                      src="/black.svg"
-                      alt="Download on the App Store"
-                      className="h-8 w-auto md:max-h-[50px]"
-                    />
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        "https://play.google.com/store/apps/details?id=me.olog.reader",
-                        "_blank"
-                      )
-                    }
-                    className="hover:opacity-90 transition-opacity"
-                    aria-label="Get it on Google Play"
-                  >
-                    <img
-                      src="/GetItOnGooglePlay_Badge_Web_color_English.png"
-                      alt="Get it on Google Play"
-                      className="h-8 w-auto md:max-h-[50px]"
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
+            </motion.div>
           </motion.div>
 
-          {/* Right – phone mock */}
+          {/* Auto-moving 3D phone column */}
           <motion.div
-            className="flex justify-center md:justify-end"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+            className="shrink-0 flex justify-center relative"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
           >
-            <div className="relative">
-              <TiltedCard
-                imageSrc="/reader-screen.png"
-                altText="Olog Reader mobile app"
-                containerWidth="220px"
-                containerHeight="475px"
-                imageWidth="220px"
-                imageHeight="475px"
-                scaleOnHover={1.06}
-                rotateAmplitude={10}
-                showMobileWarning={false}
-                showTooltip={false}
-              />
-            </div>
+            <FloatingPhone
+              imageSrc="/reader-screen.webp"
+              altText="Olog Reader app on a smartphone, reading a document aloud with words highlighted in sync"
+              reduced={isMobile}
+            />
           </motion.div>
         </div>
       </div>
     </section>
   );
-
-  return isMobile ? <MobileHeroLayout /> : <DesktopHeroLayout />;
 }

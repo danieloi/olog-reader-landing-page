@@ -1,42 +1,102 @@
 import type { Metadata } from "next";
-import { Inter, Barriecito, Georama } from "next/font/google";
+import { Fraunces, Bricolage_Grotesque } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import SkipToContent from "@/components/ui/SkipToContent";
 import { ThemeProvider } from "@/components/theme-provider";
+import StructuredData from "@/components/StructuredData";
 
-const inter = Inter({ subsets: ["latin"] });
-
-const georama = Georama({
-  weight: ["400", "700", "900"],
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-georama",
+  variable: "--font-fraunces",
+  display: "swap",
+  axes: ["opsz", "SOFT", "WONK"],
 });
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+  axes: ["opsz", "wdth"],
+});
+
+const SITE_TITLE = "Olog Reader — Listen to Any Document with Natural AI Voices";
+const SITE_DESCRIPTION =
+  "Turn PDFs, EPUBs, Word docs, PowerPoint, web links, and scans into natural-sounding audio. Read anywhere, listen everywhere with the most natural AI voices — real-time highlighting, speed control, offline mode, and cross-device sync. Free on iOS & Android.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ologreader.com"),
-  title: "Olog Reader",
-  description: "Turn any PDF into an audio book",
+  title: {
+    default: SITE_TITLE,
+    template: "%s — Olog Reader",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: "Olog Reader",
+  keywords: [
+    "text to speech",
+    "AI voice reader",
+    "listen to PDF",
+    "PDF to audio",
+    "document reader",
+    "read aloud app",
+    "EPUB reader",
+    "natural AI voices",
+    "audiobook converter",
+    "TTS app",
+    "dyslexia reading app",
+    "accessibility reading",
+  ],
+  authors: [{ name: "Olog Reader" }],
+  creator: "Olog Reader",
+  publisher: "Olog Reader",
+  category: "productivity",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: "/icon.png",
   },
+  manifest: "/manifest.json",
   openGraph: {
-    title: "Olog Reader",
-    description: "Turn any PDF into an audio book",
+    type: "website",
+    siteName: "Olog Reader",
+    locale: "en_US",
+    url: "https://ologreader.com",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/LinkPreview.png",
+        url: "/LinkPreview.webp",
         width: 1200,
         height: 630,
-        alt: "Olog Reader - Turn any PDF into an audio book",
+        alt: "Olog Reader — Listen to any document with natural AI voices",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Olog Reader",
-    description: "Turn any PDF into an audio book",
-    images: ["/LinkPreview.png"],
+    site: "@OlogReader",
+    creator: "@OlogReader",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/LinkPreview.webp"],
+  },
+  itunes: {
+    appId: "6744651101",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  other: {
+    "google-play-app": "app-id=me.olog.reader",
   },
 };
 
@@ -56,7 +116,9 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} ${georama.variable} antialiased`}>
+      <body className={`${bricolage.variable} ${fraunces.variable} antialiased`}>
+        <StructuredData />
+
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-G1J25G5MG0"
@@ -73,8 +135,8 @@ export default function RootLayout({
         
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
         >
           <SkipToContent />
           {children}

@@ -22,8 +22,8 @@ interface TextPressureProps {
 
 const TextPressure: React.FC<TextPressureProps> = ({
   text = "Compressa",
-  fontFamily = "Compressa VF",
-  fontUrl = "https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2",
+  fontFamily = "Roboto Flex",
+  fontUrl = "/fonts/roboto-flex.woff2",
   width = true,
   weight = true,
   italic = true,
@@ -225,6 +225,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           fontWeight: 100,
           color: stroke ? undefined : textColor,
           opacity: fontLoaded ? 1 : 0,
+          
         }}
       >
         {chars.map((char, i) => (

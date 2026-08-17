@@ -131,8 +131,26 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "General Sans", "sans-serif"],
-        serif: ["Georgia", "Times New Roman", "Times", "serif"],
+        sans: [
+          "var(--font-bricolage)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        serif: [
+          "var(--font-fraunces)",
+          "Georgia",
+          "Times New Roman",
+          "Times",
+          "serif",
+        ],
+        display: [
+          "var(--font-fraunces)",
+          "Georgia",
+          "Times New Roman",
+          "Times",
+          "serif",
+        ],
       },
       fontSize: {
         h1: [
@@ -158,6 +176,11 @@ module.exports = {
         medium: "var(--font-weight-medium)",
         semibold: "var(--font-weight-semibold)",
         bold: "var(--font-weight-bold)",
+      },
+      transitionTimingFunction: {
+        // Stronger than the built-in `ease-out`, which is too soft to read as
+        // deliberate on short (<200ms) interaction transitions.
+        "out-strong": "cubic-bezier(0.23, 1, 0.32, 1)",
       },
       animation: {
         float: "float 6s ease-in-out infinite",
