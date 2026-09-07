@@ -18,6 +18,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 type Stage = "capture" | "transcribing" | "edit" | "rendering" | "done";
 type Ratio = "story" | "portrait" | "square";
+type Theme = "paper" | "midnight" | "sunset" | "sage";
 type SpeechMark = { time: number; value: string };
 
 type UploadSession = {
@@ -42,6 +43,105 @@ const ratioLabels: Array<{ value: Ratio; label: string; hint: string }> = [
   { value: "portrait", label: "Post", hint: "4:5" },
   { value: "square", label: "Square", hint: "1:1" },
 ];
+
+const themes: Array<{
+  value: Theme;
+  label: string;
+  background: [string, string];
+  card: string;
+  border: string;
+  text: string;
+  muted: string;
+  accent: string;
+  quote: string;
+  sticker: string;
+}> = [
+  {
+    value: "paper",
+    label: "Paper",
+    background: ["#EBF4FF", "#D6EAFF"],
+    card: "#FFFFFF",
+    border: "#ADD4FF",
+    text: "#0B0F14",
+    muted: "#32353A",
+    accent: "#FF9500",
+    quote: "#85BFFF",
+    sticker: "#003166",
+  },
+  {
+    value: "midnight",
+    label: "Midnight",
+    background: ["#0A1228", "#172A52"],
+    card: "#14213D",
+    border: "#355583",
+    text: "#F5F8FF",
+    muted: "#B9C8E4",
+    accent: "#FFB24A",
+    quote: "#5274AA",
+    sticker: "#D7E7FF",
+  },
+  {
+    value: "sunset",
+    label: "Sunset",
+    background: ["#FFF1DE", "#FFD3CA"],
+    card: "#FFF9F2",
+    border: "#F5B39B",
+    text: "#3B2030",
+    muted: "#75495B",
+    accent: "#E75650",
+    quote: "#F2A184",
+    sticker: "#762D52",
+  },
+  {
+    value: "sage",
+    label: "Sage",
+    background: ["#EAF2E5", "#C8DCCB"],
+    card: "#FAFCF5",
+    border: "#A7C5AA",
+    text: "#17342A",
+    muted: "#49665A",
+    accent: "#D97942",
+    quote: "#8EB497",
+    sticker: "#214D3D",
+  },
+];
+
+function buildPreviewPages(text: string, ratio: Ratio) {
+  const limit = ratio === "square" ? 20 : ratio === "portrait" ? 26 : 34;
+  const paragraphs = text
+    .trim()
+    .split(/\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const pages: string[][] = [];
+
+  for (const paragraph of paragraphs) {
+    const sentences = paragraph
+      .split(/(?<=[.!?])\s+/)
+      .map((sentence) => sentence.split(/\s+/).filter(Boolean))
+      .filter((sentence) => sentence.length);
+    const units = sentences.flatMap((sentence) => {
+      if (sentence.length <= limit) return [sentence];
+      const chunks: string[][] = [];
+      for (let index = 0; index < sentence.length; index += limit) {
+        chunks.push(sentence.slice(index, index + limit));
+      }
+      return chunks;
+    });
+    let pageWords: string[] = [];
+
+    for (const unit of units) {
+      if (pageWords.length && pageWords.length + unit.length > limit) {
+        pages.push(pageWords);
+        pageWords = [];
+      }
+      pageWords.push(...unit);
+    }
+    if (pageWords.length) pages.push(pageWords);
+  }
+
+  return pages;
+}
 
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
@@ -68,6 +168,7 @@ export function VoiceVideoStudio() {
   const [transcript, setTranscript] = useState("");
   const [session, setSession] = useState<UploadSession | null>(null);
   const [ratio, setRatio] = useState<Ratio>("story");
+  const [theme, setTheme] = useState<Theme>("paper");
   const [attribution, setAttribution] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [error, setError] = useState("");
@@ -238,6 +339,7 @@ export function VoiceVideoStudio() {
           body: JSON.stringify({
             text: transcript.trim(),
             ratio,
+            theme,
             attribution: attribution.trim() || undefined,
           }),
         },
@@ -282,6 +384,7 @@ export function VoiceVideoStudio() {
     setError("");
     setElapsed(0);
     setDuration(0);
+    setTheme("paper");
   };
 
   const words = transcript.trim().split(/\s+/).filter(Boolean);
@@ -522,7 +625,7 @@ export function VoiceVideoStudio() {
                   />
                   <div className="mt-2 flex justify-between text-xs text-[#8b919d]">
                     <span>{words.length} words</span>
-                    <span>AI can make mistakes. Give it a quick read.</span>
+                    <span>Paragraph breaks become separate scenes.</span>
                   </div>
                   <label
                     className="mt-5 block text-xs font-bold uppercase tracking-[0.14em] text-[#697386]"
@@ -541,7 +644,10 @@ export function VoiceVideoStudio() {
                     placeholder="e.g. @mayowa"
                     className="mt-2 w-full rounded-xl border border-[#15233a]/12 bg-white px-4 py-3 outline-none focus:border-[#007aff]"
                   />
-                  <div className="mt-5 grid grid-cols-3 gap-2">
+                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#697386]">
+                    Format
+                  </p>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
                     {ratioLabels.map((option) => (
                       <button
                         key={option.value}
@@ -557,9 +663,51 @@ export function VoiceVideoStudio() {
                       </button>
                     ))}
                   </div>
+                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#697386]">
+                    Theme
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {themes.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={theme === option.value}
+                        onClick={() => setTheme(option.value)}
+                        className={`rounded-xl border p-2 text-left transition ${theme === option.value ? "border-[#007aff] ring-2 ring-[#007aff]/15" : "border-[#15233a]/10 hover:border-[#15233a]/25"}`}
+                      >
+                        <span
+                          className="flex h-14 items-center justify-center rounded-lg"
+                          style={{
+                            background: `linear-gradient(135deg, ${option.background[0]}, ${option.background[1]})`,
+                          }}
+                        >
+                          <span
+                            className="relative h-9 w-16 rounded-md border p-2 shadow-sm"
+                            style={{
+                              backgroundColor: option.card,
+                              borderColor: option.border,
+                            }}
+                          >
+                            <span
+                              className="block h-1 w-8 rounded-full"
+                              style={{ backgroundColor: option.text }}
+                            />
+                            <span
+                              className="mt-1 block h-1 w-5 rounded-full"
+                              style={{ backgroundColor: option.accent }}
+                            />
+                          </span>
+                        </span>
+                        <span className="mt-1.5 block px-1 text-xs font-semibold">
+                          {option.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <VideoCard
                   ratio={ratio}
+                  theme={theme}
                   transcript={transcript}
                   attribution={attribution}
                 />
@@ -661,20 +809,49 @@ export function VoiceVideoStudio() {
 
 function VideoCard({
   ratio,
+  theme,
   transcript,
   attribution,
 }: {
   ratio: Ratio;
+  theme: Theme;
   transcript: string;
   attribution: string;
 }) {
-  const previewWords = transcript.trim().split(/\s+/).slice(0, 36);
+  const selectedTheme = themes.find((option) => option.value === theme)!;
+  const previewPages = buildPreviewPages(transcript, ratio);
+  const previewWords = previewPages[0] ?? [];
+  const pageCount = Math.max(1, previewPages.length);
   return (
     <div
-      className={`mx-auto flex w-full max-w-[310px] flex-col justify-center overflow-hidden rounded-[1.8rem] bg-gradient-to-br from-[#ddecff] via-[#edf5ff] to-[#ffe7df] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] ${ratioClasses[ratio]}`}
+      className={`relative mx-auto flex w-full max-w-[310px] flex-col justify-center overflow-hidden rounded-[1.8rem] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] transition-colors ${ratioClasses[ratio]}`}
+      style={{
+        background: `linear-gradient(135deg, ${selectedTheme.background[0]}, ${selectedTheme.background[1]})`,
+      }}
     >
-      <div className="relative -rotate-1 rounded-[1.5rem] border-2 border-[#b9dcff] bg-white px-5 py-8 shadow-[0_12px_30px_rgba(0,72,150,0.14)]">
-        <span className="absolute left-4 top-2 font-serif text-6xl font-bold leading-none text-[#9bcaff]">
+      {pageCount > 1 && (
+        <span
+          className="absolute right-3 top-3 rounded-full px-2 py-1 text-[10px] font-bold"
+          style={{
+            backgroundColor: selectedTheme.card,
+            color: selectedTheme.muted,
+          }}
+        >
+          Page 1 of {pageCount}
+        </span>
+      )}
+      <div
+        className="relative -rotate-1 rounded-[1.5rem] border-2 px-5 py-8 shadow-[0_12px_30px_rgba(0,72,150,0.14)] transition-colors"
+        style={{
+          backgroundColor: selectedTheme.card,
+          borderColor: selectedTheme.border,
+          color: selectedTheme.text,
+        }}
+      >
+        <span
+          className="absolute left-4 top-2 font-serif text-6xl font-bold leading-none"
+          style={{ color: selectedTheme.quote }}
+        >
           “
         </span>
         <p className="relative mt-5 text-center text-[clamp(1rem,3.1vw,1.35rem)] font-semibold leading-snug tracking-[-0.025em]">
@@ -682,8 +859,11 @@ function VideoCard({
             ? previewWords.map((word, index) => (
                 <span
                   key={`${word}-${index}`}
-                  className={
-                    index === 2 ? "rounded bg-[#ff8a65] px-1 text-white" : ""
+                  className={index === 2 ? "rounded px-1 text-white" : ""}
+                  style={
+                    index === 2
+                      ? { backgroundColor: selectedTheme.accent }
+                      : undefined
                   }
                 >
                   {word}{" "}
@@ -692,12 +872,24 @@ function VideoCard({
             : "Your words will appear here."}
         </p>
         {attribution && (
-          <p className="mt-5 border-t border-[#dbeafe] pt-3 text-sm font-semibold text-[#566174]">
+          <p
+            className="mt-5 border-t pt-3 text-sm font-semibold"
+            style={{
+              borderColor: selectedTheme.border,
+              color: selectedTheme.muted,
+            }}
+          >
             {attribution}
           </p>
         )}
       </div>
-      <div className="mt-5 self-center -rotate-3 rounded-lg border-4 border-white bg-[#0b477f] px-3 py-1.5 text-xs font-extrabold text-white shadow-md">
+      <div
+        className="mt-5 self-center -rotate-3 rounded-lg border-4 border-white px-3 py-1.5 text-xs font-extrabold shadow-md"
+        style={{
+          backgroundColor: selectedTheme.sticker,
+          color: theme === "midnight" ? "#14213D" : "#FFFFFF",
+        }}
+      >
         ologreader.com
       </div>
     </div>
