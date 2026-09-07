@@ -1,11 +1,15 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import Image from "next/image";
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
   Download,
   Mic,
+  ImagePlus,
   Pause,
   Play,
   RotateCcw,
@@ -13,13 +17,25 @@ import {
   Square,
   Upload,
   WandSparkles,
+  X,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { segmentPhoto } from "./subject-segmentation";
 
 type Stage = "capture" | "transcribing" | "edit" | "rendering" | "done";
 type Ratio = "story" | "portrait" | "square";
 type Theme = "paper" | "midnight" | "sunset" | "sage";
 type SpeechMark = { time: number; value: string };
+type PhotoAsset = {
+  localId: string;
+  name: string;
+  previewUrl: string;
+  foregroundUrl?: string;
+  background?: Blob;
+  foreground?: Blob;
+  status: "processing" | "ready";
+  remoteId?: string;
+};
 
 type UploadSession = {
   uploadId: string;
@@ -31,6 +47,8 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://api.reader.olog.me/v1";
 const MAX_SECONDS = 60;
 const MAX_BYTES = 20 * 1024 * 1024;
+const MAX_PHOTOS = 6;
+const MAX_PHOTO_SOURCE_BYTES = 15 * 1024 * 1024;
 
 const ratioClasses: Record<Ratio, string> = {
   story: "aspect-[9/16] max-h-[610px]",
@@ -169,6 +187,7 @@ export function VoiceVideoStudio() {
   const [session, setSession] = useState<UploadSession | null>(null);
   const [ratio, setRatio] = useState<Ratio>("story");
   const [theme, setTheme] = useState<Theme>("paper");
+  const [photos, setPhotos] = useState<PhotoAsset[]>([]);
   const [attribution, setAttribution] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [error, setError] = useState("");
@@ -178,6 +197,7 @@ export function VoiceVideoStudio() {
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const photosRef = useRef<PhotoAsset[]>([]);
 
   useEffect(() => {
     return () => {
@@ -186,6 +206,19 @@ export function VoiceVideoStudio() {
       if (audioUrl) URL.revokeObjectURL(audioUrl);
     };
   }, [audioUrl]);
+
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+
+  useEffect(() => {
+    return () => {
+      for (const photo of photosRef.current) {
+        URL.revokeObjectURL(photo.previewUrl);
+        if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
+      }
+    };
+  }, []);
 
   const acceptAudio = (blob: Blob, name: string) => {
     setError("");
@@ -323,11 +356,148 @@ export function VoiceVideoStudio() {
     }
   };
 
+  const choosePhotos = async (event: ChangeEvent<HTMLInputElement>) => {
+    const available = Math.max(0, MAX_PHOTOS - photosRef.current.length);
+    const requested = Array.from(event.target.files ?? []);
+    const selected = requested.slice(0, available);
+    event.target.value = "";
+    if (!selected.length) {
+      if (available === 0) setError("You can add up to 6 photos.");
+      return;
+    }
+    const valid = selected.filter(
+      (file) =>
+        ["image/jpeg", "image/png", "image/webp"].includes(file.type) &&
+        file.size <= MAX_PHOTO_SOURCE_BYTES,
+    );
+    if (requested.length > available) {
+      setError("Only the available photo slots were added.");
+    } else if (valid.length !== selected.length) {
+      setError("Use JPG, PNG, or WebP photos under 15 MB each.");
+    } else {
+      setError("");
+    }
+    const queued = valid.map((file) => ({
+      file,
+      asset: {
+        localId: crypto.randomUUID(),
+        name: file.name,
+        previewUrl: URL.createObjectURL(file),
+        status: "processing" as const,
+      },
+    }));
+    setPhotos((current) => [...current, ...queued.map(({ asset }) => asset)]);
+
+    for (const { file, asset } of queued) {
+      try {
+        const processed = await segmentPhoto(file);
+        const previewUrl = URL.createObjectURL(processed.background);
+        const foregroundUrl = processed.foreground
+          ? URL.createObjectURL(processed.foreground)
+          : undefined;
+        URL.revokeObjectURL(asset.previewUrl);
+        setPhotos((current) =>
+          current.map((photo) =>
+            photo.localId === asset.localId
+              ? {
+                  ...photo,
+                  previewUrl,
+                  foregroundUrl,
+                  background: processed.background,
+                  foreground: processed.foreground,
+                  status: "ready",
+                }
+              : photo,
+          ),
+        );
+      } catch {
+        URL.revokeObjectURL(asset.previewUrl);
+        setPhotos((current) =>
+          current.filter((photo) => photo.localId !== asset.localId),
+        );
+        setError(`Could not prepare ${file.name}.`);
+      }
+    }
+  };
+
+  const removePhoto = (localId: string) => {
+    const photo = photosRef.current.find((item) => item.localId === localId);
+    if (photo) {
+      URL.revokeObjectURL(photo.previewUrl);
+      if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
+    }
+    setPhotos((current) => current.filter((item) => item.localId !== localId));
+  };
+
+  const movePhoto = (index: number, offset: -1 | 1) => {
+    setPhotos((current) => {
+      const target = index + offset;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
+  const uploadPhotos = async (activeSession: UploadSession) => {
+    const visuals: Array<{ imageId: string; segmented: boolean }> = [];
+    for (const photo of photosRef.current) {
+      if (!photo.background || photo.status !== "ready") {
+        throw new Error("Wait for every photo to finish processing");
+      }
+      let imageId = photo.remoteId;
+      if (!imageId) {
+        const slotResponse = await fetch(
+          `${API_URL}/voice-videos/${activeSession.uploadId}/images`,
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-voice-video-token": activeSession.accessToken,
+            },
+          },
+        );
+        if (!slotResponse.ok) throw new Error("Could not prepare photo upload");
+        const slot = (await slotResponse.json()) as {
+          imageId: string;
+          backgroundUploadUrl: string;
+          foregroundUploadUrl: string;
+        };
+        const backgroundResponse = await fetch(slot.backgroundUploadUrl, {
+          method: "PUT",
+          headers: { "content-type": "image/jpeg" },
+          body: photo.background,
+        });
+        if (!backgroundResponse.ok) throw new Error("Could not upload a photo");
+        if (photo.foreground) {
+          const foregroundResponse = await fetch(slot.foregroundUploadUrl, {
+            method: "PUT",
+            headers: { "content-type": "image/png" },
+            body: photo.foreground,
+          });
+          if (!foregroundResponse.ok)
+            throw new Error("Could not upload a subject mask");
+        }
+        imageId = slot.imageId;
+        setPhotos((current) =>
+          current.map((item) =>
+            item.localId === photo.localId
+              ? { ...item, remoteId: slot.imageId }
+              : item,
+          ),
+        );
+      }
+      visuals.push({ imageId, segmented: Boolean(photo.foreground) });
+    }
+    return visuals;
+  };
+
   const renderVideo = async () => {
     if (!session || !transcript.trim()) return;
     setError("");
     setStage("rendering");
     try {
+      const visuals = await uploadPhotos(session);
       const response = await fetch(
         `${API_URL}/voice-videos/${session.uploadId}/jobs`,
         {
@@ -341,6 +511,7 @@ export function VoiceVideoStudio() {
             ratio,
             theme,
             attribution: attribution.trim() || undefined,
+            visuals,
           }),
         },
       );
@@ -385,6 +556,11 @@ export function VoiceVideoStudio() {
     setElapsed(0);
     setDuration(0);
     setTheme("paper");
+    for (const photo of photosRef.current) {
+      URL.revokeObjectURL(photo.previewUrl);
+      if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
+    }
+    setPhotos([]);
   };
 
   const words = transcript.trim().split(/\s+/).filter(Boolean);
@@ -704,12 +880,102 @@ export function VoiceVideoStudio() {
                       </button>
                     ))}
                   </div>
+                  <div className="mt-5 flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#697386]">
+                        Scene photos{" "}
+                        <span className="normal-case">(optional)</span>
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-[#8b919d]">
+                        Subjects are cut out on this device. Photos follow your
+                        scenes in order.
+                      </p>
+                    </div>
+                    {photos.length < MAX_PHOTOS && (
+                      <label className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#15233a]/15 bg-white px-3 py-2 text-xs font-semibold hover:border-[#007aff]/40 hover:text-[#007aff]">
+                        <ImagePlus className="h-3.5 w-3.5" /> Add
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          multiple
+                          className="sr-only"
+                          onChange={choosePhotos}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {photos.length > 0 && (
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {photos.map((photo, index) => (
+                        <div
+                          key={photo.localId}
+                          className="overflow-hidden rounded-xl border border-[#15233a]/10 bg-white"
+                        >
+                          <div className="relative aspect-[4/3] overflow-hidden bg-[#e9e6df]">
+                            <img
+                              src={photo.previewUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                            {photo.status === "processing" ? (
+                              <span className="absolute inset-0 grid place-items-center bg-[#15233a]/45 text-xs font-semibold text-white backdrop-blur-[1px]">
+                                <span className="flex items-center gap-2">
+                                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                  Finding subject…
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+                                {photo.foreground
+                                  ? "Subject found"
+                                  : "Background only"}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removePhoto(photo.localId)}
+                              className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm"
+                              aria-label={`Remove ${photo.name}`}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+                            <span className="truncate text-[11px] font-semibold">
+                              Scene {index + 1}
+                            </span>
+                            <span className="flex gap-1">
+                              <button
+                                type="button"
+                                disabled={index === 0}
+                                onClick={() => movePhoto(index, -1)}
+                                className="grid h-6 w-6 place-items-center rounded-md border border-[#15233a]/10 disabled:opacity-25"
+                                aria-label="Move photo earlier"
+                              >
+                                <ArrowLeft className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={index === photos.length - 1}
+                                onClick={() => movePhoto(index, 1)}
+                                className="grid h-6 w-6 place-items-center rounded-md border border-[#15233a]/10 disabled:opacity-25"
+                                aria-label="Move photo later"
+                              >
+                                <ArrowRight className="h-3 w-3" />
+                              </button>
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <VideoCard
                   ratio={ratio}
                   theme={theme}
                   transcript={transcript}
                   attribution={attribution}
+                  photo={photos.find((photo) => photo.status === "ready")}
                 />
                 <div className="flex items-center justify-between gap-4 xl:col-span-2">
                   <button
@@ -719,7 +985,11 @@ export function VoiceVideoStudio() {
                     Back
                   </button>
                   <button
-                    disabled={!transcript.trim() || stage === "rendering"}
+                    disabled={
+                      !transcript.trim() ||
+                      stage === "rendering" ||
+                      photos.some((photo) => photo.status === "processing")
+                    }
                     onClick={renderVideo}
                     className="flex items-center gap-2 rounded-full bg-[#15233a] px-7 py-3.5 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60"
                   >
@@ -812,11 +1082,13 @@ function VideoCard({
   theme,
   transcript,
   attribution,
+  photo,
 }: {
   ratio: Ratio;
   theme: Theme;
   transcript: string;
   attribution: string;
+  photo?: PhotoAsset;
 }) {
   const selectedTheme = themes.find((option) => option.value === theme)!;
   const previewPages = buildPreviewPages(transcript, ratio);
@@ -829,9 +1101,25 @@ function VideoCard({
         background: `linear-gradient(135deg, ${selectedTheme.background[0]}, ${selectedTheme.background[1]})`,
       }}
     >
+      {photo && (
+        <>
+          <img
+            src={photo.previewUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-[1.04] object-cover"
+          />
+          <span
+            className="absolute inset-0"
+            style={{
+              backgroundColor: selectedTheme.background[0],
+              opacity: 0.2,
+            }}
+          />
+        </>
+      )}
       {pageCount > 1 && (
         <span
-          className="absolute right-3 top-3 rounded-full px-2 py-1 text-[10px] font-bold"
+          className="absolute right-3 top-3 z-30 rounded-full px-2 py-1 text-[10px] font-bold"
           style={{
             backgroundColor: selectedTheme.card,
             color: selectedTheme.muted,
@@ -841,11 +1129,12 @@ function VideoCard({
         </span>
       )}
       <div
-        className="relative -rotate-1 rounded-[1.5rem] border-2 px-5 py-8 shadow-[0_12px_30px_rgba(0,72,150,0.14)] transition-colors"
+        className="relative z-10 -rotate-1 rounded-[1.5rem] border-2 px-5 py-8 shadow-[0_12px_30px_rgba(0,72,150,0.14)] transition-colors"
         style={{
           backgroundColor: selectedTheme.card,
           borderColor: selectedTheme.border,
           color: selectedTheme.text,
+          opacity: photo ? 0.88 : 1,
         }}
       >
         <span
@@ -883,8 +1172,15 @@ function VideoCard({
           </p>
         )}
       </div>
+      {photo?.foregroundUrl && (
+        <img
+          src={photo.foregroundUrl}
+          alt=""
+          className="pointer-events-none absolute inset-0 z-20 h-full w-full scale-[1.04] object-cover"
+        />
+      )}
       <div
-        className="mt-5 self-center -rotate-3 rounded-lg border-4 border-white px-3 py-1.5 text-xs font-extrabold shadow-md"
+        className="relative z-30 mt-5 self-center -rotate-3 rounded-lg border-4 border-white px-3 py-1.5 text-xs font-extrabold shadow-md"
         style={{
           backgroundColor: selectedTheme.sticker,
           color: theme === "midnight" ? "#14213D" : "#FFFFFF",
