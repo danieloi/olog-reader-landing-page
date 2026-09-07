@@ -18,7 +18,10 @@ export default $config({
         : `${$app.stage}-ologreader.com`;
 
     new sst.aws.Nextjs("MyWeb", {
-      domain: domain,
+      domain: {
+        name: domain,
+        aliases: $app.stage === "production" ? ["voice.ologreader.com"] : [],
+      },
       environment: {
         NEXT_PUBLIC_API_URL: "https://api.reader.olog.me/v1",
       },
