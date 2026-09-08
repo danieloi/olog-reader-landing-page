@@ -23,6 +23,15 @@
     28px 28px;
 }
 
+/* iOS Safari zooms the page when a focused form control renders below 16px. */
+@media (max-width: 767px) {
+  .voice-studio input:not([type="range"]):not([type="file"]),
+  .voice-studio textarea,
+  .voice-studio select {
+    font-size: 16px;
+  }
+}
+
 @keyframes recording-pulse {
   0%,
   100% {
