@@ -696,7 +696,7 @@ export function VoiceVideoStudio() {
                       <Upload className="h-4 w-4" /> Upload a voice note
                       <input
                         type="file"
-                        accept="audio/*"
+                        accept=".m4a,.mp4,.mp3,.wav,.aac,.webm,.ogg,audio/*"
                         className="sr-only"
                         onChange={chooseFile}
                       />
