@@ -7,25 +7,26 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  Download,
   Mic,
   ImagePlus,
   Pause,
   Play,
   RotateCcw,
+  Share2,
   Sparkles,
   Square,
   Upload,
   WandSparkles,
   X,
 } from "lucide-react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { segmentPhoto } from "./subject-segmentation";
 
 type Stage = "capture" | "transcribing" | "edit" | "rendering" | "done";
 type Ratio = "story" | "portrait" | "square";
 type Theme = "paper" | "midnight" | "sunset" | "sage";
 type SpeechMark = { time: number; value: string };
+type PreviewWord = { text: string; index: number };
 type PhotoAsset = {
   localId: string;
   name: string;
@@ -71,8 +72,13 @@ const themes: Array<{
   text: string;
   muted: string;
   accent: string;
+  activeText: string;
   quote: string;
   sticker: string;
+  stickerInner: string;
+  stickerOuter: string;
+  orbOne: string;
+  orbTwo: string;
 }> = [
   {
     value: "paper",
@@ -83,8 +89,13 @@ const themes: Array<{
     text: "#0B0F14",
     muted: "#32353A",
     accent: "#FF9500",
+    activeText: "#FFFFFF",
     quote: "#85BFFF",
     sticker: "#003166",
+    stickerInner: "#FFFFFF",
+    stickerOuter: "#ADD4FF",
+    orbOne: "#FF9500",
+    orbTwo: "#FF6B8A",
   },
   {
     value: "midnight",
@@ -95,8 +106,13 @@ const themes: Array<{
     text: "#F5F8FF",
     muted: "#B9C8E4",
     accent: "#FFB24A",
+    activeText: "#17213A",
     quote: "#5274AA",
     sticker: "#D7E7FF",
+    stickerInner: "#233A63",
+    stickerOuter: "#6F91C4",
+    orbOne: "#FFB24A",
+    orbTwo: "#8C6CFF",
   },
   {
     value: "sunset",
@@ -107,8 +123,13 @@ const themes: Array<{
     text: "#3B2030",
     muted: "#75495B",
     accent: "#E75650",
+    activeText: "#FFFFFF",
     quote: "#F2A184",
     sticker: "#762D52",
+    stickerInner: "#FFF9F2",
+    stickerOuter: "#F3A8A0",
+    orbOne: "#E75650",
+    orbTwo: "#8D4D91",
   },
   {
     value: "sage",
@@ -119,19 +140,33 @@ const themes: Array<{
     text: "#17342A",
     muted: "#49665A",
     accent: "#D97942",
+    activeText: "#FFFFFF",
     quote: "#8EB497",
     sticker: "#214D3D",
+    stickerInner: "#FAFCF5",
+    stickerOuter: "#9AC2A4",
+    orbOne: "#D97942",
+    orbTwo: "#668D78",
   },
 ];
 
 function buildPreviewPages(text: string, ratio: Ratio) {
+  const allTokens = Array.from(
+    text.trim().matchAll(/\S+/g),
+    (match, index) => ({
+      text: match[0],
+      index,
+    }),
+  );
+  if (!allTokens.length) return [];
   const limit = ratio === "square" ? 20 : ratio === "portrait" ? 26 : 34;
   const paragraphs = text
     .trim()
     .split(/\n+/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
-  const pages: string[][] = [];
+  const pages: PreviewWord[][] = [];
+  let globalCursor = 0;
 
   for (const paragraph of paragraphs) {
     const sentences = paragraph
@@ -150,15 +185,104 @@ function buildPreviewPages(text: string, ratio: Ratio) {
 
     for (const unit of units) {
       if (pageWords.length && pageWords.length + unit.length > limit) {
-        pages.push(pageWords);
+        pages.push(
+          allTokens.slice(globalCursor, globalCursor + pageWords.length),
+        );
+        globalCursor += pageWords.length;
         pageWords = [];
       }
       pageWords.push(...unit);
     }
-    if (pageWords.length) pages.push(pageWords);
+    if (pageWords.length) {
+      pages.push(
+        allTokens.slice(globalCursor, globalCursor + pageWords.length),
+      );
+      globalCursor += pageWords.length;
+    }
   }
 
   return pages;
+}
+
+const nonWordCharacters = new RegExp("[^\\p{L}\\p{N}]", "gu");
+
+function normalizeWord(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(nonWordCharacters, "");
+}
+
+function alignPreviewWords(
+  text: string,
+  rawMarks: SpeechMark[],
+  durationMs: number,
+) {
+  const edited = text.trim().split(/\s+/).filter(Boolean);
+  if (!edited.length || !rawMarks.length) return [];
+  const source = rawMarks.map((mark) => normalizeWord(mark.value));
+  const target = edited.map(normalizeWord);
+  const matrix = Array.from({ length: source.length + 1 }, () =>
+    Array<number>(target.length + 1).fill(0),
+  );
+  for (let left = 1; left <= source.length; left += 1) {
+    for (let right = 1; right <= target.length; right += 1) {
+      matrix[left][right] =
+        source[left - 1] && source[left - 1] === target[right - 1]
+          ? matrix[left - 1][right - 1] + 1
+          : Math.max(matrix[left - 1][right], matrix[left][right - 1]);
+    }
+  }
+  const anchors = new Map<number, number>();
+  let left = source.length;
+  let right = target.length;
+  while (left > 0 && right > 0) {
+    if (source[left - 1] && source[left - 1] === target[right - 1]) {
+      anchors.set(right - 1, left - 1);
+      left -= 1;
+      right -= 1;
+    } else if (matrix[left - 1][right] >= matrix[left][right - 1]) left -= 1;
+    else right -= 1;
+  }
+  const anchorList = Array.from(anchors.entries()).sort((a, b) => a[0] - b[0]);
+  const timeFor = (targetIndex: number) => {
+    const exact = anchors.get(targetIndex);
+    if (exact !== undefined) return rawMarks[exact].time;
+    const before = [...anchorList]
+      .reverse()
+      .find(([index]) => index < targetIndex);
+    const after = anchorList.find(([index]) => index > targetIndex);
+    if (before && after) {
+      const progress = (targetIndex - before[0]) / (after[0] - before[0]);
+      return (
+        rawMarks[before[1]].time +
+        progress * (rawMarks[after[1]].time - rawMarks[before[1]].time)
+      );
+    }
+    if (before) {
+      const startTime = rawMarks[before[1]].time;
+      const endTime = Math.max(startTime, Math.max(0, durationMs) - 1);
+      const progress = (targetIndex - before[0]) / (target.length - before[0]);
+      return startTime + progress * (endTime - startTime);
+    }
+    if (after) {
+      return (targetIndex / Math.max(1, after[0])) * rawMarks[after[1]].time;
+    }
+    const sourceIndex =
+      (targetIndex * Math.max(0, source.length - 1)) /
+      Math.max(1, target.length - 1);
+    const lower = Math.floor(sourceIndex);
+    const upper = Math.ceil(sourceIndex);
+    return (
+      rawMarks[lower].time +
+      (rawMarks[upper].time - rawMarks[lower].time) * (sourceIndex - lower)
+    );
+  };
+  return edited.map((value, wordIndex) => ({
+    time: timeFor(wordIndex),
+    value,
+    wordIndex,
+  }));
 }
 
 function formatTime(seconds: number) {
@@ -184,12 +308,16 @@ export function VoiceVideoStudio() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [speechMarks, setSpeechMarks] = useState<SpeechMark[]>([]);
+  const [previewTime, setPreviewTime] = useState(0);
   const [session, setSession] = useState<UploadSession | null>(null);
   const [ratio, setRatio] = useState<Ratio>("story");
   const [theme, setTheme] = useState<Theme>("paper");
   const [photos, setPhotos] = useState<PhotoAsset[]>([]);
   const [attribution, setAttribution] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [saveUrl, setSaveUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -231,6 +359,10 @@ export function VoiceVideoStudio() {
     setAudio(blob);
     setAudioName(name);
     setAudioUrl(nextUrl);
+    setTranscript("");
+    setSpeechMarks([]);
+    setSession(null);
+    setPreviewTime(0);
     setElapsed(0);
     const probe = new Audio(nextUrl);
     probe.addEventListener("loadedmetadata", () => {
@@ -346,6 +478,8 @@ export function VoiceVideoStudio() {
       };
       setSession(nextSession);
       setTranscript(result.transcript);
+      setSpeechMarks(result.marks);
+      setPreviewTime(0);
       setDuration(result.durationMs / 1000);
       setStage("edit");
     } catch (caught) {
@@ -494,6 +628,8 @@ export function VoiceVideoStudio() {
 
   const renderVideo = async () => {
     if (!session || !transcript.trim()) return;
+    audioRef.current?.pause();
+    setIsPlaying(false);
     setError("");
     setStage("rendering");
     try {
@@ -528,9 +664,11 @@ export function VoiceVideoStudio() {
         const status = (await statusResponse.json()) as {
           status: "queued" | "rendering" | "completed" | "failed";
           downloadUrl?: string;
+          saveUrl?: string;
         };
         if (status.status === "completed" && status.downloadUrl) {
           setDownloadUrl(status.downloadUrl);
+          setSaveUrl(status.saveUrl || status.downloadUrl);
           setStage("done");
           return;
         }
@@ -547,11 +685,18 @@ export function VoiceVideoStudio() {
   };
 
   const reset = () => {
+    audioRef.current?.pause();
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
     setStage("capture");
     setAudio(null);
+    setAudioUrl("");
     setTranscript("");
+    setSpeechMarks([]);
+    setPreviewTime(0);
     setSession(null);
     setDownloadUrl("");
+    setSaveUrl("");
+    setIsSaving(false);
     setError("");
     setElapsed(0);
     setDuration(0);
@@ -564,6 +709,65 @@ export function VoiceVideoStudio() {
   };
 
   const words = transcript.trim().split(/\s+/).filter(Boolean);
+  const isEditingStage = stage === "edit" || stage === "rendering";
+  const previewMarks = useMemo(
+    () => alignPreviewWords(transcript, speechMarks, duration * 1000),
+    [duration, speechMarks, transcript],
+  );
+  let activeWordIndex: number | null = null;
+  for (const mark of previewMarks) {
+    if (mark.time > previewTime * 1000) break;
+    activeWordIndex = mark.wordIndex;
+  }
+
+  const seekPreview = (seconds: number) => {
+    setPreviewTime(seconds);
+    if (audioRef.current) audioRef.current.currentTime = seconds;
+  };
+
+  const saveVideo = async () => {
+    const videoSaveUrl = saveUrl || downloadUrl;
+    if (!videoSaveUrl || isSaving) return;
+    setError("");
+    setIsSaving(true);
+    try {
+      const response = await fetch(videoSaveUrl);
+      if (!response.ok) throw new Error("Could not prepare the download");
+      const blob = await response.blob();
+      const file = new File([blob], "olog-voice-video.mp4", {
+        type: "video/mp4",
+      });
+      if (
+        navigator.share &&
+        (!navigator.canShare || navigator.canShare({ files: [file] }))
+      ) {
+        await navigator.share({
+          files: [file],
+          title: "My Olog voice video",
+        });
+        return;
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30_000);
+    } catch (caught) {
+      if (caught instanceof DOMException && caught.name === "AbortError")
+        return;
+      const link = document.createElement("a");
+      link.href = videoSaveUrl;
+      link.download = "olog-voice-video.mp4";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <main
@@ -590,8 +794,10 @@ export function VoiceVideoStudio() {
         </a>
       </header>
 
-      <section className="mx-auto grid max-w-7xl gap-7 px-5 pb-16 pt-2 sm:px-8 sm:pt-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:gap-16 lg:pt-12">
-        <div className="lg:sticky lg:top-10">
+      <section
+        className={`mx-auto grid max-w-7xl gap-7 px-5 pb-16 pt-2 sm:px-8 sm:pt-7 lg:items-start lg:pt-12 ${isEditingStage ? "lg:grid-cols-1" : "lg:grid-cols-[0.95fr_1.05fr] lg:gap-16"}`}
+      >
+        <div className={isEditingStage ? "hidden" : "lg:sticky lg:top-10"}>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#15233a]/10 bg-white/55 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#536078] sm:mb-5">
             <Sparkles className="h-3.5 w-3.5 text-[#ff7a59]" /> Free voice
             captioner
@@ -786,6 +992,60 @@ export function VoiceVideoStudio() {
                     Fix names or wording. We’ll keep the captions matched to
                     your voice.
                   </p>
+                  <div className="mt-5 rounded-2xl border border-[#15233a]/10 bg-white p-4 shadow-sm">
+                    <audio
+                      ref={audioRef}
+                      src={audioUrl}
+                      preload="metadata"
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onEnded={() => setIsPlaying(false)}
+                      onTimeUpdate={(event) =>
+                        setPreviewTime(event.currentTarget.currentTime)
+                      }
+                    />
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={togglePlayback}
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#007aff] text-white shadow-[0_6px_18px_rgba(0,122,255,0.24)]"
+                        aria-label={
+                          isPlaying ? "Pause preview" : "Play preview"
+                        }
+                      >
+                        {isPlaying ? (
+                          <Pause className="h-4 w-4" fill="currentColor" />
+                        ) : (
+                          <Play
+                            className="ml-0.5 h-4 w-4"
+                            fill="currentColor"
+                          />
+                        )}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex items-center justify-between text-xs font-semibold tabular-nums text-[#697386]">
+                          <span>{formatTime(previewTime)}</span>
+                          <span>{formatTime(duration)}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={Math.max(duration, 0.01)}
+                          step={0.01}
+                          value={Math.min(previewTime, duration || 0)}
+                          onChange={(event) =>
+                            seekPreview(Number(event.target.value))
+                          }
+                          className="w-full accent-[#007aff]"
+                          aria-label="Preview timestamp"
+                        />
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-[#8b919d]">
+                      Play or scrub to see the exact caption frame while you
+                      edit.
+                    </p>
+                  </div>
                   <label
                     className="mt-6 block text-xs font-bold uppercase tracking-[0.14em] text-[#697386]"
                     htmlFor="transcript"
@@ -975,7 +1235,8 @@ export function VoiceVideoStudio() {
                   theme={theme}
                   transcript={transcript}
                   attribution={attribution}
-                  photo={photos.find((photo) => photo.status === "ready")}
+                  photos={photos.filter((photo) => photo.status === "ready")}
+                  activeWordIndex={activeWordIndex}
                 />
                 <div className="flex items-center justify-between gap-4 xl:col-span-2">
                   <button
@@ -1027,13 +1288,19 @@ export function VoiceVideoStudio() {
                   className="mx-auto mt-7 max-h-[520px] max-w-full rounded-2xl bg-black shadow-xl"
                 />
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
-                  <a
-                    href={downloadUrl}
-                    download="olog-voice-video.mp4"
+                  <button
+                    type="button"
+                    onClick={saveVideo}
+                    disabled={isSaving}
                     className="flex items-center gap-2 rounded-full bg-[#007aff] px-7 py-3.5 font-semibold text-white"
                   >
-                    <Download className="h-4 w-4" /> Download video
-                  </a>
+                    {isSaving ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
+                    ) : (
+                      <Share2 className="h-4 w-4" />
+                    )}
+                    {isSaving ? "Preparing…" : "Save or share video"}
+                  </button>
                   <button
                     onClick={reset}
                     className="flex items-center gap-2 rounded-full border border-[#15233a]/15 px-6 py-3.5 font-semibold"
@@ -1082,21 +1349,33 @@ function VideoCard({
   theme,
   transcript,
   attribution,
-  photo,
+  photos,
+  activeWordIndex,
 }: {
   ratio: Ratio;
   theme: Theme;
   transcript: string;
   attribution: string;
-  photo?: PhotoAsset;
+  photos: PhotoAsset[];
+  activeWordIndex: number | null;
 }) {
   const selectedTheme = themes.find((option) => option.value === theme)!;
   const previewPages = buildPreviewPages(transcript, ratio);
-  const previewWords = previewPages[0] ?? [];
+  const pageIndex = Math.max(
+    0,
+    previewPages.findIndex((page) =>
+      activeWordIndex === null
+        ? false
+        : activeWordIndex >= page[0].index &&
+          activeWordIndex <= page[page.length - 1].index,
+    ),
+  );
+  const previewWords = previewPages[pageIndex] ?? [];
   const pageCount = Math.max(1, previewPages.length);
+  const photo = photos.length ? photos[pageIndex % photos.length] : undefined;
   return (
     <div
-      className={`relative mx-auto flex w-full max-w-[310px] flex-col justify-center overflow-hidden rounded-[1.8rem] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] transition-colors ${ratioClasses[ratio]}`}
+      className={`relative mx-auto flex w-full max-w-[340px] flex-col justify-center overflow-hidden rounded-[1.8rem] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] transition-colors ${ratioClasses[ratio]}`}
       style={{
         background: `linear-gradient(135deg, ${selectedTheme.background[0]}, ${selectedTheme.background[1]})`,
       }}
@@ -1117,6 +1396,14 @@ function VideoCard({
           />
         </>
       )}
+      <span
+        className="pointer-events-none absolute -right-20 top-[12%] h-52 w-52 rounded-full opacity-10 blur-sm"
+        style={{ backgroundColor: selectedTheme.orbOne }}
+      />
+      <span
+        className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full opacity-[0.08] blur-sm"
+        style={{ backgroundColor: selectedTheme.orbTwo }}
+      />
       {pageCount > 1 && (
         <span
           className="absolute right-3 top-3 z-30 rounded-full px-2 py-1 text-[10px] font-bold"
@@ -1125,11 +1412,11 @@ function VideoCard({
             color: selectedTheme.muted,
           }}
         >
-          Page 1 of {pageCount}
+          Scene {pageIndex + 1} of {pageCount}
         </span>
       )}
       <div
-        className="relative z-10 -rotate-1 rounded-[1.5rem] border-2 px-5 py-8 shadow-[0_12px_30px_rgba(0,72,150,0.14)] transition-colors"
+        className="relative z-10 -rotate-[1.5deg] rounded-[1.5rem] border-2 px-5 py-8 shadow-[0_14px_34px_rgba(0,49,102,0.18)] transition-colors"
         style={{
           backgroundColor: selectedTheme.card,
           borderColor: selectedTheme.border,
@@ -1145,19 +1432,34 @@ function VideoCard({
         </span>
         <p className="relative mt-5 text-center text-[clamp(1rem,3.1vw,1.35rem)] font-semibold leading-snug tracking-[-0.025em]">
           {previewWords.length
-            ? previewWords.map((word, index) => (
-                <span
-                  key={`${word}-${index}`}
-                  className={index === 2 ? "rounded px-1 text-white" : ""}
-                  style={
-                    index === 2
-                      ? { backgroundColor: selectedTheme.accent }
-                      : undefined
-                  }
-                >
-                  {word}{" "}
-                </span>
-              ))
+            ? previewWords.map((word) => {
+                const state =
+                  activeWordIndex === null || word.index > activeWordIndex
+                    ? "future"
+                    : word.index === activeWordIndex
+                      ? "active"
+                      : "past";
+                return (
+                  <span
+                    key={`${word.text}-${word.index}`}
+                    className={
+                      state === "active" ? "rounded-md px-1 py-0.5" : ""
+                    }
+                    style={{
+                      backgroundColor:
+                        state === "active" ? selectedTheme.accent : undefined,
+                      color:
+                        state === "active"
+                          ? selectedTheme.activeText
+                          : undefined,
+                      opacity: state === "past" ? 0.3 : 1,
+                      filter: state === "past" ? "blur(0.2px)" : undefined,
+                    }}
+                  >
+                    {word.text}{" "}
+                  </span>
+                );
+              })
             : "Your words will appear here."}
         </p>
         {attribution && (
@@ -1180,13 +1482,21 @@ function VideoCard({
         />
       )}
       <div
-        className="relative z-30 mt-5 self-center -rotate-3 rounded-lg border-4 border-white px-3 py-1.5 text-xs font-extrabold shadow-md"
+        className="relative z-30 mt-5 flex items-center self-center -rotate-3 rounded-md px-2.5 py-1 text-xs font-extrabold shadow-md"
         style={{
           backgroundColor: selectedTheme.sticker,
           color: theme === "midnight" ? "#14213D" : "#FFFFFF",
+          boxShadow: `0 0 0 3px ${selectedTheme.stickerInner}, 0 0 0 6px ${selectedTheme.stickerOuter}, 0 5px 10px rgba(0,49,102,0.22)`,
         }}
       >
-        ologreader.com
+        <Image
+          src="/icon.png"
+          width={44}
+          height={20}
+          alt="Olog"
+          className="h-4 w-9 object-contain"
+        />
+        <span className="-ml-0.5">reader.com</span>
       </div>
     </div>
   );
