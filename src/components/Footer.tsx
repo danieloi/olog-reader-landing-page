@@ -14,7 +14,11 @@ export function Footer() {
       <div className="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="border-b border-border py-6 md:py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2 md:gap-4">
-            <a href="/" className="flex items-center" aria-label="Olog Reader home">
+            <a
+              href="/"
+              className="flex items-center"
+              aria-label="Olog Reader home"
+            >
               <Image
                 src="/icon.webp"
                 alt=""
@@ -35,19 +39,37 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="flex items-center gap-5 md:gap-8 text-base text-text-secondary">
-            <a
-              href="/privacy"
-              className="hover:text-text-primary transition-colors"
-            >
-              Privacy
-            </a>
-            <a
-              href="mailto:contact@olog.me"
-              className="hover:text-text-primary transition-colors"
-            >
-              Support
-            </a>
+          <div className="flex flex-wrap items-start gap-7 text-base text-text-secondary md:items-center md:gap-9">
+            <nav aria-label="Tools" className="flex flex-col gap-1.5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary/65">
+                Tools
+              </span>
+              <a
+                href="/voice"
+                className="hover:text-text-primary transition-colors"
+              >
+                Voice captions
+              </a>
+            </nav>
+            <nav aria-label="Company" className="flex flex-col gap-1.5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary/65">
+                Company
+              </span>
+              <span className="flex items-center gap-5">
+                <a
+                  href="/privacy"
+                  className="hover:text-text-primary transition-colors"
+                >
+                  Privacy
+                </a>
+                <a
+                  href="mailto:contact@olog.me"
+                  className="hover:text-text-primary transition-colors"
+                >
+                  Support
+                </a>
+              </span>
+            </nav>
             <span className="hidden md:inline w-px h-4 bg-border" />
             <div className="flex items-center gap-4">
               <a
@@ -94,7 +116,10 @@ export function Footer() {
       >
         <div
           className="w-full"
-          style={{ opacity: fontLoaded ? 1 : 0, transition: "opacity 400ms ease" }}
+          style={{
+            opacity: fontLoaded ? 1 : 0,
+            transition: "opacity 400ms ease",
+          }}
         >
           <TextPressure
             text="OLOG READER"
