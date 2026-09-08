@@ -52,6 +52,30 @@ function loadImage(file: File) {
   });
 }
 
+function isHeicFile(file: File) {
+  const type = file.type.toLocaleLowerCase();
+  return (
+    type.startsWith("image/heic") ||
+    type.startsWith("image/heif") ||
+    /\.(?:heic|heif)$/i.test(file.name)
+  );
+}
+
+async function browserReadablePhoto(file: File) {
+  if (!isHeicFile(file)) return file;
+  const { heicTo } = await import("heic-to/csp");
+  const jpeg = await heicTo({
+    blob: file,
+    type: "image/jpeg",
+    quality: 0.92,
+  });
+  const convertedName = file.name.replace(/\.(?:heic|heif)$/i, ".jpg");
+  return new File([jpeg], convertedName, {
+    type: "image/jpeg",
+    lastModified: file.lastModified,
+  });
+}
+
 export type SegmentedPhoto = {
   background: Blob;
   foreground?: Blob;
@@ -59,8 +83,16 @@ export type SegmentedPhoto = {
   height: number;
 };
 
-export async function segmentPhoto(file: File): Promise<SegmentedPhoto> {
-  const image = await loadImage(file);
+export type MaskRefinement = {
+  coverage?: number;
+  softness?: number;
+};
+
+export async function segmentPhoto(
+  file: File,
+  refinement: MaskRefinement = {},
+): Promise<SegmentedPhoto> {
+  const image = await loadImage(await browserReadablePhoto(file));
   const scale = Math.min(1, MAX_EDGE / Math.max(image.width, image.height));
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
@@ -79,12 +111,21 @@ export async function segmentPhoto(file: File): Promise<SegmentedPhoto> {
     if (!mask) return { background, width, height };
     const confidence = mask.getAsFloat32Array();
     const pixels = new Uint8ClampedArray(mask.width * mask.height * 4);
+    const coverageAdjustment = Math.max(
+      -20,
+      Math.min(20, refinement.coverage ?? 0),
+    );
+    const softness = Math.max(0, Math.min(20, refinement.softness ?? 20));
+    const subjectThreshold = 0.5 - coverageAdjustment * 0.008;
+    const transitionWidth = 0.18 + (softness / 20) * 0.46;
+    const transitionStart = subjectThreshold - transitionWidth / 2;
     let subjectPixels = 0;
     for (let index = 0; index < confidence.length; index += 1) {
       const score = confidence[index];
-      if (score > 0.5) subjectPixels += 1;
+      if (score > subjectThreshold) subjectPixels += 1;
       const alpha = Math.round(
-        Math.max(0, Math.min(1, (score - 0.18) / 0.64)) * 255,
+        Math.max(0, Math.min(1, (score - transitionStart) / transitionWidth)) *
+          255,
       );
       const offset = index * 4;
       pixels[offset] = 255;

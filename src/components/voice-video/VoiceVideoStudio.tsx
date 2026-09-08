@@ -11,7 +11,9 @@ import {
   Clock3,
   Mic,
   ImagePlus,
+  SlidersHorizontal,
   Pause,
+  Paintbrush,
   Play,
   RotateCcw,
   Share2,
@@ -21,12 +23,40 @@ import {
   WandSparkles,
   X,
 } from "lucide-react";
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FaAt,
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaTiktok,
+  FaWhatsapp,
+  FaXTwitter,
+  FaYoutube,
+} from "react-icons/fa6";
+import {
+  ChangeEvent,
+  CSSProperties,
+  PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { segmentPhoto } from "./subject-segmentation";
+import { MaskPainter } from "./MaskPainter";
 
 type Stage = "capture" | "transcribing" | "edit" | "rendering" | "done";
 type Ratio = "story" | "portrait" | "square";
 type Theme = "paper" | "midnight" | "sunset" | "sage";
+type SocialPlatform =
+  | "none"
+  | "instagram"
+  | "tiktok"
+  | "x"
+  | "youtube"
+  | "facebook"
+  | "linkedin"
+  | "whatsapp";
 type SpeechMark = { time: number; value: string };
 type PreviewWord = { text: string; index: number };
 type CaptionSegment = {
@@ -38,12 +68,17 @@ type CaptionSegment = {
 type PhotoAsset = {
   localId: string;
   name: string;
+  sourceFile: File;
   previewUrl: string;
   foregroundUrl?: string;
   background?: Blob;
   foreground?: Blob;
   status: "processing" | "ready";
   remoteId?: string;
+  maskCoverage: number;
+  maskSoftness: number;
+  foregroundScale: number;
+  maskEdited?: boolean;
 };
 
 type UploadSession = {
@@ -58,11 +93,67 @@ const MAX_SECONDS = 60;
 const MAX_BYTES = 20 * 1024 * 1024;
 const MAX_PHOTOS = 6;
 const MAX_PHOTO_SOURCE_BYTES = 15 * 1024 * 1024;
+const TIMELINE_PIXELS_PER_SECOND = 72;
+const supportedPhotoTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+]);
+
+function isSupportedPhoto(file: File) {
+  if (supportedPhotoTypes.has(file.type.toLocaleLowerCase())) return true;
+  return /\.(?:jpe?g|png|webp|heic|heif)$/i.test(file.name);
+}
+
+const socialPlatforms: Array<{
+  value: SocialPlatform;
+  label: string;
+  color: string;
+}> = [
+  { value: "none", label: "No platform", color: "#697386" },
+  { value: "instagram", label: "Instagram", color: "#d62976" },
+  { value: "tiktok", label: "TikTok", color: "#11161e" },
+  { value: "x", label: "X", color: "#11161e" },
+  { value: "youtube", label: "YouTube", color: "#ff0033" },
+  { value: "facebook", label: "Facebook", color: "#1877f2" },
+  { value: "linkedin", label: "LinkedIn", color: "#0a66c2" },
+  { value: "whatsapp", label: "WhatsApp", color: "#25d366" },
+];
+
+function SocialIcon({
+  platform,
+  className,
+  style,
+}: {
+  platform: SocialPlatform;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const props = { className, style, "aria-hidden": true };
+  if (platform === "instagram") return <FaInstagram {...props} />;
+  if (platform === "tiktok") return <FaTiktok {...props} />;
+  if (platform === "x") return <FaXTwitter {...props} />;
+  if (platform === "youtube") return <FaYoutube {...props} />;
+  if (platform === "facebook") return <FaFacebookF {...props} />;
+  if (platform === "linkedin") return <FaLinkedinIn {...props} />;
+  if (platform === "whatsapp") return <FaWhatsapp {...props} />;
+  return <FaAt {...props} />;
+}
 
 const ratioClasses: Record<Ratio, string> = {
   story: "aspect-[9/16] max-h-[68svh] xl:max-h-[760px]",
   portrait: "aspect-[4/5] max-h-[64svh] xl:max-h-[680px]",
   square: "aspect-square max-h-[58svh] xl:max-h-[620px]",
+};
+
+const previewTextCardClasses: Record<Ratio, string> = {
+  story: "h-[20rem]",
+  portrait: "h-[17rem]",
+  square: "h-[14rem]",
 };
 
 const ratioLabels: Array<{ value: Ratio; label: string; hint: string }> = [
@@ -176,37 +267,34 @@ function buildPreviewPages(text: string, ratio: Ratio) {
   const pages: PreviewWord[][] = [];
   let globalCursor = 0;
 
-  for (const paragraph of paragraphs) {
-    const sentences = paragraph
+  const units = paragraphs.flatMap((paragraph) =>
+    paragraph
       .split(/(?<=[.!?])\s+/)
       .map((sentence) => sentence.split(/\s+/).filter(Boolean))
-      .filter((sentence) => sentence.length);
-    const units = sentences.flatMap((sentence) => {
-      if (sentence.length <= limit) return [sentence];
-      const chunks: string[][] = [];
-      for (let index = 0; index < sentence.length; index += limit) {
-        chunks.push(sentence.slice(index, index + limit));
-      }
-      return chunks;
-    });
-    let pageWords: string[] = [];
+      .filter((sentence) => sentence.length)
+      .flatMap((sentence) => {
+        if (sentence.length <= limit) return [sentence];
+        const chunks: string[][] = [];
+        for (let index = 0; index < sentence.length; index += limit) {
+          chunks.push(sentence.slice(index, index + limit));
+        }
+        return chunks;
+      }),
+  );
+  let pageWords: string[] = [];
 
-    for (const unit of units) {
-      if (pageWords.length && pageWords.length + unit.length > limit) {
-        pages.push(
-          allTokens.slice(globalCursor, globalCursor + pageWords.length),
-        );
-        globalCursor += pageWords.length;
-        pageWords = [];
-      }
-      pageWords.push(...unit);
-    }
-    if (pageWords.length) {
+  for (const unit of units) {
+    if (pageWords.length && pageWords.length + unit.length > limit) {
       pages.push(
         allTokens.slice(globalCursor, globalCursor + pageWords.length),
       );
       globalCursor += pageWords.length;
+      pageWords = [];
     }
+    pageWords.push(...unit);
+  }
+  if (pageWords.length) {
+    pages.push(allTokens.slice(globalCursor, globalCursor + pageWords.length));
   }
 
   return pages;
@@ -344,7 +432,7 @@ function segmentsToTranscript(segments: CaptionSegment[]) {
   return segments
     .map((segment) => segment.text.trim())
     .filter(Boolean)
-    .join("\n\n");
+    .join(" ");
 }
 
 function preferredMimeType() {
@@ -370,11 +458,16 @@ export function VoiceVideoStudio() {
   const [captionSegments, setCaptionSegments] = useState<CaptionSegment[]>([]);
   const [selectedSegmentId, setSelectedSegmentId] = useState("");
   const [previewTime, setPreviewTime] = useState(0);
+  const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
   const [session, setSession] = useState<UploadSession | null>(null);
   const [ratio, setRatio] = useState<Ratio>("story");
   const [theme, setTheme] = useState<Theme>("paper");
   const [photos, setPhotos] = useState<PhotoAsset[]>([]);
+  const [refiningPhotoId, setRefiningPhotoId] = useState("");
+  const [maskEditorPhotoId, setMaskEditorPhotoId] = useState("");
+  const [paintingPhotoId, setPaintingPhotoId] = useState("");
   const [attribution, setAttribution] = useState("");
+  const [socialPlatform, setSocialPlatform] = useState<SocialPlatform>("none");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [saveUrl, setSaveUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -385,6 +478,15 @@ export function VoiceVideoStudio() {
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const capturePlayheadRef = useRef<HTMLSpanElement | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const timelineScrubbingRef = useRef(false);
+  const timelineSyncingRef = useRef(false);
+  const timelinePointerRef = useRef({
+    id: -1,
+    startX: 0,
+    startScrollLeft: 0,
+  });
   const photosRef = useRef<PhotoAsset[]>([]);
 
   useEffect(() => {
@@ -495,8 +597,12 @@ export function VoiceVideoStudio() {
 
   const togglePlayback = async () => {
     if (!audioRef.current) return;
-    if (audioRef.current.paused) await audioRef.current.play();
-    else audioRef.current.pause();
+    if (audioRef.current.paused) {
+      if (document.activeElement instanceof HTMLTextAreaElement) {
+        document.activeElement.blur();
+      }
+      await audioRef.current.play();
+    } else audioRef.current.pause();
   };
 
   const transcribe = async () => {
@@ -545,7 +651,7 @@ export function VoiceVideoStudio() {
         result.durationMs,
       );
       setCaptionSegments(nextSegments);
-      setSelectedSegmentId(nextSegments[0]?.id ?? "");
+      setSelectedSegmentId("");
       setTranscript(
         nextSegments.length
           ? segmentsToTranscript(nextSegments)
@@ -573,14 +679,12 @@ export function VoiceVideoStudio() {
       return;
     }
     const valid = selected.filter(
-      (file) =>
-        ["image/jpeg", "image/png", "image/webp"].includes(file.type) &&
-        file.size <= MAX_PHOTO_SOURCE_BYTES,
+      (file) => isSupportedPhoto(file) && file.size <= MAX_PHOTO_SOURCE_BYTES,
     );
     if (requested.length > available) {
       setError("Only the available photo slots were added.");
     } else if (valid.length !== selected.length) {
-      setError("Use JPG, PNG, or WebP photos under 15 MB each.");
+      setError("Use HEIC, HEIF, JPG, PNG, or WebP photos under 15 MB each.");
     } else {
       setError("");
     }
@@ -589,8 +693,12 @@ export function VoiceVideoStudio() {
       asset: {
         localId: crypto.randomUUID(),
         name: file.name,
+        sourceFile: file,
         previewUrl: URL.createObjectURL(file),
         status: "processing" as const,
+        maskCoverage: 0,
+        maskSoftness: 20,
+        foregroundScale: 140,
       },
     }));
     setPhotos((current) => [...current, ...queued.map(({ asset }) => asset)]);
@@ -633,6 +741,7 @@ export function VoiceVideoStudio() {
       URL.revokeObjectURL(photo.previewUrl);
       if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
     }
+    setMaskEditorPhotoId((current) => (current === localId ? "" : current));
     setPhotos((current) => current.filter((item) => item.localId !== localId));
   };
 
@@ -646,8 +755,102 @@ export function VoiceVideoStudio() {
     });
   };
 
+  const updatePhotoRefinement = (
+    localId: string,
+    key: "maskCoverage" | "maskSoftness",
+    value: number,
+  ) => {
+    setPhotos((current) =>
+      current.map((photo) =>
+        photo.localId === localId ? { ...photo, [key]: value } : photo,
+      ),
+    );
+  };
+
+  const refinePhoto = async (
+    localId: string,
+    refinement: { maskCoverage?: number; maskSoftness?: number } = {},
+  ) => {
+    const photo = photosRef.current.find((item) => item.localId === localId);
+    if (!photo || photo.status === "processing") return;
+    const maskCoverage = refinement.maskCoverage ?? photo.maskCoverage;
+    const maskSoftness = refinement.maskSoftness ?? photo.maskSoftness;
+    setRefiningPhotoId(localId);
+    setPhotos((current) =>
+      current.map((item) =>
+        item.localId === localId
+          ? { ...item, maskCoverage, maskSoftness, status: "processing" }
+          : item,
+      ),
+    );
+    try {
+      const processed = await segmentPhoto(photo.sourceFile, {
+        coverage: maskCoverage,
+        softness: maskSoftness,
+      });
+      const previewUrl = URL.createObjectURL(processed.background);
+      const foregroundUrl = processed.foreground
+        ? URL.createObjectURL(processed.foreground)
+        : undefined;
+      URL.revokeObjectURL(photo.previewUrl);
+      if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
+      setPhotos((current) =>
+        current.map((item) =>
+          item.localId === localId
+            ? {
+                ...item,
+                previewUrl,
+                foregroundUrl,
+                background: processed.background,
+                foreground: processed.foreground,
+                remoteId: undefined,
+                maskCoverage,
+                maskSoftness,
+                maskEdited: false,
+                status: "ready",
+              }
+            : item,
+        ),
+      );
+    } catch {
+      setPhotos((current) =>
+        current.map((item) =>
+          item.localId === localId ? { ...item, status: "ready" } : item,
+        ),
+      );
+      setError(`Could not refine ${photo.name}.`);
+    } finally {
+      setRefiningPhotoId((current) => (current === localId ? "" : current));
+    }
+  };
+
+  const savePaintedMask = (localId: string, foreground: Blob) => {
+    const photo = photosRef.current.find((item) => item.localId === localId);
+    if (!photo) return;
+    const foregroundUrl = URL.createObjectURL(foreground);
+    if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
+    setPhotos((current) =>
+      current.map((item) =>
+        item.localId === localId
+          ? {
+              ...item,
+              foreground,
+              foregroundUrl,
+              remoteId: undefined,
+              maskEdited: true,
+            }
+          : item,
+      ),
+    );
+    setPaintingPhotoId("");
+  };
+
   const uploadPhotos = async (activeSession: UploadSession) => {
-    const visuals: Array<{ imageId: string; segmented: boolean }> = [];
+    const visuals: Array<{
+      imageId: string;
+      segmented: boolean;
+      foregroundScale: number;
+    }> = [];
     for (const photo of photosRef.current) {
       if (!photo.background || photo.status !== "ready") {
         throw new Error("Wait for every photo to finish processing");
@@ -694,7 +897,11 @@ export function VoiceVideoStudio() {
           ),
         );
       }
-      visuals.push({ imageId, segmented: Boolean(photo.foreground) });
+      visuals.push({
+        imageId,
+        segmented: Boolean(photo.foreground),
+        foregroundScale: photo.foregroundScale ?? 140,
+      });
     }
     return visuals;
   };
@@ -720,6 +927,8 @@ export function VoiceVideoStudio() {
             ratio,
             theme,
             attribution: attribution.trim() || undefined,
+            socialPlatform:
+              socialPlatform === "none" ? undefined : socialPlatform,
             visuals,
           }),
         },
@@ -776,15 +985,24 @@ export function VoiceVideoStudio() {
     setElapsed(0);
     setDuration(0);
     setTheme("paper");
+    setSocialPlatform("none");
     for (const photo of photosRef.current) {
       URL.revokeObjectURL(photo.previewUrl);
       if (photo.foregroundUrl) URL.revokeObjectURL(photo.foregroundUrl);
     }
     setPhotos([]);
+    setRefiningPhotoId("");
+    setMaskEditorPhotoId("");
+    setPaintingPhotoId("");
   };
 
   const words = transcript.trim().split(/\s+/).filter(Boolean);
+  const paintingPhoto = photos.find(
+    (photo) => photo.localId === paintingPhotoId,
+  );
   const isEditingStage = stage === "edit" || stage === "rendering";
+  const capturePlaybackProgress =
+    duration > 0 ? Math.min(1, Math.max(0, previewTime / duration)) : 0;
   const previewMarks = useMemo(
     () => alignPreviewWords(transcript, speechMarks, duration * 1000),
     [duration, speechMarks, transcript],
@@ -795,9 +1013,75 @@ export function VoiceVideoStudio() {
     activeWordIndex = mark.wordIndex;
   }
 
+  const positionCapturePlayhead = (seconds: number) => {
+    if (!capturePlayheadRef.current) return;
+    const progress =
+      duration > 0 ? Math.min(1, Math.max(0, seconds / duration)) : 0;
+    capturePlayheadRef.current.style.left = `${progress * 100}%`;
+  };
+
   const seekPreview = (seconds: number) => {
-    setPreviewTime(seconds);
-    if (audioRef.current) audioRef.current.currentTime = seconds;
+    const nextTime = Math.min(Math.max(seconds, 0), duration || 0);
+    positionCapturePlayhead(nextTime);
+    setPreviewTime(nextTime);
+    if (audioRef.current) audioRef.current.currentTime = nextTime;
+  };
+
+  const scrubCaptureWaveform = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const progress = Math.min(
+      1,
+      Math.max(0, (event.clientX - bounds.left) / bounds.width),
+    );
+    seekPreview(progress * duration);
+  };
+
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    if (!timeline || !isEditingStage) return;
+    const measureTimeline = () =>
+      setTimelineViewportWidth(timeline.clientWidth);
+    measureTimeline();
+    const observer = new ResizeObserver(measureTimeline);
+    observer.observe(timeline);
+    return () => observer.disconnect();
+  }, [isEditingStage]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    let frame = 0;
+    const followAudio = () => {
+      if (audioRef.current && !timelineScrubbingRef.current) {
+        const currentTime = audioRef.current.currentTime;
+        positionCapturePlayhead(currentTime);
+        setPreviewTime(currentTime);
+      }
+      frame = window.requestAnimationFrame(followAudio);
+    };
+    frame = window.requestAnimationFrame(followAudio);
+    return () => window.cancelAnimationFrame(frame);
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    if (!timeline || timelineScrubbingRef.current) return;
+    const target = previewTime * TIMELINE_PIXELS_PER_SECOND;
+    if (Math.abs(timeline.scrollLeft - target) < 1) return;
+    timelineSyncingRef.current = true;
+    timeline.scrollLeft = target;
+    const frame = window.requestAnimationFrame(() => {
+      timelineSyncingRef.current = false;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [previewTime]);
+
+  const scrubTimeline = () => {
+    const timeline = timelineRef.current;
+    if (!timeline) return;
+    if (timeline.scrollTop !== 0) timeline.scrollTop = 0;
+    if (timelineSyncingRef.current && !timelineScrubbingRef.current) return;
+    seekPreview(timeline.scrollLeft / TIMELINE_PIXELS_PER_SECOND);
   };
 
   const activeCaptionSegment =
@@ -805,10 +1089,15 @@ export function VoiceVideoStudio() {
       (segment) =>
         previewTime * 1000 >= segment.startMs &&
         previewTime * 1000 < segment.endMs,
-    ) ?? captionSegments.at(-1);
-  const selectedCaptionSegment =
-    captionSegments.find((segment) => segment.id === selectedSegmentId) ??
-    activeCaptionSegment;
+    ) ??
+    captionSegments
+      .slice()
+      .reverse()
+      .find((segment) => previewTime * 1000 >= segment.startMs) ??
+    captionSegments.at(0);
+  const selectedCaptionSegment = captionSegments.find(
+    (segment) => segment.id === selectedSegmentId,
+  );
 
   const selectCaptionSegment = (segment: CaptionSegment) => {
     setSelectedSegmentId(segment.id);
@@ -869,12 +1158,35 @@ export function VoiceVideoStudio() {
     }
   };
 
+  const returnToEditor = () => {
+    setError("");
+    setIsSaving(false);
+    setStage("edit");
+  };
+
+  const captureHeading =
+    stage === "transcribing"
+      ? "Creating your captions"
+      : audio
+        ? "Your voice note is ready"
+        : isRecording
+          ? "Recording your thought"
+          : "Record or upload a voice note";
+  const captureDescription =
+    stage === "transcribing"
+      ? "Listening to the full recording and matching each word to the audio."
+      : audio
+        ? "Play it back or make captions when you’re ready."
+        : isRecording
+          ? "Speak naturally. You can clean up the words next."
+          : "Use your microphone or choose an audio file from your device.";
+
   return (
     <main
       id="main-content"
       className="voice-studio min-h-[100svh] bg-[#f5f0e8] text-[#15233a]"
     >
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+      <header className="mx-auto flex max-w-7xl items-center justify-between px-[1rem] py-[1rem] sm:px-8 sm:py-5">
         <a
           href="https://ologreader.com"
           className="flex items-center gap-2.5"
@@ -895,7 +1207,7 @@ export function VoiceVideoStudio() {
       </header>
 
       <section
-        className={`mx-auto grid max-w-7xl gap-7 px-5 pb-16 pt-2 sm:px-8 sm:pt-7 lg:items-start lg:pt-12 ${isEditingStage ? "lg:grid-cols-1" : "lg:grid-cols-[0.95fr_1.05fr] lg:gap-16"}`}
+        className={`mx-auto grid max-w-7xl gap-[1rem] px-[0.5rem] pb-16 pt-2 sm:gap-7 sm:px-8 sm:pt-7 lg:items-start lg:pt-12 ${isEditingStage ? "lg:grid-cols-1" : "lg:grid-cols-[0.95fr_1.05fr] lg:gap-16"}`}
       >
         <div className={isEditingStage ? "hidden" : "lg:sticky lg:top-10"}>
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#15233a]/10 bg-white/55 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#536078] sm:mb-5">
@@ -923,23 +1235,26 @@ export function VoiceVideoStudio() {
         </div>
 
         <div
-          className={`${isEditingStage ? "overflow-visible" : "overflow-hidden"} rounded-[2rem] border border-[#15233a]/10 bg-[#fffdf9] shadow-[0_24px_80px_rgba(34,46,68,0.12)]`}
+          className={`${isEditingStage ? "overflow-visible" : "overflow-hidden"} rounded-[1.25rem] border border-[#15233a]/10 bg-[#fffdf9] shadow-[0_24px_80px_rgba(34,46,68,0.12)] sm:rounded-[2rem]`}
         >
-          <div className="flex items-center gap-2 border-b border-[#15233a]/8 px-6 py-4">
+          <div className="relative grid grid-cols-3 items-center border-b border-[#15233a]/8 px-[0.75rem] py-[0.75rem] sm:px-6 sm:py-4">
+            <span className="absolute left-[1.875rem] right-[1.875rem] top-1/2 h-px -translate-y-1/2 bg-[#15233a]/10 sm:left-[4.125rem] sm:right-[4.125rem]" />
             {["Record", "Edit", "Download"].map((label, index) => {
               const current =
-                stage === "capture" || stage === "transcribing"
+                stage === "capture"
                   ? 0
-                  : stage === "edit" || stage === "rendering"
+                  : stage === "transcribing" ||
+                      stage === "edit" ||
+                      stage === "rendering"
                     ? 1
                     : 2;
               return (
                 <div
                   key={label}
-                  className="flex min-w-0 flex-1 items-center gap-2"
+                  className={`relative z-10 ${index === 0 ? "justify-self-start" : index === 1 ? "justify-self-center" : "justify-self-end"}`}
                 >
                   <span
-                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${index <= current ? "bg-[#007aff] text-white" : "bg-[#e8e5df] text-[#7a8290]"}`}
+                    className={`grid h-[2.25rem] w-[2.25rem] place-items-center rounded-full text-[11px] font-bold shadow-[0_0_0_0.4rem_#fffdf9] ${index <= current ? "bg-[#007aff] text-white" : "bg-[#e8e5df] text-[#7a8290]"}`}
                   >
                     {index < current ? (
                       <Check className="h-3.5 w-3.5" />
@@ -947,39 +1262,47 @@ export function VoiceVideoStudio() {
                       index + 1
                     )}
                   </span>
-                  <span
-                    className={`hidden text-xs font-bold uppercase tracking-[0.12em] sm:block ${index <= current ? "text-[#15233a]" : "text-[#9a9fa8]"}`}
-                  >
-                    {label}
-                  </span>
-                  {index < 2 && (
-                    <span className="ml-auto h-px flex-1 bg-[#15233a]/10" />
-                  )}
+                  <span className="sr-only">{label}</span>
                 </div>
               );
             })}
           </div>
 
-          <div className="p-5 sm:p-8">
+          <div className="p-[0.75rem] sm:p-8">
             {(stage === "capture" || stage === "transcribing") && (
               <div>
                 <h2 className="text-2xl font-semibold tracking-[-0.035em]">
-                  Record your thought
+                  {captureHeading}
                 </h2>
-                <p className="mt-2 text-[#697386]">
-                  Speak naturally. You can clean up the words next.
-                </p>
+                <p className="mt-2 text-[#697386]">{captureDescription}</p>
 
                 {!audio ? (
                   <div className="mt-7 rounded-[1.6rem] border border-dashed border-[#15233a]/20 bg-[#f8f6f1] p-7 text-center sm:p-10">
-                    <div
-                      className={`mx-auto grid h-24 w-24 place-items-center rounded-full transition ${isRecording ? "recording-ring bg-[#ff6b5f] text-white" : "bg-[#15233a] text-white"}`}
-                    >
-                      {isRecording ? (
-                        <Square className="h-8 w-8 fill-current" />
-                      ) : (
-                        <Mic className="h-9 w-9" />
-                      )}
+                    <div className="flex w-full justify-center">
+                      <button
+                        type="button"
+                        onClick={isRecording ? stopRecording : startRecording}
+                        className={`group relative grid shrink-0 transform-gpu place-items-center rounded-[2.25rem] border bg-white shadow-[0_18px_34px_rgba(21,35,58,0.16),inset_0_1px_0_rgba(255,255,255,0.9)] transition duration-300 hover:-translate-y-1 hover:rotate-[1deg] hover:shadow-[0_24px_42px_rgba(21,35,58,0.2),inset_0_1px_0_rgba(255,255,255,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#007aff] ${isRecording ? "recording-ring border-[#ff6b5f]/30" : "border-[#b8d8ff]"}`}
+                        style={{
+                          width: "7rem",
+                          height: "7rem",
+                          padding: "0.75rem",
+                        }}
+                        aria-label={
+                          isRecording ? "Finish recording" : "Start recording"
+                        }
+                      >
+                        <span
+                          className={`grid transform-gpu place-items-center rounded-[1.45rem] text-white shadow-[0_10px_20px_rgba(0,100,220,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] transition duration-300 group-hover:-translate-y-0.5 group-hover:-rotate-[2deg] group-hover:scale-[1.035] ${isRecording ? "bg-[#ff6b5f]" : "bg-gradient-to-br from-[#1688ff] to-[#0064dc]"}`}
+                          style={{ width: "100%", height: "100%" }}
+                        >
+                          {isRecording ? (
+                            <Square className="h-5 w-5 fill-current" />
+                          ) : (
+                            <Mic className="h-6 w-6" strokeWidth={2.25} />
+                          )}
+                        </span>
+                      </button>
                     </div>
                     <p className="mt-5 font-mono text-3xl font-semibold tabular-nums">
                       {formatTime(elapsed)}
@@ -989,12 +1312,9 @@ export function VoiceVideoStudio() {
                         ? "Listening… tap when you’re done"
                         : "Your microphone stays off until you tap"}
                     </p>
-                    <button
-                      onClick={isRecording ? stopRecording : startRecording}
-                      className="mt-6 rounded-full bg-[#007aff] px-7 py-3.5 font-semibold text-white shadow-[0_8px_24px_rgba(0,122,255,0.25)] transition hover:-translate-y-0.5 hover:bg-[#0068d9]"
-                    >
-                      {isRecording ? "Finish recording" : "Start recording"}
-                    </button>
+                    <p className="mt-4 text-sm font-semibold text-[#15233a]">
+                      {isRecording ? "Tap to finish" : "Tap to record"}
+                    </p>
                     <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#9a9fa8]">
                       <span className="h-px flex-1 bg-[#15233a]/10" />
                       or
@@ -1017,7 +1337,20 @@ export function VoiceVideoStudio() {
                       src={audioUrl}
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
-                      onEnded={() => setIsPlaying(false)}
+                      onTimeUpdate={(event) => {
+                        const currentTime = event.currentTarget.currentTime;
+                        positionCapturePlayhead(currentTime);
+                        setPreviewTime(currentTime);
+                      }}
+                      onSeeked={(event) => {
+                        const currentTime = event.currentTarget.currentTime;
+                        positionCapturePlayhead(currentTime);
+                        setPreviewTime(currentTime);
+                      }}
+                      onEnded={() => {
+                        setIsPlaying(false);
+                        setPreviewTime(duration);
+                      }}
                     />
                     <div className="flex items-center gap-4">
                       <button
@@ -1034,24 +1367,82 @@ export function VoiceVideoStudio() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-3">
                           <p className="truncate font-semibold">{audioName}</p>
-                          <span className="font-mono text-sm text-[#697386]">
-                            {formatTime(duration)}
+                          <span className="font-mono text-sm tabular-nums text-[#697386]">
+                            {formatTime(previewTime)} / {formatTime(duration)}
                           </span>
                         </div>
                         <div
-                          className="mt-2 flex h-7 items-center gap-1"
-                          aria-hidden
+                          className="relative mt-2 h-8 cursor-pointer touch-none"
+                          onPointerDown={(event) => {
+                            event.currentTarget.setPointerCapture(
+                              event.pointerId,
+                            );
+                            scrubCaptureWaveform(event);
+                          }}
+                          onPointerMove={(event) => {
+                            if (
+                              event.currentTarget.hasPointerCapture(
+                                event.pointerId,
+                              )
+                            ) {
+                              scrubCaptureWaveform(event);
+                            }
+                          }}
+                          onPointerUp={(event) => {
+                            scrubCaptureWaveform(event);
+                            event.currentTarget.releasePointerCapture(
+                              event.pointerId,
+                            );
+                          }}
                         >
-                          {Array.from({ length: 34 }).map((_, index) => (
-                            <span
-                              key={index}
-                              className="w-1 flex-1 rounded-full bg-[#6aaeff]"
-                              style={{
-                                height: `${22 + ((index * 37) % 78)}%`,
-                                opacity: 0.45 + ((index * 13) % 50) / 100,
-                              }}
-                            />
-                          ))}
+                          <div
+                            className="absolute inset-0 flex items-center gap-1"
+                            aria-hidden
+                          >
+                            {Array.from({ length: 34 }).map((_, index) => {
+                              const played =
+                                (index + 0.5) / 34 <= capturePlaybackProgress;
+                              return (
+                                <span
+                                  key={index}
+                                  className="w-1 flex-1 rounded-full transition-colors duration-100"
+                                  style={{
+                                    height: `${22 + ((index * 37) % 78)}%`,
+                                    backgroundColor: played
+                                      ? "#007aff"
+                                      : "#9bc9ff",
+                                    opacity: played
+                                      ? 1
+                                      : 0.42 + ((index * 13) % 34) / 100,
+                                  }}
+                                />
+                              );
+                            })}
+                          </div>
+                          <span
+                            ref={capturePlayheadRef}
+                            className="pointer-events-none absolute bottom-0 top-0 z-10 w-0.5 -translate-x-1/2 rounded-full bg-[#15233a] shadow-[0_0_0_2px_rgba(255,255,255,0.8)] will-change-[left]"
+                            style={{
+                              left: `${capturePlaybackProgress * 100}%`,
+                            }}
+                            aria-hidden
+                          />
+                          <input
+                            type="range"
+                            min={0}
+                            max={Math.max(duration, 0.01)}
+                            step={0.01}
+                            value={Math.min(previewTime, duration || 0)}
+                            onChange={(event) =>
+                              seekPreview(Number(event.target.value))
+                            }
+                            onInput={(event) =>
+                              seekPreview(Number(event.currentTarget.value))
+                            }
+                            className="pointer-events-none absolute inset-0 z-20 h-full w-full opacity-0"
+                            aria-label="Audio playback position"
+                            aria-valuetext={`${formatTime(previewTime)} of ${formatTime(duration)}`}
+                          />
                         </div>
                       </div>
                     </div>
@@ -1085,7 +1476,7 @@ export function VoiceVideoStudio() {
             )}
 
             {(stage === "edit" || stage === "rendering") && (
-              <div className="grid min-w-0 gap-7 xl:grid-cols-[minmax(320px,1.18fr)_minmax(0,0.82fr)]">
+              <div className="grid min-w-0 gap-[1rem] xl:grid-cols-[minmax(320px,1.18fr)_minmax(0,0.82fr)] xl:gap-7">
                 <div className="order-2 min-w-0">
                   <h2 className="text-2xl font-semibold tracking-[-0.035em]">
                     Make it sound like you
@@ -1106,74 +1497,202 @@ export function VoiceVideoStudio() {
                         setPreviewTime(event.currentTarget.currentTime)
                       }
                     />
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={togglePlayback}
-                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#007aff] text-white shadow-[0_6px_18px_rgba(0,122,255,0.24)]"
-                        aria-label={
-                          isPlaying ? "Pause preview" : "Play preview"
-                        }
-                      >
-                        {isPlaying ? (
-                          <Pause className="h-4 w-4" fill="currentColor" />
-                        ) : (
-                          <Play
-                            className="ml-0.5 h-4 w-4"
-                            fill="currentColor"
-                          />
-                        )}
-                      </button>
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1.5 flex items-center justify-between text-xs font-semibold tabular-nums text-[#697386]">
-                          <span>{formatTime(previewTime)}</span>
-                          <span>{formatTime(duration)}</span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={Math.max(duration, 0.01)}
-                          step={0.01}
-                          value={Math.min(previewTime, duration || 0)}
-                          onChange={(event) =>
-                            seekPreview(Number(event.target.value))
+                    <div className="relative">
+                      <div className="relative z-40 flex min-h-[3rem] items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={togglePlayback}
+                          className="grid h-12 w-12 shrink-0 place-items-center rounded-[1rem] border border-white/10 bg-[#11161e] text-white shadow-[0_8px_22px_rgba(17,22,30,0.2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007aff]"
+                          aria-label={
+                            isPlaying ? "Pause preview" : "Play preview"
                           }
-                          className="w-full accent-[#007aff]"
-                          aria-label="Preview timestamp"
-                        />
+                        >
+                          {isPlaying ? (
+                            <Pause className="h-5 w-5 fill-current" />
+                          ) : (
+                            <Play className="ml-0.5 h-5 w-5 fill-current" />
+                          )}
+                        </button>
+                        <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center font-mono font-semibold leading-none tabular-nums">
+                          <span className="text-base text-[#15233a]">
+                            {formatCaptionTime(previewTime * 1000)}
+                          </span>
+                          <span className="mt-1 text-xs text-[#8b919d]">
+                            {formatCaptionTime(duration * 1000)}
+                          </span>
+                        </div>
+                        <span className="h-11 w-11" aria-hidden="true" />
+                      </div>
+                      <div className="relative mt-[1rem] h-[9rem] rounded-2xl bg-[#11161e] shadow-inner">
+                        <div className="pointer-events-none absolute -top-3 bottom-0 left-1/2 z-50 w-[0.125rem] -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_1px_rgba(17,22,30,0.55)]" />
+                        <div
+                          ref={timelineRef}
+                          role="slider"
+                          tabIndex={0}
+                          aria-label="Caption timeline"
+                          aria-valuemin={0}
+                          aria-valuemax={Math.max(
+                            0,
+                            Math.round(duration * 100),
+                          )}
+                          aria-valuenow={Math.round(previewTime * 100)}
+                          aria-valuetext={`${formatTime(previewTime)} of ${formatTime(duration)}`}
+                          onScroll={scrubTimeline}
+                          onPointerDown={(event) => {
+                            timelineScrubbingRef.current = true;
+                            audioRef.current?.pause();
+                            timelinePointerRef.current = {
+                              id: event.pointerId,
+                              startX: event.clientX,
+                              startScrollLeft: event.currentTarget.scrollLeft,
+                            };
+                            event.currentTarget.setPointerCapture(
+                              event.pointerId,
+                            );
+                          }}
+                          onPointerMove={(event) => {
+                            if (
+                              timelinePointerRef.current.id !== event.pointerId
+                            )
+                              return;
+                            event.preventDefault();
+                            const nextScrollLeft =
+                              timelinePointerRef.current.startScrollLeft +
+                              timelinePointerRef.current.startX -
+                              event.clientX;
+                            event.currentTarget.scrollLeft = nextScrollLeft;
+                            seekPreview(
+                              event.currentTarget.scrollLeft /
+                                TIMELINE_PIXELS_PER_SECOND,
+                            );
+                          }}
+                          onPointerUp={(event) => {
+                            timelineScrubbingRef.current = false;
+                            timelinePointerRef.current.id = -1;
+                            event.currentTarget.releasePointerCapture(
+                              event.pointerId,
+                            );
+                            scrubTimeline();
+                          }}
+                          onWheel={(event) => {
+                            event.preventDefault();
+                            audioRef.current?.pause();
+                            const delta =
+                              Math.abs(event.deltaX) > Math.abs(event.deltaY)
+                                ? event.deltaX
+                                : event.deltaY;
+                            event.currentTarget.scrollLeft += delta;
+                            seekPreview(
+                              event.currentTarget.scrollLeft /
+                                TIMELINE_PIXELS_PER_SECOND,
+                            );
+                          }}
+                          onPointerCancel={(event) => {
+                            timelineScrubbingRef.current = false;
+                            timelinePointerRef.current.id = -1;
+                            if (
+                              event.currentTarget.hasPointerCapture(
+                                event.pointerId,
+                              )
+                            ) {
+                              event.currentTarget.releasePointerCapture(
+                                event.pointerId,
+                              );
+                            }
+                            scrubTimeline();
+                          }}
+                          onKeyDown={(event) => {
+                            if (
+                              event.key !== "ArrowLeft" &&
+                              event.key !== "ArrowRight"
+                            )
+                              return;
+                            event.preventDefault();
+                            seekPreview(
+                              previewTime +
+                                (event.key === "ArrowRight" ? 1 : -1),
+                            );
+                          }}
+                          className="h-[9rem] cursor-grab overflow-x-auto overflow-y-hidden rounded-2xl bg-[#11161e] overscroll-none outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-[#8ea0ff] [&::-webkit-scrollbar]:hidden"
+                          style={{
+                            scrollbarWidth: "none",
+                            touchAction: "none",
+                          }}
+                        >
+                          <div
+                            className="relative h-[9rem] select-none"
+                            style={{
+                              width: `${timelineViewportWidth + Math.max(duration, 0) * TIMELINE_PIXELS_PER_SECOND}px`,
+                            }}
+                          >
+                            <div
+                              className="absolute inset-y-0"
+                              style={{
+                                left: `${timelineViewportWidth / 2}px`,
+                                width: `${Math.max(duration, 0) * TIMELINE_PIXELS_PER_SECOND}px`,
+                              }}
+                            >
+                              {Array.from(
+                                { length: Math.floor(duration) + 1 },
+                                (_, second) => (
+                                  <span
+                                    key={second}
+                                    className="absolute top-[0.75rem] -translate-x-1/2"
+                                    style={{
+                                      left: `${second * TIMELINE_PIXELS_PER_SECOND}px`,
+                                    }}
+                                  >
+                                    <span className="block whitespace-nowrap text-[10px] font-medium leading-none tabular-nums text-[#aeb7c2]">
+                                      {second}s
+                                    </span>
+                                    <span className="mx-auto mt-[0.4rem] block h-[0.35rem] w-[0.2rem] rounded-full bg-[#7f8996]" />
+                                  </span>
+                                ),
+                              )}
+                              {Array.from(
+                                { length: Math.floor(duration) },
+                                (_, second) => (
+                                  <span
+                                    key={`half-${second}`}
+                                    className="absolute top-[0.75rem] h-[1rem] w-[0.2rem] -translate-x-1/2 rounded-full bg-[#626d7a]"
+                                    style={{
+                                      left: `${(second + 0.5) * TIMELINE_PIXELS_PER_SECOND}px`,
+                                    }}
+                                  />
+                                ),
+                              )}
+                              <div className="absolute inset-x-0 bottom-[0.5rem] h-[4.5rem] rounded-lg bg-white/[0.05]">
+                                {captionSegments.map((segment) => {
+                                  const active =
+                                    activeCaptionSegment?.id === segment.id;
+                                  return (
+                                    <button
+                                      key={segment.id}
+                                      type="button"
+                                      onClick={() =>
+                                        selectCaptionSegment(segment)
+                                      }
+                                      className={`absolute inset-y-[0.3rem] truncate rounded-md border px-[0.75rem] text-left text-[14px] font-bold tracking-[-0.01em] transition ${active ? "z-10 border-[#ffd60a] bg-[#5268ff] text-white shadow-[0_0_0_2px_#ffd60a]" : "border-white/10 bg-[#5268ff] text-white/95 hover:bg-[#6175ff]"}`}
+                                      style={{
+                                        left: `${(segment.startMs / 1000) * TIMELINE_PIXELS_PER_SECOND}px`,
+                                        width: `${Math.max(42, ((segment.endMs - segment.startMs) / 1000) * TIMELINE_PIXELS_PER_SECOND - 3)}px`,
+                                      }}
+                                      title={`${formatCaptionTime(segment.startMs)} ${segment.text}`}
+                                    >
+                                      {segment.text}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <p className="mt-2 text-xs text-[#8b919d]">
-                      Play or scrub to see the exact caption frame while you
-                      edit.
+                      Swipe the caption track beneath the playhead, or tap a
+                      segment to edit it.
                     </p>
-                    <div className="mt-4 overflow-x-auto pb-1">
-                      <div className="relative flex min-w-[680px] gap-1.5 border-y border-[#15233a]/8 py-3">
-                        <span
-                          className="pointer-events-none absolute bottom-1 top-1 z-20 w-0.5 rounded-full bg-[#15233a] shadow-[0_0_0_2px_white]"
-                          style={{
-                            left: `${Math.min(100, Math.max(0, (previewTime / Math.max(duration, 0.01)) * 100))}%`,
-                          }}
-                        />
-                        {captionSegments.map((segment) => (
-                          <button
-                            key={segment.id}
-                            type="button"
-                            onClick={() => selectCaptionSegment(segment)}
-                            className={`min-w-24 flex-1 truncate rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition ${activeCaptionSegment?.id === segment.id ? "bg-[#5168ff] text-white" : "bg-[#e8ebff] text-[#34405a] hover:bg-[#dce1ff]"}`}
-                            style={{
-                              flexGrow: Math.max(
-                                1,
-                                segment.endMs - segment.startMs,
-                              ),
-                            }}
-                            title={segment.text}
-                          >
-                            {segment.text}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                   <div className="mt-5 overflow-hidden rounded-t-[2rem] rounded-b-2xl bg-[#15191f] text-white shadow-[0_18px_50px_rgba(21,25,31,0.2)]">
                     <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-white/35" />
@@ -1199,42 +1718,49 @@ export function VoiceVideoStudio() {
                         return (
                           <div
                             key={segment.id}
-                            className={`rounded-xl transition ${active ? "bg-white/[0.07]" : ""}`}
+                            className="relative rounded-xl"
+                            aria-current={active ? "true" : undefined}
                           >
-                            <button
-                              type="button"
-                              onClick={() => selectCaptionSegment(segment)}
-                              className="grid w-full grid-cols-[3.5rem_1fr] gap-2 px-3 py-3 text-left"
-                            >
-                              <span
+                            <div className="relative z-10 grid w-full grid-cols-[3.5rem_1fr] gap-2 px-[0.75rem] py-[0.65rem] text-left sm:px-3 sm:py-3">
+                              <button
+                                type="button"
+                                onClick={() => selectCaptionSegment(segment)}
                                 className={`flex items-center gap-1 font-mono text-xs tabular-nums ${active ? "text-[#9aa8ff]" : "text-white/28"}`}
                               >
                                 {formatCaptionTime(segment.startMs)}
-                              </span>
-                              <span
-                                className={`text-sm font-medium leading-snug ${active ? "text-white" : "text-white/52"}`}
-                              >
-                                {segment.text}
-                              </span>
-                            </button>
-                            {selected && (
-                              <div className="px-3 pb-3 pl-[4.9rem]">
+                              </button>
+                              {selected ? (
                                 <textarea
                                   autoFocus
+                                  ref={(element) => {
+                                    if (!element) return;
+                                    element.style.height = "auto";
+                                    element.style.height = `${element.scrollHeight}px`;
+                                  }}
                                   value={segment.text}
-                                  onChange={(event) =>
+                                  onChange={(event) => {
+                                    event.currentTarget.style.height = "auto";
+                                    event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
                                     updateCaptionSegment(
                                       segment.id,
                                       event.target.value,
-                                    )
-                                  }
+                                    );
+                                  }}
                                   maxLength={500}
-                                  rows={2}
-                                  className="w-full resize-none rounded-xl border border-[#7e8cff]/55 bg-[#20252d] px-3 py-2 text-sm leading-relaxed text-white outline-none ring-4 ring-[#6574ff]/10"
+                                  rows={1}
+                                  className="m-0 block min-h-[1.25rem] w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-sm font-medium leading-[1.25rem] text-white caret-white outline-none"
                                   aria-label={`Caption at ${formatCaptionTime(segment.startMs)}`}
                                 />
-                              </div>
-                            )}
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => selectCaptionSegment(segment)}
+                                  className="block min-h-[1.25rem] w-full p-0 text-left text-sm font-medium leading-[1.25rem] text-white/72"
+                                >
+                                  {segment.text}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -1255,14 +1781,45 @@ export function VoiceVideoStudio() {
                       (optional)
                     </span>
                   </label>
-                  <input
-                    id="credit"
-                    value={attribution}
-                    onChange={(event) => setAttribution(event.target.value)}
-                    maxLength={80}
-                    placeholder="e.g. @mayowa"
-                    className="mt-2 w-full rounded-xl border border-[#15233a]/12 bg-white px-4 py-3 outline-none focus:border-[#007aff]"
-                  />
+                  <div className="mt-2 flex overflow-hidden rounded-xl border border-[#15233a]/12 bg-white transition focus-within:border-[#007aff] focus-within:ring-2 focus-within:ring-[#007aff]/10">
+                    <div
+                      className="relative grid w-14 shrink-0 place-items-center border-r border-[#15233a]/10"
+                      style={{
+                        color: socialPlatforms.find(
+                          (platform) => platform.value === socialPlatform,
+                        )?.color,
+                      }}
+                    >
+                      <SocialIcon
+                        platform={socialPlatform}
+                        className="h-[1.15rem] w-[1.15rem]"
+                      />
+                      <select
+                        aria-label="Social platform"
+                        value={socialPlatform}
+                        onChange={(event) =>
+                          setSocialPlatform(
+                            event.target.value as SocialPlatform,
+                          )
+                        }
+                        className="absolute inset-0 cursor-pointer opacity-0"
+                      >
+                        {socialPlatforms.map((platform) => (
+                          <option key={platform.value} value={platform.value}>
+                            {platform.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <input
+                      id="credit"
+                      value={attribution}
+                      onChange={(event) => setAttribution(event.target.value)}
+                      maxLength={80}
+                      placeholder="e.g. @mayowa"
+                      className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 outline-none"
+                    />
+                  </div>
                   <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#697386]">
                     Format
                   </p>
@@ -1339,7 +1896,7 @@ export function VoiceVideoStudio() {
                         <ImagePlus className="h-3.5 w-3.5" /> Add
                         <input
                           type="file"
-                          accept="image/jpeg,image/png,image/webp"
+                          accept=".heic,.heif,image/heic,image/heif,image/jpeg,image/png,image/webp"
                           multiple
                           className="sr-only"
                           onChange={choosePhotos}
@@ -1364,13 +1921,17 @@ export function VoiceVideoStudio() {
                               <span className="absolute inset-0 grid place-items-center bg-[#15233a]/45 text-xs font-semibold text-white backdrop-blur-[1px]">
                                 <span className="flex items-center gap-2">
                                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                                  Finding subject…
+                                  {refiningPhotoId === photo.localId
+                                    ? "Refining mask…"
+                                    : "Finding subject…"}
                                 </span>
                               </span>
                             ) : (
                               <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
                                 {photo.foreground
-                                  ? "Subject found"
+                                  ? photo.maskEdited
+                                    ? "Mask edited"
+                                    : "Subject found"
                                   : "Background only"}
                               </span>
                             )}
@@ -1388,6 +1949,25 @@ export function VoiceVideoStudio() {
                               Scene {index + 1}
                             </span>
                             <span className="flex gap-1">
+                              {photo.foreground && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setMaskEditorPhotoId((current) =>
+                                      current === photo.localId
+                                        ? ""
+                                        : photo.localId,
+                                    )
+                                  }
+                                  className="grid h-6 w-6 place-items-center rounded-md border border-[#15233a]/10"
+                                  aria-label={`Refine mask for scene ${index + 1}`}
+                                  aria-expanded={
+                                    maskEditorPhotoId === photo.localId
+                                  }
+                                >
+                                  <SlidersHorizontal className="h-3 w-3" />
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 disabled={index === 0}
@@ -1408,6 +1988,141 @@ export function VoiceVideoStudio() {
                               </button>
                             </span>
                           </div>
+                          {photo.foreground &&
+                            maskEditorPhotoId === photo.localId &&
+                            photo.status === "ready" && (
+                              <div className="space-y-3 border-t border-[#15233a]/10 px-2.5 py-3">
+                                <label className="block text-[10px] font-semibold text-[#536078]">
+                                  <span className="mb-1 flex justify-between gap-2">
+                                    Subject scale
+                                    <span className="font-mono tabular-nums">
+                                      {photo.foregroundScale ?? 140}%
+                                    </span>
+                                  </span>
+                                  <input
+                                    type="range"
+                                    min={110}
+                                    max={190}
+                                    step={1}
+                                    value={photo.foregroundScale ?? 140}
+                                    className="w-full accent-[#007aff]"
+                                    onChange={(event) => {
+                                      const foregroundScale = Number(
+                                        event.currentTarget.value,
+                                      );
+                                      setPhotos((current) =>
+                                        current.map((item) =>
+                                          item.localId === photo.localId
+                                            ? { ...item, foregroundScale }
+                                            : item,
+                                        ),
+                                      );
+                                    }}
+                                  />
+                                </label>
+                                <label className="block text-[10px] font-semibold text-[#536078]">
+                                  <span className="mb-1 flex justify-between gap-2">
+                                    Include more or less
+                                    <span className="font-mono tabular-nums">
+                                      {photo.maskCoverage > 0 ? "+" : ""}
+                                      {photo.maskCoverage}
+                                    </span>
+                                  </span>
+                                  <input
+                                    type="range"
+                                    min={-20}
+                                    max={20}
+                                    step={1}
+                                    value={photo.maskCoverage}
+                                    className="w-full accent-[#007aff]"
+                                    onChange={(event) =>
+                                      updatePhotoRefinement(
+                                        photo.localId,
+                                        "maskCoverage",
+                                        Number(event.currentTarget.value),
+                                      )
+                                    }
+                                    onPointerUp={(event) =>
+                                      void refinePhoto(photo.localId, {
+                                        maskCoverage: Number(
+                                          event.currentTarget.value,
+                                        ),
+                                      })
+                                    }
+                                    onKeyUp={(event) => {
+                                      if (
+                                        event.key === "ArrowLeft" ||
+                                        event.key === "ArrowRight"
+                                      ) {
+                                        void refinePhoto(photo.localId, {
+                                          maskCoverage: Number(
+                                            event.currentTarget.value,
+                                          ),
+                                        });
+                                      }
+                                    }}
+                                  />
+                                </label>
+                                <label className="block text-[10px] font-semibold text-[#536078]">
+                                  <span className="mb-1 flex justify-between gap-2">
+                                    Edge softness
+                                    <span className="font-mono tabular-nums">
+                                      {photo.maskSoftness}
+                                    </span>
+                                  </span>
+                                  <input
+                                    type="range"
+                                    min={0}
+                                    max={20}
+                                    step={1}
+                                    value={photo.maskSoftness}
+                                    className="w-full accent-[#007aff]"
+                                    onChange={(event) =>
+                                      updatePhotoRefinement(
+                                        photo.localId,
+                                        "maskSoftness",
+                                        Number(event.currentTarget.value),
+                                      )
+                                    }
+                                    onPointerUp={(event) =>
+                                      void refinePhoto(photo.localId, {
+                                        maskSoftness: Number(
+                                          event.currentTarget.value,
+                                        ),
+                                      })
+                                    }
+                                    onKeyUp={(event) => {
+                                      if (
+                                        event.key === "ArrowLeft" ||
+                                        event.key === "ArrowRight"
+                                      ) {
+                                        void refinePhoto(photo.localId, {
+                                          maskSoftness: Number(
+                                            event.currentTarget.value,
+                                          ),
+                                        });
+                                      }
+                                    }}
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setPaintingPhotoId(photo.localId)
+                                  }
+                                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#15233a] px-3 py-2 text-[11px] font-semibold text-white"
+                                >
+                                  <Paintbrush className="h-3.5 w-3.5" /> Paint
+                                  mask details
+                                </button>
+                                {photo.maskEdited && (
+                                  <p className="text-[9px] leading-relaxed text-[#8b919d]">
+                                    Moving either slider regenerates the
+                                    automatic mask and replaces brush edits.
+                                  </p>
+                                )}
+                              </div>
+                            )}
                         </div>
                       ))}
                     </div>
@@ -1418,8 +2133,10 @@ export function VoiceVideoStudio() {
                   theme={theme}
                   transcript={transcript}
                   attribution={attribution}
+                  socialPlatform={socialPlatform}
                   photos={photos.filter((photo) => photo.status === "ready")}
                   activeWordIndex={activeWordIndex}
+                  previewTime={previewTime}
                 />
                 <div className="order-3 flex items-center justify-between gap-4 xl:col-span-2">
                   <button
@@ -1473,6 +2190,13 @@ export function VoiceVideoStudio() {
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
                   <button
                     type="button"
+                    onClick={returnToEditor}
+                    className="flex items-center gap-2 rounded-full border border-[#15233a]/15 bg-white px-6 py-3.5 font-semibold text-[#15233a] transition hover:border-[#007aff]/40 hover:text-[#007aff]"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Back to edit
+                  </button>
+                  <button
+                    type="button"
                     onClick={saveVideo}
                     disabled={isSaving}
                     className="flex items-center gap-2 rounded-full bg-[#007aff] px-7 py-3.5 font-semibold text-white"
@@ -1512,6 +2236,18 @@ export function VoiceVideoStudio() {
           </div>
         </div>
       </section>
+
+      {paintingPhoto?.foregroundUrl && (
+        <MaskPainter
+          name={paintingPhoto.name}
+          sourceUrl={paintingPhoto.previewUrl}
+          foregroundUrl={paintingPhoto.foregroundUrl}
+          onCancel={() => setPaintingPhotoId("")}
+          onSave={(foreground) =>
+            savePaintedMask(paintingPhoto.localId, foreground)
+          }
+        />
+      )}
 
       <footer className="border-t border-[#15233a]/10 px-5 py-7 text-center text-sm text-[#697386]">
         Made by{" "}
@@ -1642,15 +2378,19 @@ function VideoCard({
   theme,
   transcript,
   attribution,
+  socialPlatform,
   photos,
   activeWordIndex,
+  previewTime,
 }: {
   ratio: Ratio;
   theme: Theme;
   transcript: string;
   attribution: string;
+  socialPlatform: SocialPlatform;
   photos: PhotoAsset[];
   activeWordIndex: number | null;
+  previewTime: number;
 }) {
   const selectedTheme = themes.find((option) => option.value === theme)!;
   const previewPages = buildPreviewPages(transcript, ratio);
@@ -1666,6 +2406,86 @@ function VideoCard({
   const previewWords = previewPages[pageIndex] ?? [];
   const pageCount = Math.max(1, previewPages.length);
   const photo = photos.length ? photos[pageIndex % photos.length] : undefined;
+  const zoomProgress = Math.min(1, Math.max(0, previewTime / 45));
+  const easedZoom = 1 - (1 - zoomProgress) ** 3;
+  const backgroundScale = 1.035 + easedZoom * 0.055;
+  const foregroundScale =
+    (photo?.foregroundScale ?? 140) / 100 + easedZoom * 0.12;
+  const backgroundX =
+    Math.sin(previewTime * 0.22) * 0.9 +
+    Math.sin(previewTime * 0.071 + 1.3) * 0.32;
+  const backgroundY = Math.cos(previewTime * 0.17 + 0.2) * 0.68;
+  const foregroundX =
+    -Math.sin(previewTime * 0.19 + 0.45) * 0.42 +
+    Math.sin(previewTime * 0.063) * 0.18;
+  const foregroundY = Math.sin(previewTime * 0.14 + 0.8) * 0.42;
+  const backgroundTransform = `translate3d(${backgroundX}%, ${backgroundY}%, 0) scale(${backgroundScale})`;
+  const foregroundTransform = `translate3d(${foregroundX}%, ${foregroundY}%, 0) scale(${foregroundScale})`;
+  const captionWords = previewWords.length
+    ? previewWords.map((word) => {
+        const state =
+          activeWordIndex === null || word.index > activeWordIndex
+            ? "future"
+            : word.index === activeWordIndex
+              ? "active"
+              : "past";
+        return (
+          <span
+            key={`${word.text}-${word.index}`}
+            className="relative inline-block rounded-[0.18em]"
+            style={{
+              zIndex: photo ? (state === "active" ? 30 : 10) : undefined,
+              backgroundColor:
+                state === "active" ? selectedTheme.accent : undefined,
+              boxShadow:
+                state === "active"
+                  ? photo
+                    ? `0 0 0 0.14em ${selectedTheme.accent}, 0 0.18em 0.45em rgba(0,0,0,0.38)`
+                    : `0 0 0 0.14em ${selectedTheme.accent}`
+                  : undefined,
+              color:
+                state === "active"
+                  ? selectedTheme.activeText
+                  : photo
+                    ? "#ffffff"
+                    : undefined,
+              opacity: state === "past" ? (photo ? 0.62 : 0.3) : 1,
+              filter: state === "past" ? "blur(0.2px)" : undefined,
+              WebkitTextStroke:
+                photo && state !== "active"
+                  ? "0.055em rgba(5, 12, 24, 0.96)"
+                  : undefined,
+              paintOrder: photo ? "stroke fill" : undefined,
+              textShadow:
+                photo && state !== "active"
+                  ? "0 0.1em 0.18em rgba(0,0,0,0.9), 0 0.28em 0.7em rgba(0,0,0,0.72)"
+                  : undefined,
+            }}
+          >
+            {word.text}
+          </span>
+        );
+      })
+    : "Your words will appear here.";
+  const subjectOverlayWords = previewWords.map((word) => {
+    const isActive = word.index === activeWordIndex;
+    return (
+      <span
+        key={`subject-overlay-${word.index}`}
+        className="inline-block"
+        style={{
+          color: "#ffffff",
+          opacity: isActive ? 0 : 0.24,
+          WebkitTextStroke: "0.04em rgba(5, 12, 24, 0.9)",
+          paintOrder: "stroke fill",
+          textShadow:
+            "0 0.1em 0.18em rgba(0,0,0,0.85), 0 0.28em 0.7em rgba(0,0,0,0.65)",
+        }}
+      >
+        {word.text}
+      </span>
+    );
+  });
   return (
     <div
       className={`relative order-1 mx-auto flex w-full max-w-[430px] flex-col justify-center self-start overflow-hidden rounded-[1.8rem] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] transition-colors xl:sticky xl:top-6 ${ratioClasses[ratio]}`}
@@ -1678,13 +2498,14 @@ function VideoCard({
           <img
             src={photo.previewUrl}
             alt=""
-            className="absolute inset-0 h-full w-full scale-[1.04] object-cover"
+            className="absolute inset-0 h-full w-full origin-center object-cover will-change-transform"
+            style={{ transform: backgroundTransform }}
           />
           <span
             className="absolute inset-0"
             style={{
-              backgroundColor: selectedTheme.background[0],
-              opacity: 0.2,
+              backgroundColor: "#07111f",
+              opacity: 0.12,
             }}
           />
         </>
@@ -1708,74 +2529,78 @@ function VideoCard({
           Scene {pageIndex + 1} of {pageCount}
         </span>
       )}
-      <div
-        className="relative z-10 -rotate-[1.5deg] rounded-[1.5rem] border-2 px-5 py-8 shadow-[0_14px_34px_rgba(0,49,102,0.18)] transition-colors"
-        style={{
-          backgroundColor: selectedTheme.card,
-          borderColor: selectedTheme.border,
-          color: selectedTheme.text,
-          opacity: photo ? 0.88 : 1,
-        }}
-      >
-        <span
-          className="absolute left-4 top-2 font-serif text-6xl font-bold leading-none"
-          style={{ color: selectedTheme.quote }}
-        >
-          “
-        </span>
-        <p className="relative mt-5 text-center text-[clamp(1rem,3.1vw,1.35rem)] font-semibold leading-snug tracking-[-0.025em]">
-          {previewWords.length
-            ? previewWords.map((word) => {
-                const state =
-                  activeWordIndex === null || word.index > activeWordIndex
-                    ? "future"
-                    : word.index === activeWordIndex
-                      ? "active"
-                      : "past";
-                return (
-                  <span
-                    key={`${word.text}-${word.index}`}
-                    className={
-                      state === "active" ? "rounded-md px-1 py-0.5" : ""
-                    }
-                    style={{
-                      backgroundColor:
-                        state === "active" ? selectedTheme.accent : undefined,
-                      color:
-                        state === "active"
-                          ? selectedTheme.activeText
-                          : undefined,
-                      opacity: state === "past" ? 0.3 : 1,
-                      filter: state === "past" ? "blur(0.2px)" : undefined,
-                    }}
-                  >
-                    {word.text}{" "}
-                  </span>
-                );
-              })
-            : "Your words will appear here."}
-        </p>
-        {attribution && (
-          <p
-            className="mt-5 border-t pt-3 text-sm font-semibold"
-            style={{
-              borderColor: selectedTheme.border,
-              color: selectedTheme.muted,
-            }}
-          >
-            {attribution}
+      {photo ? (
+        <div className="relative flex min-h-[56%] shrink-0 items-center justify-center px-2 py-8">
+          <p className="relative w-full text-center text-[clamp(1.12rem,3.5vw,1.55rem)] font-extrabold leading-[1.18] tracking-[-0.035em]">
+            {typeof captionWords === "string"
+              ? captionWords
+              : captionWords.map((word, index) => (
+                  <span key={index}>{word} </span>
+                ))}
           </p>
-        )}
-      </div>
+          {photo.foregroundUrl && subjectOverlayWords.length > 0 && (
+            <p className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-2 py-8 text-center text-[clamp(1.12rem,3.5vw,1.55rem)] font-extrabold leading-[1.18] tracking-[-0.035em]">
+              <span className="block w-full">
+                {subjectOverlayWords.map((word, index) => (
+                  <span key={index}>{word} </span>
+                ))}
+              </span>
+            </p>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`relative z-10 flex shrink-0 -rotate-[1.5deg] flex-col justify-center rounded-[1.5rem] border-2 px-[1.25rem] py-[2rem] shadow-[0_14px_34px_rgba(0,49,102,0.18)] transition-colors ${previewTextCardClasses[ratio]}`}
+          style={{
+            backgroundColor: selectedTheme.card,
+            borderColor: selectedTheme.border,
+            color: selectedTheme.text,
+          }}
+        >
+          <span
+            className="absolute left-4 top-2 font-serif text-6xl font-bold leading-none"
+            style={{ color: selectedTheme.quote }}
+          >
+            “
+          </span>
+          <p className="relative mt-5 text-center text-[clamp(1rem,3.1vw,1.35rem)] font-semibold leading-snug tracking-[-0.025em]">
+            {typeof captionWords === "string"
+              ? captionWords
+              : captionWords.map((word, index) => (
+                  <span key={index}>{word} </span>
+                ))}
+          </p>
+        </div>
+      )}
       {photo?.foregroundUrl && (
         <img
           src={photo.foregroundUrl}
           alt=""
-          className="pointer-events-none absolute inset-0 z-20 h-full w-full scale-[1.04] object-cover"
+          className="pointer-events-none absolute inset-0 z-20 h-full w-full origin-center object-cover will-change-transform"
+          style={{ transform: foregroundTransform }}
         />
       )}
-      <div className="relative z-30 mt-5 flex -rotate-3 justify-center">
+      <div className="relative z-30 mt-5 flex -rotate-3 flex-col items-center justify-center gap-1">
         <OlogSticker theme={selectedTheme} />
+        {attribution && (
+          <div
+            className="flex min-w-0 max-w-[72%] items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-sm font-bold shadow-[0_5px_12px_rgba(0,49,102,0.16)]"
+            style={{
+              backgroundColor: selectedTheme.card,
+              borderColor: selectedTheme.border,
+              color: selectedTheme.muted,
+            }}
+          >
+            {socialPlatform !== "none" && (
+              <SocialIcon
+                platform={socialPlatform}
+                className="shrink-0"
+                style={{ width: "1.05rem", height: "1.05rem" }}
+              />
+            )}
+            <span className="truncate">{attribution}</span>
+          </div>
+        )}
       </div>
     </div>
   );
