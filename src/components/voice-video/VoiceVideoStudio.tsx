@@ -6,7 +6,9 @@ import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
+  Captions,
   Check,
+  Clock3,
   Mic,
   ImagePlus,
   Pause,
@@ -27,6 +29,12 @@ type Ratio = "story" | "portrait" | "square";
 type Theme = "paper" | "midnight" | "sunset" | "sage";
 type SpeechMark = { time: number; value: string };
 type PreviewWord = { text: string; index: number };
+type CaptionSegment = {
+  id: string;
+  startMs: number;
+  endMs: number;
+  text: string;
+};
 type PhotoAsset = {
   localId: string;
   name: string;
@@ -52,9 +60,9 @@ const MAX_PHOTOS = 6;
 const MAX_PHOTO_SOURCE_BYTES = 15 * 1024 * 1024;
 
 const ratioClasses: Record<Ratio, string> = {
-  story: "aspect-[9/16] max-h-[610px]",
-  portrait: "aspect-[4/5] max-h-[560px]",
-  square: "aspect-square max-h-[520px]",
+  story: "aspect-[9/16] max-h-[68svh] xl:max-h-[760px]",
+  portrait: "aspect-[4/5] max-h-[64svh] xl:max-h-[680px]",
+  square: "aspect-square max-h-[58svh] xl:max-h-[620px]",
 };
 
 const ratioLabels: Array<{ value: Ratio; label: string; hint: string }> = [
@@ -289,6 +297,56 @@ function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 }
 
+function formatCaptionTime(milliseconds: number) {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function buildCaptionSegments(
+  text: string,
+  rawMarks: SpeechMark[],
+  durationMs: number,
+) {
+  const marks = alignPreviewWords(text, rawMarks, durationMs);
+  if (!marks.length) return [];
+  const segments: CaptionSegment[] = [];
+  let startIndex = 0;
+
+  const commit = (endIndex: number) => {
+    const slice = marks.slice(startIndex, endIndex + 1);
+    if (!slice.length) return;
+    segments.push({
+      id: `caption-${startIndex}-${Math.round(slice[0].time)}`,
+      startMs: slice[0].time,
+      endMs: marks[endIndex + 1]?.time ?? durationMs,
+      text: slice.map((mark) => mark.value).join(" "),
+    });
+    startIndex = endIndex + 1;
+  };
+
+  for (let index = 0; index < marks.length; index += 1) {
+    const count = index - startIndex + 1;
+    const span = marks[index].time - marks[startIndex].time;
+    const sentenceEnd = /[.!?][”'\"]?$/.test(marks[index].value);
+    if (
+      (sentenceEnd && count >= 4 && span >= 1400) ||
+      span >= 4200 ||
+      count >= 12
+    ) {
+      commit(index);
+    }
+  }
+  if (startIndex < marks.length) commit(marks.length - 1);
+  return segments;
+}
+
+function segmentsToTranscript(segments: CaptionSegment[]) {
+  return segments
+    .map((segment) => segment.text.trim())
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 function preferredMimeType() {
   if (typeof MediaRecorder === "undefined") return "";
   return (
@@ -309,6 +367,8 @@ export function VoiceVideoStudio() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [speechMarks, setSpeechMarks] = useState<SpeechMark[]>([]);
+  const [captionSegments, setCaptionSegments] = useState<CaptionSegment[]>([]);
+  const [selectedSegmentId, setSelectedSegmentId] = useState("");
   const [previewTime, setPreviewTime] = useState(0);
   const [session, setSession] = useState<UploadSession | null>(null);
   const [ratio, setRatio] = useState<Ratio>("story");
@@ -361,6 +421,8 @@ export function VoiceVideoStudio() {
     setAudioUrl(nextUrl);
     setTranscript("");
     setSpeechMarks([]);
+    setCaptionSegments([]);
+    setSelectedSegmentId("");
     setSession(null);
     setPreviewTime(0);
     setElapsed(0);
@@ -477,7 +539,18 @@ export function VoiceVideoStudio() {
         durationMs: number;
       };
       setSession(nextSession);
-      setTranscript(result.transcript);
+      const nextSegments = buildCaptionSegments(
+        result.transcript,
+        result.marks,
+        result.durationMs,
+      );
+      setCaptionSegments(nextSegments);
+      setSelectedSegmentId(nextSegments[0]?.id ?? "");
+      setTranscript(
+        nextSegments.length
+          ? segmentsToTranscript(nextSegments)
+          : result.transcript,
+      );
       setSpeechMarks(result.marks);
       setPreviewTime(0);
       setDuration(result.durationMs / 1000);
@@ -692,6 +765,8 @@ export function VoiceVideoStudio() {
     setAudioUrl("");
     setTranscript("");
     setSpeechMarks([]);
+    setCaptionSegments([]);
+    setSelectedSegmentId("");
     setPreviewTime(0);
     setSession(null);
     setDownloadUrl("");
@@ -723,6 +798,31 @@ export function VoiceVideoStudio() {
   const seekPreview = (seconds: number) => {
     setPreviewTime(seconds);
     if (audioRef.current) audioRef.current.currentTime = seconds;
+  };
+
+  const activeCaptionSegment =
+    captionSegments.find(
+      (segment) =>
+        previewTime * 1000 >= segment.startMs &&
+        previewTime * 1000 < segment.endMs,
+    ) ?? captionSegments.at(-1);
+  const selectedCaptionSegment =
+    captionSegments.find((segment) => segment.id === selectedSegmentId) ??
+    activeCaptionSegment;
+
+  const selectCaptionSegment = (segment: CaptionSegment) => {
+    setSelectedSegmentId(segment.id);
+    seekPreview(segment.startMs / 1000);
+  };
+
+  const updateCaptionSegment = (id: string, text: string) => {
+    setCaptionSegments((current) => {
+      const next = current.map((segment) =>
+        segment.id === id ? { ...segment, text } : segment,
+      );
+      setTranscript(segmentsToTranscript(next));
+      return next;
+    });
   };
 
   const saveVideo = async () => {
@@ -822,7 +922,9 @@ export function VoiceVideoStudio() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-[#15233a]/10 bg-[#fffdf9] shadow-[0_24px_80px_rgba(34,46,68,0.12)]">
+        <div
+          className={`${isEditingStage ? "overflow-visible" : "overflow-hidden"} rounded-[2rem] border border-[#15233a]/10 bg-[#fffdf9] shadow-[0_24px_80px_rgba(34,46,68,0.12)]`}
+        >
           <div className="flex items-center gap-2 border-b border-[#15233a]/8 px-6 py-4">
             {["Record", "Edit", "Download"].map((label, index) => {
               const current =
@@ -983,8 +1085,8 @@ export function VoiceVideoStudio() {
             )}
 
             {(stage === "edit" || stage === "rendering") && (
-              <div className="grid gap-7 xl:grid-cols-[1fr_0.86fr]">
-                <div>
+              <div className="grid min-w-0 gap-7 xl:grid-cols-[minmax(320px,1.18fr)_minmax(0,0.82fr)]">
+                <div className="order-2 min-w-0">
                   <h2 className="text-2xl font-semibold tracking-[-0.035em]">
                     Make it sound like you
                   </h2>
@@ -1045,23 +1147,104 @@ export function VoiceVideoStudio() {
                       Play or scrub to see the exact caption frame while you
                       edit.
                     </p>
+                    <div className="mt-4 overflow-x-auto pb-1">
+                      <div className="relative flex min-w-[680px] gap-1.5 border-y border-[#15233a]/8 py-3">
+                        <span
+                          className="pointer-events-none absolute bottom-1 top-1 z-20 w-0.5 rounded-full bg-[#15233a] shadow-[0_0_0_2px_white]"
+                          style={{
+                            left: `${Math.min(100, Math.max(0, (previewTime / Math.max(duration, 0.01)) * 100))}%`,
+                          }}
+                        />
+                        {captionSegments.map((segment) => (
+                          <button
+                            key={segment.id}
+                            type="button"
+                            onClick={() => selectCaptionSegment(segment)}
+                            className={`min-w-24 flex-1 truncate rounded-lg px-3 py-2 text-left text-[11px] font-semibold transition ${activeCaptionSegment?.id === segment.id ? "bg-[#5168ff] text-white" : "bg-[#e8ebff] text-[#34405a] hover:bg-[#dce1ff]"}`}
+                            style={{
+                              flexGrow: Math.max(
+                                1,
+                                segment.endMs - segment.startMs,
+                              ),
+                            }}
+                            title={segment.text}
+                          >
+                            {segment.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <label
-                    className="mt-6 block text-xs font-bold uppercase tracking-[0.14em] text-[#697386]"
-                    htmlFor="transcript"
-                  >
-                    Transcript
-                  </label>
-                  <textarea
-                    id="transcript"
-                    value={transcript}
-                    onChange={(event) => setTranscript(event.target.value)}
-                    maxLength={5000}
-                    className="mt-2 min-h-48 w-full resize-y rounded-2xl border border-[#15233a]/12 bg-[#f8f6f1] p-4 text-lg leading-relaxed outline-none transition focus:border-[#007aff] focus:ring-4 focus:ring-[#007aff]/10"
-                  />
-                  <div className="mt-2 flex justify-between text-xs text-[#8b919d]">
-                    <span>{words.length} words</span>
-                    <span>Paragraph breaks become separate scenes.</span>
+                  <div className="mt-5 overflow-hidden rounded-t-[2rem] rounded-b-2xl bg-[#15191f] text-white shadow-[0_18px_50px_rgba(21,25,31,0.2)]">
+                    <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-white/35" />
+                    <div className="flex items-center justify-between px-5 pb-3 pt-4">
+                      <div>
+                        <p className="flex items-center gap-2 text-lg font-semibold">
+                          <Captions className="h-4 w-4 text-[#8ea0ff]" /> Edit
+                          captions
+                        </p>
+                        <p className="mt-1 text-xs text-white/45">
+                          Tap a segment to seek and correct it.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-white/8 px-3 py-1.5 text-xs font-semibold text-white/65">
+                        {captionSegments.length} segments
+                      </span>
+                    </div>
+                    <div className="max-h-[42svh] overflow-y-auto border-t border-white/8 px-3 py-2">
+                      {captionSegments.map((segment) => {
+                        const selected =
+                          selectedCaptionSegment?.id === segment.id;
+                        const active = activeCaptionSegment?.id === segment.id;
+                        return (
+                          <div
+                            key={segment.id}
+                            className={`rounded-xl transition ${active ? "bg-white/[0.07]" : ""}`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => selectCaptionSegment(segment)}
+                              className="grid w-full grid-cols-[3.5rem_1fr] gap-2 px-3 py-3 text-left"
+                            >
+                              <span
+                                className={`flex items-center gap-1 font-mono text-xs tabular-nums ${active ? "text-[#9aa8ff]" : "text-white/28"}`}
+                              >
+                                {formatCaptionTime(segment.startMs)}
+                              </span>
+                              <span
+                                className={`text-sm font-medium leading-snug ${active ? "text-white" : "text-white/52"}`}
+                              >
+                                {segment.text}
+                              </span>
+                            </button>
+                            {selected && (
+                              <div className="px-3 pb-3 pl-[4.9rem]">
+                                <textarea
+                                  autoFocus
+                                  value={segment.text}
+                                  onChange={(event) =>
+                                    updateCaptionSegment(
+                                      segment.id,
+                                      event.target.value,
+                                    )
+                                  }
+                                  maxLength={500}
+                                  rows={2}
+                                  className="w-full resize-none rounded-xl border border-[#7e8cff]/55 bg-[#20252d] px-3 py-2 text-sm leading-relaxed text-white outline-none ring-4 ring-[#6574ff]/10"
+                                  aria-label={`Caption at ${formatCaptionTime(segment.startMs)}`}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center justify-between border-t border-white/8 px-5 py-3 text-xs text-white/42">
+                      <span className="flex items-center gap-1.5">
+                        <Clock3 className="h-3.5 w-3.5" /> Synced to your audio
+                      </span>
+                      <span>{words.length} words</span>
+                    </div>
                   </div>
                   <label
                     className="mt-5 block text-xs font-bold uppercase tracking-[0.14em] text-[#697386]"
@@ -1238,7 +1421,7 @@ export function VoiceVideoStudio() {
                   photos={photos.filter((photo) => photo.status === "ready")}
                   activeWordIndex={activeWordIndex}
                 />
-                <div className="flex items-center justify-between gap-4 xl:col-span-2">
+                <div className="order-3 flex items-center justify-between gap-4 xl:col-span-2">
                   <button
                     onClick={() => setStage("capture")}
                     className="text-sm font-semibold text-[#697386] hover:text-[#15233a]"
@@ -1344,6 +1527,116 @@ export function VoiceVideoStudio() {
   );
 }
 
+function OlogSticker({ theme }: { theme: (typeof themes)[number] }) {
+  return (
+    <svg
+      viewBox="-14 -16 474 116"
+      role="img"
+      aria-label="ologreader.com"
+      className="h-auto w-[58%] max-w-[240px] overflow-visible"
+    >
+      <defs>
+        <filter
+          id="previewStickerShadow"
+          x="-20%"
+          y="-40%"
+          width="150%"
+          height="190%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="4"
+            stdDeviation="4"
+            floodColor="#003166"
+            floodOpacity="0.22"
+          />
+        </filter>
+        <filter
+          id="previewStickerEdge"
+          x="-12%"
+          y="-45%"
+          width="125%"
+          height="190%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feMorphology
+            in="SourceAlpha"
+            operator="dilate"
+            radius="9"
+            result="outerAlpha"
+          />
+          <feFlood floodColor={theme.stickerOuter} result="outerColor" />
+          <feComposite
+            in="outerColor"
+            in2="outerAlpha"
+            operator="in"
+            result="outer"
+          />
+          <feMorphology
+            in="SourceAlpha"
+            operator="dilate"
+            radius="6"
+            result="innerAlpha"
+          />
+          <feFlood floodColor={theme.stickerInner} result="innerColor" />
+          <feComposite
+            in="innerColor"
+            in2="innerAlpha"
+            operator="in"
+            result="inner"
+          />
+          <feMerge>
+            <feMergeNode in="outer" />
+            <feMergeNode in="inner" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <mask
+          id="previewLogoMask"
+          maskUnits="userSpaceOnUse"
+          x="0"
+          y="0"
+          width="176"
+          height="78"
+          style={{ maskType: "alpha" }}
+        >
+          <image
+            href="/olog-wordmark.png"
+            x="0"
+            y="0"
+            width="176"
+            height="78"
+            preserveAspectRatio="xMidYMid meet"
+          />
+        </mask>
+      </defs>
+      <g filter="url(#previewStickerShadow)">
+        <g filter="url(#previewStickerEdge)">
+          <rect
+            x="0"
+            y="0"
+            width="176"
+            height="78"
+            fill={theme.sticker}
+            mask="url(#previewLogoMask)"
+          />
+          <text
+            x="180"
+            y="61"
+            fontFamily="Arial, sans-serif"
+            fontSize="46"
+            fontWeight="800"
+            letterSpacing="-1.6"
+            fill={theme.sticker}
+          >
+            reader.com
+          </text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 function VideoCard({
   ratio,
   theme,
@@ -1375,7 +1668,7 @@ function VideoCard({
   const photo = photos.length ? photos[pageIndex % photos.length] : undefined;
   return (
     <div
-      className={`relative mx-auto flex w-full max-w-[340px] flex-col justify-center overflow-hidden rounded-[1.8rem] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] transition-colors ${ratioClasses[ratio]}`}
+      className={`relative order-1 mx-auto flex w-full max-w-[430px] flex-col justify-center self-start overflow-hidden rounded-[1.8rem] p-5 shadow-[0_18px_55px_rgba(24,50,86,0.16)] transition-colors xl:sticky xl:top-6 ${ratioClasses[ratio]}`}
       style={{
         background: `linear-gradient(135deg, ${selectedTheme.background[0]}, ${selectedTheme.background[1]})`,
       }}
@@ -1481,22 +1774,8 @@ function VideoCard({
           className="pointer-events-none absolute inset-0 z-20 h-full w-full scale-[1.04] object-cover"
         />
       )}
-      <div
-        className="relative z-30 mt-5 flex items-center self-center -rotate-3 rounded-md px-2.5 py-1 text-xs font-extrabold shadow-md"
-        style={{
-          backgroundColor: selectedTheme.sticker,
-          color: theme === "midnight" ? "#14213D" : "#FFFFFF",
-          boxShadow: `0 0 0 3px ${selectedTheme.stickerInner}, 0 0 0 6px ${selectedTheme.stickerOuter}, 0 5px 10px rgba(0,49,102,0.22)`,
-        }}
-      >
-        <Image
-          src="/icon.png"
-          width={44}
-          height={20}
-          alt="Olog"
-          className="h-4 w-9 object-contain"
-        />
-        <span className="-ml-0.5">reader.com</span>
+      <div className="relative z-30 mt-5 flex -rotate-3 justify-center">
+        <OlogSticker theme={selectedTheme} />
       </div>
     </div>
   );
