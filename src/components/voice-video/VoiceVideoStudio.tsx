@@ -1748,14 +1748,14 @@ export function VoiceVideoStudio() {
                                   }}
                                   maxLength={500}
                                   rows={1}
-                                  className="m-0 block min-h-[1.25rem] w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-sm font-medium leading-[1.25rem] text-white caret-white outline-none"
+                                  className="m-0 block min-h-[1.25rem] w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-[16px] font-medium leading-[1.25rem] text-white caret-white outline-none sm:text-sm"
                                   aria-label={`Caption at ${formatCaptionTime(segment.startMs)}`}
                                 />
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => selectCaptionSegment(segment)}
-                                  className="block min-h-[1.25rem] w-full p-0 text-left text-sm font-medium leading-[1.25rem] text-white/72"
+                                  className="block min-h-[1.25rem] w-full p-0 text-left text-[16px] font-medium leading-[1.25rem] text-white/72 sm:text-sm"
                                 >
                                   {segment.text}
                                 </button>
