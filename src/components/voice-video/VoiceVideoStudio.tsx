@@ -89,8 +89,8 @@ type UploadSession = {
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://api.reader.olog.me/v1";
-const MAX_SECONDS = 60;
-const MAX_BYTES = 20 * 1024 * 1024;
+const MAX_SECONDS = 90;
+const MAX_BYTES = 30 * 1024 * 1024;
 const MAX_PHOTOS = 6;
 const MAX_PHOTO_SOURCE_BYTES = 15 * 1024 * 1024;
 const TIMELINE_PIXELS_PER_SECOND = 72;
@@ -513,7 +513,7 @@ export function VoiceVideoStudio() {
   const acceptAudio = (blob: Blob, name: string) => {
     setError("");
     if (blob.size > MAX_BYTES) {
-      setError("That recording is over 20 MB. Choose a clip under one minute.");
+      setError("That recording is over 30 MB. Choose a smaller file.");
       return;
     }
     if (audioUrl) URL.revokeObjectURL(audioUrl);
@@ -534,7 +534,7 @@ export function VoiceVideoStudio() {
         setDuration(probe.duration);
         if (probe.duration > MAX_SECONDS + 0.5) {
           setAudio(null);
-          setError("Keep it to 60 seconds so it fits a WhatsApp Status.");
+          setError("Keep it to 90 seconds or less.");
         }
       }
     });
@@ -1224,7 +1224,7 @@ export function VoiceVideoStudio() {
             anywhere—even with the sound off.
           </p>
           <div className="mt-8 hidden flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-[#536078] sm:flex">
-            {["Up to 60 seconds", "Edit every word", "Made for WhatsApp"].map(
+            {["Up to 90 seconds", "Edit every word", "Made for WhatsApp"].map(
               (item) => (
                 <span key={item} className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-[#1d9a6c]" /> {item}
