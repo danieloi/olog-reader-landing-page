@@ -171,14 +171,13 @@ export function PricingSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="font-mono text-xs md:text-sm uppercase tracking-[0.22em] text-primary mb-3">
+        <p className="type-eyebrow text-primary-700 mb-2">
           Pricing
         </p>
-        <h2 className="font-display text-4xl md:text-6xl text-text-primary leading-[1.05] tracking-tight mb-4">
-          Simple, honest{" "}
-          <em className="not-italic text-accent">pricing.</em>
+        <h2 className="type-h2 text-text-primary mb-3">
+          Simple, honest pricing.
         </h2>
-        <p className="text-text-secondary text-lg md:text-xl max-w-lg mx-auto">
+        <p className="type-lead text-text-secondary max-w-lg mx-auto">
           Go Premium and enjoy full control of your listening. <br /> Cancel
           anytime.
         </p>
@@ -216,11 +215,11 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45 }}
         >
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-text-secondary mb-2">
+          <p className="type-eyebrow text-text-secondary mb-1">
             {freePlan.name}
           </p>
           <div className="mt-1 mb-3 flex items-baseline gap-1">
-            <span className="font-display text-6xl md:text-7xl leading-none text-text-primary tabular-nums tracking-tight">
+            <span className="type-stat text-6xl md:text-7xl text-text-primary">
               {freePlan.price}
             </span>
           </div>
@@ -258,10 +257,10 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.08 }}
         >
-          <span className="absolute top-0 right-6 -translate-y-1/2 font-mono text-xs font-semibold uppercase tracking-[0.22em] bg-accent text-text-light px-3 py-1 rounded-full">
+          <span className="absolute top-0 right-6 -translate-y-1/2 text-sm font-bold bg-accent text-accent-foreground px-3 py-1 rounded-full">
             Recommended
           </span>
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-primary mb-2">
+          <p className="type-eyebrow text-primary-700 mb-1">
             Premium
           </p>
 
@@ -274,10 +273,10 @@ export function PricingSection() {
               transition={{ duration: 0.15 }}
             >
               <div className="mt-1 mb-3 flex items-baseline gap-1.5">
-                <span className="font-display text-6xl md:text-8xl leading-none text-text-primary tabular-nums tracking-tight">
+                <span className="type-stat text-6xl md:text-8xl text-text-primary">
                   {activePlan.price}
                 </span>
-                <span className="font-mono text-sm md:text-base text-text-secondary">
+                <span className="text-base md:text-lg font-medium text-text-secondary">
                   {activePlan.period}
                 </span>
               </div>
@@ -309,14 +308,14 @@ export function PricingSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.45, delay: 0.16 }}
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-secondary/70 mb-2">
+          <p className="text-sm font-semibold text-text-secondary/80 mb-1">
             Competitors
           </p>
           <div className="mt-1 mb-3 flex items-baseline gap-1.5">
-            <span className="font-display text-4xl md:text-5xl leading-none text-text-secondary line-through decoration-2 decoration-text-secondary/60 tabular-nums">
+            <span className="type-stat text-4xl md:text-5xl text-text-secondary line-through decoration-2 decoration-text-secondary/60">
               {pricing.competitorPrice}
             </span>
-            <span className="font-mono text-xs text-text-secondary/70">
+            <span className="text-sm font-medium text-text-secondary/70">
               /yr avg.
             </span>
           </div>
@@ -344,7 +343,7 @@ export function PricingSection() {
             ))}
           </ul>
 
-          <div className="w-full py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-[0.22em] text-center text-text-secondary/80 border border-dashed border-text-secondary/30">
+          <div className="w-full py-1.5 rounded-lg text-sm font-semibold text-center text-text-secondary/80 border border-dashed border-text-secondary/30">
             Overpriced
           </div>
         </motion.div>

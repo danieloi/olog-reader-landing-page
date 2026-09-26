@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 type Variant = "accent" | "primary";
 
 type Audience = {
-  numeral: string;
   label: string;
   heading: string;
   description: string;
@@ -66,7 +65,6 @@ function GlyphWave() {
 
 const audiences: Audience[] = [
   {
-    numeral: "01",
     label: "ADHD",
     heading: "Stay focused, effortlessly",
     description:
@@ -75,7 +73,6 @@ const audiences: Audience[] = [
     glyph: <GlyphRipple />,
   },
   {
-    numeral: "02",
     label: "Dyslexia",
     heading: "Read without the struggle",
     description:
@@ -84,7 +81,6 @@ const audiences: Audience[] = [
     glyph: <GlyphFlow />,
   },
   {
-    numeral: "03",
     label: "Visual Impairments",
     heading: "Your eyes can rest",
     description:
@@ -94,16 +90,21 @@ const audiences: Audience[] = [
   },
 ];
 
-const variantStyles: Record<Variant, { border: string; bg: string; text: string }> = {
+const variantStyles: Record<
+  Variant,
+  { border: string; bg: string; text: string; label: string }
+> = {
   accent: {
     border: "border-accent/30",
     bg: "bg-accent/8 dark:bg-accent/10",
     text: "text-accent",
+    label: "text-accent-700",
   },
   primary: {
     border: "border-primary/30",
     bg: "bg-primary/8 dark:bg-primary/10",
     text: "text-primary",
+    label: "text-primary-700",
   },
 };
 
@@ -124,17 +125,8 @@ function AudienceCard({ a, index }: { a: Audience; index: number }) {
         {a.glyph}
       </div>
       <div className="relative z-10 flex flex-col">
-        <div className="flex items-baseline gap-3 mb-5 md:mb-6">
-          <span
-            className={`font-display text-5xl md:text-6xl leading-none tabular-nums ${v.text}`}
-          >
-            {a.numeral}
-          </span>
-          <span className="font-mono text-xs uppercase tracking-[0.22em] text-text-secondary">
-            {a.label}
-          </span>
-        </div>
-        <h3 className="font-display text-2xl md:text-3xl text-text-primary leading-tight tracking-tight mb-4">
+        <p className={`type-eyebrow mb-2 md:mb-3 ${v.label}`}>{a.label}</p>
+        <h3 className="type-h3 text-text-primary mb-2">
           {a.heading}
         </h3>
         <p className="text-base md:text-lg text-text-secondary leading-relaxed">
@@ -155,14 +147,13 @@ export function AccessibilitySection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
       >
-        <p className="font-mono text-xs md:text-sm font-semibold text-primary uppercase tracking-[0.22em] mb-4">
+        <p className="type-eyebrow text-primary-700 mb-2">
           Designed for everyone
         </p>
-        <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-text-primary leading-[1.02] tracking-tight max-w-4xl">
-          Reading should be{" "}
-          <em className="not-italic text-primary">accessible</em> to all.
+        <h2 className="type-h2 text-text-primary max-w-4xl">
+          Reading should be accessible to all.
         </h2>
-        <p className="mt-6 text-lg md:text-xl text-text-secondary max-w-2xl leading-relaxed">
+        <p className="type-lead mt-3 text-text-secondary max-w-2xl">
           Olog helps you move past the limitations — so nothing stands between
           you and the content you love.
         </p>

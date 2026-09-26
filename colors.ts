@@ -5,7 +5,7 @@ export const lightColors = {
     200: "#8CCCFF",
     300: "#66B2FF",
     400: "#3399FF",
-    500: "#007AFF", // Primary Blue
+    500: "#3359EF", // Primary Blue
     600: "#0066CC",
     700: "#0051B5", // Dark Blue Shade
     800: "#003D99",
@@ -50,7 +50,7 @@ export const lightColors = {
 
   background: {
     hero: "#D9EFFF", // Light Blue Tint
-    header: "#007AFF", // Primary Blue
+    header: "#3359EF", // Primary Blue
     content: "#FFFFFF", // Background White
     white: "#FFFFFF",
     card: "#F0F0F0", // Light Gray
@@ -58,7 +58,7 @@ export const lightColors = {
   },
 
   button: {
-    primary: "#007AFF", // Primary Blue
+    primary: "#3359EF", // Primary Blue
     secondary: "#FF9500", // Accent Orange
     hover: {
       primary: "#0051B5", // Dark Blue Shade
@@ -81,7 +81,7 @@ export const darkColors = {
     200: "#002766",
     300: "#1A56B3",
     400: "#3373D9",
-    500: "#007AFF", // Primary Blue - keeping this the same
+    500: "#3359EF", // Primary Blue - keeping this the same
     600: "#3399FF",
     700: "#0051B5",
     800: "#8CCCFF",
@@ -134,7 +134,7 @@ export const darkColors = {
   },
 
   button: {
-    primary: "#007AFF", // Keep consistent
+    primary: "#3359EF", // Keep consistent
     secondary: "#FFA23F", // Brightened for visibility
     hover: {
       primary: "#3399FF", // Lighter for hover in dark mode

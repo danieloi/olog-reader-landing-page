@@ -132,24 +132,12 @@ module.exports = {
       },
       fontFamily: {
         sans: [
-          "var(--font-bricolage)",
+          "var(--font-figtree)",
           "ui-sans-serif",
           "system-ui",
+          "-apple-system",
+          "Segoe UI",
           "sans-serif",
-        ],
-        serif: [
-          "var(--font-fraunces)",
-          "Georgia",
-          "Times New Roman",
-          "Times",
-          "serif",
-        ],
-        display: [
-          "var(--font-fraunces)",
-          "Georgia",
-          "Times New Roman",
-          "Times",
-          "serif",
         ],
       },
       fontSize: {

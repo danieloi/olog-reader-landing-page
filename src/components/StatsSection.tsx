@@ -45,17 +45,14 @@ function HeadlineStat() {
     >
       <span
         ref={ref}
-        className="font-display block leading-[0.85] text-primary tabular-nums tracking-[-0.04em]"
-        style={{
-          fontSize: "clamp(8rem, 22vw, 18rem)",
-          fontVariationSettings: '"opsz" 144, "SOFT" 30, "WONK" 1',
-        }}
+        className="type-stat block text-primary"
+        style={{ fontSize: "clamp(7rem, 20vw, 16rem)" }}
       >
         {inView ? <CountUp end={headlineStat.value} duration={1.6} /> : "0"}
         <span className="text-accent">{headlineStat.suffix}</span>
       </span>
       <div className="mt-2 md:mt-4 max-w-md">
-        <p className="font-display text-2xl md:text-4xl text-text-primary leading-tight">
+        <p className="type-h3 text-text-primary">
           {headlineStat.label}
         </p>
         <p className="mt-2 text-lg md:text-xl text-text-secondary leading-relaxed">
@@ -92,7 +89,7 @@ function SupportingStat({
     >
       <p
         ref={ref}
-        className="font-display text-4xl md:text-6xl text-text-primary tabular-nums leading-none tracking-tight"
+        className="type-stat text-4xl md:text-6xl text-text-primary"
       >
         {inView ? (
           <CountUp end={value} duration={1.6} separator="," decimals={decimals} />
@@ -101,7 +98,7 @@ function SupportingStat({
         )}
         <span className="text-accent">{suffix}</span>
       </p>
-      <p className="mt-2 text-lg md:text-xl font-semibold text-text-primary">
+      <p className="mt-2 text-lg md:text-xl font-semibold tracking-[-0.01em] text-text-primary">
         {label}
       </p>
       <p className="text-base md:text-lg text-text-secondary mt-1">{sub}</p>
