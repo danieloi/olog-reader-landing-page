@@ -101,12 +101,12 @@ function FeaturedCard({ t }: { t: Testimonial }) {
         coneSpread={30}
         edgeSensitivity={25}
         fillOpacity={0.35}
-        colors={["#007AFF", "#B8851F", "#5AA6FF"]}
+        colors={["#3359EF", "#B8851F", "#93A8F7"]}
       >
         <figure className="relative p-8 md:p-12 flex flex-col justify-between overflow-hidden h-full">
           <span
             aria-hidden
-            className="absolute top-4 right-6 md:top-8 md:right-12 font-display text-[10rem] md:text-[14rem] leading-none text-primary/15 select-none pointer-events-none"
+            className="absolute top-4 right-6 md:top-8 md:right-12 text-[10rem] md:text-[14rem] font-extrabold leading-none text-primary/15 select-none pointer-events-none"
           >
             &ldquo;
           </span>
@@ -117,7 +117,7 @@ function FeaturedCard({ t }: { t: Testimonial }) {
               ))}
             </div>
           </div>
-          <blockquote className="font-display text-2xl md:text-4xl lg:text-5xl text-text-primary leading-[1.15] tracking-tight mb-8 relative z-10 max-w-3xl">
+          <blockquote className="text-2xl md:text-4xl lg:text-[2.75rem] font-semibold text-text-primary leading-[1.2] md:leading-[1.2] lg:leading-[1.2] tracking-[-0.025em] mb-8 relative z-10 max-w-3xl">
             {t.quote}
           </blockquote>
           <figcaption className="flex items-center gap-3 relative z-10">
@@ -126,7 +126,7 @@ function FeaturedCard({ t }: { t: Testimonial }) {
               <span className="font-semibold text-text-primary text-base md:text-lg">
                 {t.source === "instagram" && t.handle ? `@${t.handle}` : t.name}
               </span>
-              <span className="font-mono text-xs text-text-secondary">
+              <span className="text-sm font-medium text-text-secondary">
                 {sourceLabel(t.source)}
               </span>
             </div>
@@ -156,7 +156,7 @@ function SecondaryCard({ t, delay }: { t: Testimonial; delay: number }) {
         coneSpread={25}
         edgeSensitivity={28}
         fillOpacity={0.3}
-        colors={["#B8851F", "#007AFF", "#DFB243"]}
+        colors={["#B8851F", "#3359EF", "#DFB243"]}
       >
         <figure className="relative p-6 md:py-7 md:px-4 flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
@@ -174,7 +174,7 @@ function SecondaryCard({ t, delay }: { t: Testimonial; delay: number }) {
             <span className="font-semibold text-text-primary text-sm md:text-base">
               {t.source === "instagram" && t.handle ? `@${t.handle}` : t.name}
             </span>
-            <span className="font-mono text-xs text-text-secondary">
+            <span className="text-sm font-medium text-text-secondary">
               {sourceLabel(t.source)}
             </span>
           </figcaption>
@@ -196,12 +196,11 @@ export function TestimonialsSection() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="font-mono text-xs md:text-sm uppercase tracking-[0.22em] text-primary mb-3">
+        <p className="type-eyebrow text-primary-700 mb-2">
           What listeners say
         </p>
-        <h2 className="font-display text-4xl md:text-6xl text-text-primary leading-[1.05] tracking-tight max-w-3xl">
-          Loved by readers, students &amp;{" "}
-          <em className="not-italic text-accent">professionals</em>.
+        <h2 className="type-h2 text-text-primary max-w-3xl">
+          Loved by readers, students &amp; professionals.
         </h2>
       </motion.div>
 

@@ -1199,7 +1199,7 @@ export function VoiceVideoStudio() {
         </a>
         <a
           href="https://ologreader.com"
-          className="group flex items-center gap-2 text-sm font-semibold text-[#33425a] transition hover:text-[#007aff]"
+          className="group flex items-center gap-2 text-sm font-semibold text-[#33425a] transition hover:text-[#3359ef]"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Listen to anything
@@ -1214,10 +1214,10 @@ export function VoiceVideoStudio() {
             <Sparkles className="h-3.5 w-3.5 text-[#ff7a59]" /> Free voice
             captioner
           </div>
-          <h1 className="max-w-xl font-serif text-[clamp(3rem,7vw,6.8rem)] font-semibold leading-[0.88] tracking-[-0.065em]">
+          <h1 className="max-w-xl text-[clamp(3rem,7vw,6.8rem)] font-extrabold leading-[0.92] tracking-[-0.045em]">
             Say it.
             <br />
-            <span className="text-[#007aff]">Let it travel.</span>
+            <span className="text-[#3359ef]">Let it travel.</span>
           </h1>
           <p className="mt-4 max-w-lg text-lg leading-relaxed text-[#536078] sm:mt-7 sm:text-xl">
             Turn a voice note into a captioned video people can watch
@@ -1254,7 +1254,7 @@ export function VoiceVideoStudio() {
                   className={`relative z-10 ${index === 0 ? "justify-self-start" : index === 1 ? "justify-self-center" : "justify-self-end"}`}
                 >
                   <span
-                    className={`grid h-[2.25rem] w-[2.25rem] place-items-center rounded-full text-[11px] font-bold shadow-[0_0_0_0.4rem_#fffdf9] ${index <= current ? "bg-[#007aff] text-white" : "bg-[#e8e5df] text-[#7a8290]"}`}
+                    className={`grid h-[2.25rem] w-[2.25rem] place-items-center rounded-full text-[11px] font-bold shadow-[0_0_0_0.4rem_#fffdf9] ${index <= current ? "bg-[#3359ef] text-white" : "bg-[#e8e5df] text-[#7a8290]"}`}
                   >
                     {index < current ? (
                       <Check className="h-3.5 w-3.5" />
@@ -1282,7 +1282,7 @@ export function VoiceVideoStudio() {
                       <button
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
-                        className={`group relative grid shrink-0 transform-gpu place-items-center rounded-[2.25rem] border bg-white shadow-[0_18px_34px_rgba(21,35,58,0.16),inset_0_1px_0_rgba(255,255,255,0.9)] transition duration-300 hover:-translate-y-1 hover:rotate-[1deg] hover:shadow-[0_24px_42px_rgba(21,35,58,0.2),inset_0_1px_0_rgba(255,255,255,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#007aff] ${isRecording ? "recording-ring border-[#ff6b5f]/30" : "border-[#b8d8ff]"}`}
+                        className={`group relative grid shrink-0 transform-gpu place-items-center rounded-[2.25rem] border bg-white shadow-[0_18px_34px_rgba(21,35,58,0.16),inset_0_1px_0_rgba(255,255,255,0.9)] transition duration-300 hover:-translate-y-1 hover:rotate-[1deg] hover:shadow-[0_24px_42px_rgba(21,35,58,0.2),inset_0_1px_0_rgba(255,255,255,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3359ef] ${isRecording ? "recording-ring border-[#ff6b5f]/30" : "border-[#bbc9fb]"}`}
                         style={{
                           width: "7rem",
                           height: "7rem",
@@ -1320,7 +1320,7 @@ export function VoiceVideoStudio() {
                       or
                       <span className="h-px flex-1 bg-[#15233a]/10" />
                     </div>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#15233a]/15 bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#007aff]/40 hover:text-[#007aff]">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#15233a]/15 bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#3359ef]/40 hover:text-[#3359ef]">
                       <Upload className="h-4 w-4" /> Upload a voice note
                       <input
                         type="file"
@@ -1409,7 +1409,7 @@ export function VoiceVideoStudio() {
                                   style={{
                                     height: `${22 + ((index * 37) % 78)}%`,
                                     backgroundColor: played
-                                      ? "#007aff"
+                                      ? "#3359ef"
                                       : "#9bc9ff",
                                     opacity: played
                                       ? 1
@@ -1456,7 +1456,7 @@ export function VoiceVideoStudio() {
                       <button
                         disabled={stage === "transcribing"}
                         onClick={transcribe}
-                        className="flex items-center gap-2 rounded-full bg-[#007aff] px-6 py-3 font-semibold text-white disabled:cursor-wait disabled:opacity-70"
+                        className="flex items-center gap-2 rounded-full bg-[#3359ef] px-6 py-3 font-semibold text-white disabled:cursor-wait disabled:opacity-70"
                       >
                         {stage === "transcribing" ? (
                           <>
@@ -1502,7 +1502,7 @@ export function VoiceVideoStudio() {
                         <button
                           type="button"
                           onClick={togglePlayback}
-                          className="grid h-12 w-12 shrink-0 place-items-center rounded-[1rem] border border-white/10 bg-[#11161e] text-white shadow-[0_8px_22px_rgba(17,22,30,0.2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007aff]"
+                          className="grid h-12 w-12 shrink-0 place-items-center rounded-[1rem] border border-white/10 bg-[#11161e] text-white shadow-[0_8px_22px_rgba(17,22,30,0.2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3359ef]"
                           aria-label={
                             isPlaying ? "Pause preview" : "Play preview"
                           }
@@ -1781,7 +1781,7 @@ export function VoiceVideoStudio() {
                       (optional)
                     </span>
                   </label>
-                  <div className="mt-2 flex overflow-hidden rounded-xl border border-[#15233a]/12 bg-white transition focus-within:border-[#007aff] focus-within:ring-2 focus-within:ring-[#007aff]/10">
+                  <div className="mt-2 flex overflow-hidden rounded-xl border border-[#15233a]/12 bg-white transition focus-within:border-[#3359ef] focus-within:ring-2 focus-within:ring-[#3359ef]/10">
                     <div
                       className="relative grid w-14 shrink-0 place-items-center border-r border-[#15233a]/10"
                       style={{
@@ -1828,7 +1828,7 @@ export function VoiceVideoStudio() {
                       <button
                         key={option.value}
                         onClick={() => setRatio(option.value)}
-                        className={`rounded-xl border p-3 text-left transition ${ratio === option.value ? "border-[#007aff] bg-[#eaf4ff]" : "border-[#15233a]/10 hover:border-[#15233a]/25"}`}
+                        className={`rounded-xl border p-3 text-left transition ${ratio === option.value ? "border-[#3359ef] bg-[#eef1fe]" : "border-[#15233a]/10 hover:border-[#15233a]/25"}`}
                       >
                         <span className="block text-sm font-semibold">
                           {option.label}
@@ -1849,7 +1849,7 @@ export function VoiceVideoStudio() {
                         type="button"
                         aria-pressed={theme === option.value}
                         onClick={() => setTheme(option.value)}
-                        className={`rounded-xl border p-2 text-left transition ${theme === option.value ? "border-[#007aff] ring-2 ring-[#007aff]/15" : "border-[#15233a]/10 hover:border-[#15233a]/25"}`}
+                        className={`rounded-xl border p-2 text-left transition ${theme === option.value ? "border-[#3359ef] ring-2 ring-[#3359ef]/15" : "border-[#15233a]/10 hover:border-[#15233a]/25"}`}
                       >
                         <span
                           className="flex h-14 items-center justify-center rounded-lg"
@@ -1892,7 +1892,7 @@ export function VoiceVideoStudio() {
                       </p>
                     </div>
                     {photos.length < MAX_PHOTOS && (
-                      <label className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#15233a]/15 bg-white px-3 py-2 text-xs font-semibold hover:border-[#007aff]/40 hover:text-[#007aff]">
+                      <label className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#15233a]/15 bg-white px-3 py-2 text-xs font-semibold hover:border-[#3359ef]/40 hover:text-[#3359ef]">
                         <ImagePlus className="h-3.5 w-3.5" /> Add
                         <input
                           type="file"
@@ -2005,7 +2005,7 @@ export function VoiceVideoStudio() {
                                     max={190}
                                     step={1}
                                     value={photo.foregroundScale ?? 140}
-                                    className="w-full accent-[#007aff]"
+                                    className="w-full accent-[#3359ef]"
                                     onChange={(event) => {
                                       const foregroundScale = Number(
                                         event.currentTarget.value,
@@ -2034,7 +2034,7 @@ export function VoiceVideoStudio() {
                                     max={20}
                                     step={1}
                                     value={photo.maskCoverage}
-                                    className="w-full accent-[#007aff]"
+                                    className="w-full accent-[#3359ef]"
                                     onChange={(event) =>
                                       updatePhotoRefinement(
                                         photo.localId,
@@ -2076,7 +2076,7 @@ export function VoiceVideoStudio() {
                                     max={20}
                                     step={1}
                                     value={photo.maskSoftness}
-                                    className="w-full accent-[#007aff]"
+                                    className="w-full accent-[#3359ef]"
                                     onChange={(event) =>
                                       updatePhotoRefinement(
                                         photo.localId,
@@ -2191,7 +2191,7 @@ export function VoiceVideoStudio() {
                   <button
                     type="button"
                     onClick={returnToEditor}
-                    className="flex items-center gap-2 rounded-full border border-[#15233a]/15 bg-white px-6 py-3.5 font-semibold text-[#15233a] transition hover:border-[#007aff]/40 hover:text-[#007aff]"
+                    className="flex items-center gap-2 rounded-full border border-[#15233a]/15 bg-white px-6 py-3.5 font-semibold text-[#15233a] transition hover:border-[#3359ef]/40 hover:text-[#3359ef]"
                   >
                     <ArrowLeft className="h-4 w-4" /> Back to edit
                   </button>
@@ -2199,7 +2199,7 @@ export function VoiceVideoStudio() {
                     type="button"
                     onClick={saveVideo}
                     disabled={isSaving}
-                    className="flex items-center gap-2 rounded-full bg-[#007aff] px-7 py-3.5 font-semibold text-white"
+                    className="flex items-center gap-2 rounded-full bg-[#3359ef] px-7 py-3.5 font-semibold text-white"
                   >
                     {isSaving ? (
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
@@ -2217,7 +2217,7 @@ export function VoiceVideoStudio() {
                 </div>
                 <a
                   href="https://ologreader.com"
-                  className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#007aff]"
+                  className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#3359ef]"
                 >
                   Like listening? Turn any document into audio with Olog Reader{" "}
                   <ArrowLeft className="h-4 w-4 rotate-180" />
@@ -2253,7 +2253,7 @@ export function VoiceVideoStudio() {
         Made by{" "}
         <a
           href="https://ologreader.com"
-          className="font-semibold text-[#007aff]"
+          className="font-semibold text-[#3359ef]"
         >
           Olog Reader
         </a>{" "}
@@ -2558,7 +2558,7 @@ function VideoCard({
           }}
         >
           <span
-            className="absolute left-4 top-2 font-serif text-6xl font-bold leading-none"
+            className="absolute left-4 top-2 text-6xl font-extrabold leading-none"
             style={{ color: selectedTheme.quote }}
           >
             “

@@ -1,23 +1,15 @@
 import type { Metadata } from "next";
-import { Fraunces, Bricolage_Grotesque } from "next/font/google";
+import { Figtree } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import SkipToContent from "@/components/ui/SkipToContent";
 import { ThemeProvider } from "@/components/theme-provider";
 import StructuredData from "@/components/StructuredData";
 
-const fraunces = Fraunces({
+const figtree = Figtree({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-figtree",
   display: "swap",
-  axes: ["opsz", "SOFT", "WONK"],
-});
-
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-bricolage",
-  display: "swap",
-  axes: ["opsz", "wdth"],
 });
 
 const SITE_TITLE = "Olog Reader — Listen to Any Document with Natural AI Voices";
@@ -106,17 +98,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <head>
-        <link
-          rel="preload"
-          href="https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-      </head>
-      <body className={`${bricolage.variable} ${fraunces.variable} antialiased`}>
+    <html lang="en" className={`${figtree.variable} scroll-smooth`} suppressHydrationWarning>
+      <body className="antialiased">
         <StructuredData />
 
         {/* Google Analytics */}

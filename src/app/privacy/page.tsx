@@ -10,7 +10,7 @@ export default function Privacy() {
       />
 
       <div className="relative px-4 sm:px-6 lg:px-8 py-16 max-w-4xl mx-auto">
-        <div className="georama-text">
+        <div>
           <h1 className="text-4xl font-bold text-text-primary mb-8">
             Privacy Policy
           </h1>

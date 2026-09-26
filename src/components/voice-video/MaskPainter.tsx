@@ -95,7 +95,7 @@ export function MaskPainter({
     overlayContext.globalCompositeOperation = "source-over";
     overlayContext.drawImage(mask, 0, 0);
     overlayContext.globalCompositeOperation = "source-in";
-    overlayContext.fillStyle = "rgba(0, 122, 255, 0.62)";
+    overlayContext.fillStyle = "rgba(51, 89, 239, 0.62)";
     overlayContext.fillRect(0, 0, overlay.width, overlay.height);
     overlayContext.globalCompositeOperation = "source-over";
     context.drawImage(overlay, 0, 0);
@@ -105,7 +105,7 @@ export function MaskPainter({
       context.beginPath();
       context.arc(cursor.x, cursor.y, brushSize / 2, 0, Math.PI * 2);
       context.fillStyle =
-        mode === "add" ? "rgba(0, 122, 255, 0.16)" : "rgba(255, 107, 95, 0.16)";
+        mode === "add" ? "rgba(51, 89, 239, 0.16)" : "rgba(255, 107, 95, 0.16)";
       context.fill();
       context.lineWidth = 0.8 / zoom;
       context.strokeStyle = "rgba(255, 255, 255, 0.94)";
@@ -113,7 +113,7 @@ export function MaskPainter({
       context.beginPath();
       context.arc(cursor.x, cursor.y, brushSize / 2, 0, Math.PI * 2);
       context.lineWidth = 0.45 / zoom;
-      context.strokeStyle = mode === "add" ? "#007aff" : "#ff6b5f";
+      context.strokeStyle = mode === "add" ? "#3359EF" : "#ff6b5f";
       context.stroke();
       context.restore();
     }
@@ -444,7 +444,7 @@ export function MaskPainter({
             <button
               type="button"
               onClick={() => setMode("add")}
-              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${mode === "add" ? "bg-[#007aff]" : "bg-white/8 text-white/70"}`}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${mode === "add" ? "bg-[#3359EF]" : "bg-white/8 text-white/70"}`}
             >
               <Paintbrush className="h-4 w-4" /> Add
             </button>
@@ -491,7 +491,7 @@ export function MaskPainter({
                 max={100}
                 value={brushSize}
                 onChange={(event) => setBrushSize(Number(event.target.value))}
-                className="w-full accent-[#007aff]"
+                className="w-full accent-[#3359EF]"
               />
             </label>
             <label>
@@ -505,7 +505,7 @@ export function MaskPainter({
                 step={0.1}
                 value={zoom}
                 onChange={(event) => updateZoom(Number(event.target.value))}
-                className="w-full accent-[#007aff]"
+                className="w-full accent-[#3359EF]"
               />
             </label>
           </div>

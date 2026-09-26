@@ -1,15 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import TextPressure from "@/components/TextPressure";
+import { FooterWordmark } from "@/components/FooterWordmark";
 import { XIcon, InstagramIcon, LinkedInIcon } from "@/components/icons";
 
 export function Footer() {
-  const [fontLoaded, setFontLoaded] = useState(false);
-
   return (
-    <footer className="relative bg-transparent overflow-hidden georama-text">
+    <footer className="relative bg-transparent overflow-hidden">
       {/* Top bar — small icon, nav, copyright, socials */}
       <div className="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="border-b border-border py-6 md:py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -34,14 +31,14 @@ export function Footer() {
                 className="hidden dark:block"
               />
             </a>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-secondary ">
+            <p className="text-sm md:text-base font-medium text-text-secondary">
               An audio log. Your reading, narrated.
             </p>
           </div>
 
           <div className="flex flex-wrap items-start gap-7 text-base text-text-secondary md:items-center md:gap-9">
             <nav aria-label="Tools" className="flex flex-col gap-1.5">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary/65">
+              <span className="text-sm font-semibold text-text-primary">
                 Tools
               </span>
               <a
@@ -52,7 +49,7 @@ export function Footer() {
               </a>
             </nav>
             <nav aria-label="Company" className="flex flex-col gap-1.5">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary/65">
+              <span className="text-sm font-semibold text-text-primary">
                 Company
               </span>
               <span className="flex items-center gap-5">
@@ -108,33 +105,12 @@ export function Footer() {
         </p>
       </div>
 
-      {/* Full-bleed kinetic wordmark — page finale */}
       <a
         href="/"
         aria-label="Olog Reader"
         className="block relative w-full select-none cursor-default overflow-hidden"
       >
-        <div
-          className="w-full"
-          style={{
-            opacity: fontLoaded ? 1 : 0,
-            transition: "opacity 400ms ease",
-          }}
-        >
-          <TextPressure
-            text="OLOG READER"
-            textColor="var(--primary)"
-            width={true}
-            weight={true}
-            italic={false}
-            alpha={false}
-            flex={true}
-            scale={false}
-            minFontSize={120}
-            className="uppercase whitespace-nowrap leading-none"
-            onFontLoaded={setFontLoaded}
-          />
-        </div>
+        <FooterWordmark text="Olog Reader" />
       </a>
     </footer>
   );

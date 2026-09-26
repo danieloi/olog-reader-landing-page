@@ -25,7 +25,7 @@ export default function Home() {
           <Hero />
         </Suspense>
       </section>
-      <div className="georama-text">
+      <div>
         <StatsSection />
         <section id="benefits" aria-label="Core benefits">
           <BenefitsSection />

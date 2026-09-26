@@ -229,7 +229,7 @@ function JoinContent() {
           Olog Reader
         </p>
 
-        <h1 className="mt-2 text-balance font-display text-h2 font-semibold leading-tight text-text-primary">
+        <h1 className="mt-2 text-balance text-h2 font-extrabold leading-tight tracking-[-0.03em] text-text-primary">
           {heading}
         </h1>
 

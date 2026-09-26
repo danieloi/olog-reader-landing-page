@@ -15,7 +15,6 @@ function FaqItem({
   index: number;
 }) {
   const [open, setOpen] = useState(false);
-  const num = String(index + 1).padStart(2, "0");
 
   return (
     <motion.div
@@ -30,10 +29,7 @@ function FaqItem({
         className="w-full text-left flex items-start gap-4 group"
         aria-expanded={open}
       >
-        <span className="font-mono text-xs uppercase tracking-[0.22em] text-text-secondary pt-2 shrink-0">
-          {num}
-        </span>
-        <span className="font-display text-2xl md:text-3xl lg:text-4xl text-text-primary leading-tight tracking-tight group-hover:text-primary transition-colors flex-1">
+        <span className="text-xl md:text-2xl lg:text-3xl font-semibold text-text-primary leading-tight tracking-[-0.025em] group-hover:text-primary transition-colors flex-1">
           {question}
         </span>
         <span className="shrink-0 text-text-secondary group-hover:text-primary transition-colors">
@@ -75,11 +71,11 @@ export function FaqSection() {
         transition={{ duration: 0.5 }}
       >
         <div>
-          <p className="font-mono text-xs md:text-sm uppercase tracking-[0.22em] text-primary mb-3">
+          <p className="type-eyebrow text-primary-700 mb-2">
             FAQ
           </p>
-          <h2 className="font-display text-4xl md:text-6xl text-text-primary leading-[1.05] tracking-tight">
-            Questions, <em className="not-italic text-accent">answered</em>.
+          <h2 className="type-h2 text-text-primary">
+            Questions, answered.
           </h2>
         </div>
         <p className="text-text-secondary text-lg md:text-xl leading-relaxed md:pt-4 max-w-xl">
