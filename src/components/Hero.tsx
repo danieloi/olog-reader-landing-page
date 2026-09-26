@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FloatingPhone } from "@/components/FloatingPhone";
 import { ReaderScreenDemo } from "@/components/ReaderScreenDemo";
@@ -95,13 +94,9 @@ function ReadAlongHeadline() {
 
 export function Hero() {
   const isMobile = useIsMobile();
-  const { resolvedTheme } = useTheme();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get("referralCode");
 
-  const appStoreBadge = resolvedTheme === "dark" ? "/white.svg" : "/black.svg";
-  const googlePlayBadge =
-    resolvedTheme === "dark" ? "/google_play_white.webp" : "/google_play_dark.webp";
 
   const handleDownload = (platform: "ios" | "android") => {
     if (referralCode) {
@@ -144,9 +139,15 @@ export function Hero() {
                 aria-label="Download on the App Store"
               >
                 <img
-                  src={appStoreBadge}
+                  src="/black.svg"
                   alt="Download on the App Store"
-                  className="block h-[46px] w-auto md:h-[52px]"
+                  className="block h-[46px] w-auto md:h-[52px] dark:hidden"
+                />
+                <img
+                  src="/white.svg"
+                  alt=""
+                  aria-hidden
+                  className="hidden h-[46px] w-auto md:h-[52px] dark:block"
                 />
               </button>
               <button
@@ -155,9 +156,15 @@ export function Hero() {
                 aria-label="Get it on Google Play"
               >
                 <img
-                  src={googlePlayBadge}
+                  src="/google_play_dark.webp"
                   alt="Get it on Google Play"
-                  className="block h-[46px] w-auto md:h-[52px]"
+                  className="block h-[46px] w-auto md:h-[52px] dark:hidden"
+                />
+                <img
+                  src="/google_play_white.webp"
+                  alt=""
+                  aria-hidden
+                  className="hidden h-[46px] w-auto md:h-[52px] dark:block"
                 />
               </button>
             </div>
