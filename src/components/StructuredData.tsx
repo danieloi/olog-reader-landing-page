@@ -50,7 +50,7 @@ export default function StructuredData() {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      description: "Free tier with generous usage; premium plans from $4.99/month.",
+      description: "Free tier with generous usage; Premium is $6.99/month or $76.99/year.",
     },
     downloadUrl: [
       "https://apps.apple.com/app/id6744651101",

@@ -1,32 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import { Check } from "lucide-react";
 import { handleGetStarted } from "@/hooks/use-download";
 
-/* ------------------------------------------------------------------ */
-/*  Country detection for pricing                                      */
-/* ------------------------------------------------------------------ */
+type Billing = "weekly" | "monthly" | "yearly";
 
-const COMPETITOR_USD = 139;
+type Pricing = {
+  symbol: string;
+  weekly?: number;
+  monthly: number;
+  yearly: number;
+  competitorYearly: number;
+  decimals: number;
+};
 
-function useCountryPricing() {
-  const [pricing, setPricing] = useState<{
-    currency: string;
-    weekly: string;
-    monthly: string;
-    yearly: string;
-    fromPrice: string;
-    competitorPrice: string;
-  }>({
-    currency: "$",
-    weekly: "$2.49",
-    monthly: "$4.99",
-    yearly: "$49.99",
-    fromPrice: "$5/mo",
-    competitorPrice: `$${COMPETITOR_USD}`,
-  });
+const USD: Pricing = {
+  symbol: "$",
+  monthly: 6.99,
+  yearly: 76.99,
+  competitorYearly: 139,
+  decimals: 2,
+};
+
+function useCountryPricing(): Pricing {
+  const [pricing, setPricing] = useState<Pricing>(USD);
 
   useEffect(() => {
     fetch("https://ipapi.co/json/")
@@ -34,23 +33,22 @@ function useCountryPricing() {
       .then(async (data) => {
         if (data.country_code !== "NG") return;
 
-        let competitorPrice = `\u20A6${(COMPETITOR_USD * 1500).toLocaleString()}`;
+        let competitorYearly = USD.competitorYearly * 1500;
         try {
           const fx = await fetch("https://open.er-api.com/v6/latest/USD").then((r) => r.json());
           const rate = fx?.rates?.NGN;
           if (typeof rate === "number" && rate > 0) {
-            const rounded = Math.round((COMPETITOR_USD * rate) / 1000) * 1000;
-            competitorPrice = `\u20A6${rounded.toLocaleString()}`;
+            competitorYearly = Math.round((USD.competitorYearly * rate) / 1000) * 1000;
           }
         } catch {}
 
         setPricing({
-          currency: "\u20A6",
-          weekly: "\u20A62,000",
-          monthly: "\u20A65,000",
-          yearly: "\u20A655,000",
-          fromPrice: "\u20A65,000/mo",
-          competitorPrice,
+          symbol: "₦",
+          weekly: 4900,
+          monthly: 9900,
+          yearly: 108900,
+          competitorYearly,
+          decimals: 0,
         });
       })
       .catch(() => {});
@@ -59,295 +57,289 @@ function useCountryPricing() {
   return pricing;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Data                                                               */
-/* ------------------------------------------------------------------ */
-
-const premiumFeatures = [
-  { text: "Unlimited listening", included: true },
-  { text: "Unlimited file uploads", included: true },
-  { text: "All 10+ file types", included: true },
-  { text: "Premium AI voices", included: true },
-  { text: "Real-time highlighting", included: true },
-  { text: "Offline Listening", included: true },
-  { text: "Cross-device sync", included: true },
-  { text: "Priority customer support", included: true },
-  { text: "Cancel anytime", included: true },
-];
-
-function getPricingPlans(pricing: ReturnType<typeof useCountryPricing>) {
-  return [
-    {
-      name: "Free",
-      price: `${pricing.currency}0`,
-      period: "",
-      description: "Get started with the basics",
-      features: [
-        { text: "6,000 words per week", included: true },
-        { text: "3 file uploads", included: true },
-        { text: "All file types supported", included: true },
-        { text: "Standard voices", included: true },
-        { text: "Real-time highlighting", included: true },
-        { text: "Unlimited listening", included: false },
-        { text: "Unlimited uploads", included: false },
-        { text: "Priority support", included: false },
-      ],
-      highlighted: false,
-      cta: "Get Started Free",
-    },
-    {
-      name: "Weekly",
-      price: pricing.weekly,
-      period: "/week",
-      description: "Try premium with full access",
-      features: premiumFeatures,
-      highlighted: false,
-      cta: "Start Weekly",
-    },
-    {
-      name: "Monthly",
-      price: pricing.monthly,
-      period: "/month",
-      description: "Most popular — save over 50% vs weekly",
-      features: premiumFeatures,
-      highlighted: true,
-      cta: "Start Monthly",
-    },
-    {
-      name: "Yearly",
-      price: pricing.yearly,
-      period: "/year",
-      description: "Best value — save over 80% vs weekly",
-      features: premiumFeatures,
-      highlighted: false,
-      cta: "Start Yearly",
-    },
-  ];
+function money(p: Pricing, value: number) {
+  return `${p.symbol}${value.toLocaleString("en-US", {
+    minimumFractionDigits: p.decimals,
+    maximumFractionDigits: p.decimals,
+  })}`;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
+const FREE_FEATURES = [
+  "6,000 words a week",
+  "3 documents in your library",
+  "Every file type",
+  "Real-time highlighting",
+  "Standard voices",
+];
+
+const PREMIUM_FEATURES = [
+  "Unlimited listening",
+  "Unlimited documents",
+  "Premium AI voices",
+  "Offline listening",
+  "Sync across devices",
+  "Priority support",
+];
+
+function RollingPrice({ value, pricing }: { value: number; pricing: Pricing }) {
+  const text = money(pricing, value);
+  return (
+    <span className="relative inline-flex overflow-hidden align-baseline" aria-live="polite">
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={text}
+          initial={{ y: "70%", opacity: 0, filter: "blur(6px)" }}
+          animate={{ y: "0%", opacity: 1, filter: "blur(0px)" }}
+          exit={{ y: "-70%", opacity: 0, filter: "blur(6px)" }}
+          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          className="inline-block"
+        >
+          {text}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
+function BillingToggle({
+  billing,
+  onChange,
+  savePct,
+  options,
+}: {
+  billing: Billing;
+  onChange: (b: Billing) => void;
+  savePct: number;
+  options: Billing[];
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Billing period"
+      className="relative mx-auto flex w-fit items-center gap-1 rounded-full bg-background-card p-1"
+    >
+      {options.map((b) => {
+        const active = billing === b;
+        return (
+          <button
+            key={b}
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(b)}
+            className={`relative z-10 flex items-center gap-2 rounded-full px-5 py-2.5 text-base font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              active ? "text-white" : "text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            {active && (
+              <motion.span
+                layoutId="billing-pill"
+                className="absolute inset-0 -z-10 rounded-full bg-primary"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              />
+            )}
+            {b === "weekly" ? "Weekly" : b === "monthly" ? "Monthly" : "Yearly"}
+            {b === "yearly" && savePct > 0 && (
+              <span
+                className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold transition-colors duration-200 ${
+                  active ? "bg-white/20 text-white" : "bg-primary-50 text-primary-700"
+                }`}
+              >
+                Save {savePct}%
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function CompareBars({ pricing }: { pricing: Pricing }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.6 });
+  const reduce = useReducedMotion();
+  const ours = pricing.yearly / pricing.competitorYearly;
+  const lessPct = Math.round((1 - ours) * 100);
+  const grow = (to: number, delay = 0) =>
+    reduce
+      ? { initial: { width: `${to * 100}%` }, animate: { width: `${to * 100}%` } }
+      : {
+          initial: { width: "0%" },
+          animate: { width: inView ? `${to * 100}%` : "0%" },
+          transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const, delay },
+        };
+
+  return (
+    <div ref={ref} className="mx-auto mt-10 max-w-3xl rounded-3xl border border-border bg-background-white p-6 md:p-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="type-h3 text-text-primary">A year of Premium</p>
+        <p className="text-base font-semibold text-primary-700">
+          {lessPct}% less than the usual reading app
+        </p>
+      </div>
+      <div className="mt-6 space-y-4">
+        <div>
+          <div className="mb-1.5 flex justify-between text-sm font-semibold">
+            <span className="text-text-primary">Olog Reader</span>
+            <span className="type-stat text-text-primary">{money(pricing, pricing.yearly)}</span>
+          </div>
+          <div className="h-3 overflow-hidden rounded-full bg-background-card">
+            <motion.div className="h-full rounded-full bg-primary" {...grow(ours, 0.35)} />
+          </div>
+        </div>
+        <div>
+          <div className="mb-1.5 flex justify-between text-sm font-semibold">
+            <span className="text-text-secondary">Typical text-to-speech app</span>
+            <span className="type-stat text-text-secondary">
+              {money({ ...pricing, decimals: 0 }, pricing.competitorYearly)}
+            </span>
+          </div>
+          <div className="h-3 overflow-hidden rounded-full bg-background-card">
+            <motion.div className="h-full rounded-full" style={{ background: "var(--text-secondary)", opacity: 0.35 }} {...grow(1)} />
+          </div>
+        </div>
+      </div>
+      <p className="mt-5 text-sm text-text-secondary">
+        Average yearly price of comparable apps with unlimited listening and premium voices.
+      </p>
+    </div>
+  );
+}
 
 export function PricingSection() {
   const pricing = useCountryPricing();
-  const pricingPlans = getPricingPlans(pricing);
-  const [activeTab, setActiveTab] = useState<"Weekly" | "Monthly" | "Yearly">("Monthly");
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [billing, setBilling] = useState<Billing>("yearly");
+  const savePct = Math.round((1 - pricing.yearly / (pricing.monthly * 12)) * 100);
+  const options: Billing[] = pricing.weekly ? ["weekly", "monthly", "yearly"] : ["monthly", "yearly"];
+  const yearlyAsMonthly = savePct > 0;
+  const shown =
+    billing === "weekly"
+      ? { value: pricing.weekly ?? pricing.monthly, unit: "/ week" }
+      : billing === "monthly"
+        ? { value: pricing.monthly, unit: "/ month" }
+        : yearlyAsMonthly
+          ? { value: pricing.yearly / 12, unit: "/ month" }
+          : { value: pricing.yearly, unit: "/ year" };
 
-  const tabOrder: ("Weekly" | "Monthly" | "Yearly")[] = ["Weekly", "Monthly", "Yearly"];
-
-  const animateToTab = (target: "Weekly" | "Monthly" | "Yearly") => {
-    if (isAnimating || target === activeTab) return;
-
-    const currentIndex = tabOrder.indexOf(activeTab);
-    const targetIndex = tabOrder.indexOf(target);
-    const step = targetIndex > currentIndex ? 1 : -1;
-    const steps = tabOrder.slice(
-      Math.min(currentIndex, targetIndex),
-      Math.max(currentIndex, targetIndex) + 1
-    );
-    if (step < 0) steps.reverse();
-
-    setIsAnimating(true);
-    steps.slice(1).forEach((tab, i) => {
-      setTimeout(() => {
-        setActiveTab(tab);
-        if (i === steps.length - 2) setIsAnimating(false);
-      }, (i + 1) * 200);
-    });
-  };
-
-  const freePlan = pricingPlans.find((p) => p.name === "Free")!;
-  const premiumPlans = pricingPlans.filter((p) => p.name !== "Free");
-  const activePlan = premiumPlans.find((p) => p.name === activeTab)!;
+  const reveal = (delay = 0) => ({
+    initial: { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.2 },
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const, delay },
+  });
 
   return (
-    <section id="pricing" className="py-10 md:py-24 px-4">
-      <motion.div
-        className="text-center mb-6"
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.5 }}
-      >
-        <p className="type-eyebrow text-primary-700 mb-2">
-          Pricing
-        </p>
-        <h2 className="type-h2 text-text-primary mb-3">
-          Simple, honest pricing.
-        </h2>
-        <p className="type-lead text-text-secondary max-w-lg mx-auto">
-          Go Premium and enjoy full control of your listening. <br /> Cancel
-          anytime.
+    <section id="pricing" className="px-4 py-12 md:py-24">
+      <motion.div className="mx-auto mb-8 max-w-2xl text-center" {...reveal()}>
+        <p className="type-eyebrow mb-2 text-primary-700">Pricing</p>
+        <h2 className="type-h2 mb-3 text-text-primary">Start free. Listen without limits.</h2>
+        <p className="type-lead mx-auto max-w-lg text-text-secondary">
+          Everything you need to get going is free. Premium unlocks unlimited listening and our best
+          voices. Cancel anytime.
         </p>
       </motion.div>
-      {/* Billing period tabs */}
-      <div className="sticky top-[72px] z-20 md:relative md:top-auto max-w-3xl mx-auto mb-2 py-3 -mx-4 px-4" style={{ background: "color-mix(in srgb, var(--background) 80%, transparent)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
-        <div className="flex rounded-lg bg-background-card p-1 max-w-xs mx-auto relative">
-          {(["Weekly", "Monthly", "Yearly"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => animateToTab(tab)}
-              className="flex-1 py-2 text-lg md:text-lg font-semibold rounded-md relative z-10 transition-colors duration-300"
-              style={{ color: activeTab === tab ? "#fff" : undefined }}
-            >
-              {activeTab === tab && (
-                <motion.div
-                  layoutId="pricing-tab-indicator"
-                  className="absolute inset-0 bg-accent rounded-md shadow-sm"
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  style={{ zIndex: -1 }}
-                />
-              )}
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      <div className="max-w-[1440px] mx-auto grid sm:grid-cols-3 gap-6">
-        {/* Free plan */}
+      <motion.div className="mb-8" {...reveal(0.05)}>
+        <BillingToggle billing={billing} onChange={setBilling} savePct={savePct} options={options} />
+      </motion.div>
+
+      <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-[1fr_1.15fr] md:items-stretch">
         <motion.div
-          className="relative rounded-2xl p-2  md:p-6 flex flex-col border border-border bg-background-white hover:shadow-soft transition-shadow duration-300"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.45 }}
+          className="flex flex-col rounded-3xl border border-border bg-background-white p-6 md:p-8"
+          {...reveal(0.1)}
         >
-          <p className="type-eyebrow text-text-secondary mb-1">
-            {freePlan.name}
+          <p className="type-eyebrow text-text-secondary">Free</p>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="type-stat text-6xl text-text-primary md:text-7xl">
+              {money({ ...pricing, decimals: 0 }, 0)}
+            </span>
+            <span className="text-base font-medium text-text-secondary">forever</span>
+          </div>
+          <p className="mt-3 text-base text-text-secondary md:text-lg">
+            Try Olog on your own documents, no card needed.
           </p>
-          <div className="mt-1 mb-3 flex items-baseline gap-1">
-            <span className="type-stat text-6xl md:text-7xl text-text-primary">
-              {freePlan.price}
+          <ul className="mt-6 flex-1 space-y-3">
+            {FREE_FEATURES.map((f) => (
+              <li key={f} className="flex items-center gap-3 text-base text-text-primary md:text-lg">
+                <Check className="h-5 w-5 shrink-0 text-text-secondary" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={handleGetStarted}
+            className="mt-8 w-full rounded-xl bg-background-card py-3 text-lg font-semibold text-text-primary transition-colors hover:bg-background-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Get started free
+          </button>
+        </motion.div>
+
+        <motion.div
+          className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-primary bg-background-white p-6 shadow-medium md:p-8"
+          {...reveal(0.16)}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
+          />
+          <div className="flex items-center justify-between">
+            <p className="type-eyebrow text-primary-700">Premium</p>
+            <span className="rounded-full bg-primary-50 px-3 py-1 text-sm font-bold text-primary-700">
+              Most popular
             </span>
           </div>
-          <p className="text-base md:text-lg text-text-secondary mb-6">
-            {freePlan.description}
-          </p>
-          <ul className="space-y-2.5 mb-6 flex-1">
-            {freePlan.features.map((f) => (
-              <li key={f.text} className="flex items-center gap-2">
-                {f.included ? (
-                  <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="type-stat text-6xl text-text-primary md:text-8xl">
+              <RollingPrice value={shown.value} pricing={pricing} />
+            </span>
+            <span className="text-base font-medium text-text-secondary">{shown.unit}</span>
+          </div>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.p
+              key={billing}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              className="mt-3 text-base text-text-secondary md:text-lg"
+            >
+              {billing === "yearly" ? (
+                yearlyAsMonthly ? (
+                  <>
+                    Billed {money(pricing, pricing.yearly)} once a year
+                    <span className="font-semibold text-primary-700"> · save {savePct}%</span>
+                  </>
                 ) : (
-                  <X className="w-5 h-5 text-text-secondary/30 mt-0.5 shrink-0" />
-                )}
-                <span
-                  className={`text-lg md:text-lg ${
-                    f.included ? "text-text-primary" : "text-text-secondary/50"
-                  }`}
-                >
-                  {f.text}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <button onClick={handleGetStarted} className="w-full py-2.5 rounded-xl text-lg md:text-lg font-semibold transition-colors bg-background-card text-text-primary hover:bg-background-card/80">
-            {freePlan.cta}
-          </button>
-        </motion.div>
-
-        {/* Premium plan (active tab) */}
-        <motion.div
-          className="relative rounded-2xl px-2 py-4 md:p-8 flex flex-col border-2 border-primary shadow-medium bg-background-white sm:scale-[1.02] sm:-translate-y-1"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.45, delay: 0.08 }}
-        >
-          <span className="absolute top-0 right-6 -translate-y-1/2 text-sm font-bold bg-accent text-accent-foreground px-3 py-1 rounded-full">
-            Recommended
-          </span>
-          <p className="type-eyebrow text-primary-700 mb-1">
-            Premium
-          </p>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <div className="mt-1 mb-3 flex items-baseline gap-1.5">
-                <span className="type-stat text-6xl md:text-8xl text-text-primary">
-                  {activePlan.price}
-                </span>
-                <span className="text-base md:text-lg font-medium text-text-secondary">
-                  {activePlan.period}
-                </span>
-              </div>
-              <p className="text-base md:text-lg text-text-secondary mb-6">
-                {activePlan.description}
-              </p>
-            </motion.div>
+                  <>Billed once a year · one payment, all year</>
+                )
+              ) : billing === "weekly" ? (
+                <>Billed weekly · cancel anytime</>
+              ) : (
+                <>Billed monthly · switch plans anytime</>
+              )}
+            </motion.p>
           </AnimatePresence>
-
-          <ul className="space-y-2.5 mb-6 flex-1">
-            {premiumFeatures.map((f) => (
-              <li key={f.text} className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
-                <span className="text-lg md:text-lg text-text-primary">{f.text}</span>
+          <p className="mt-6 text-sm font-semibold text-text-secondary">Everything in Free, plus</p>
+          <ul className="mt-3 flex-1 space-y-3">
+            {PREMIUM_FEATURES.map((f) => (
+              <li key={f} className="flex items-center gap-3 text-base text-text-primary md:text-lg">
+                <Check className="h-5 w-5 shrink-0 text-primary" />
+                {f}
               </li>
             ))}
           </ul>
-
-          <button onClick={handleGetStarted} className="w-full py-2.5 rounded-xl text-lg md:text-lg font-semibold transition-colors bg-primary text-white hover:bg-button-hover-primary">
-            {activePlan.cta}
+          <button
+            onClick={handleGetStarted}
+            className="mt-8 w-full rounded-xl bg-primary py-3 text-lg font-semibold text-white transition-colors hover:bg-button-hover-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            {`Get Premium ${billing}`}
           </button>
-        </motion.div>
-
-        {/* Competitors comparison — visually defeated */}
-        <motion.div
-          className="relative rounded-2xl p-2 flex flex-col border border-dashed border-border bg-transparent opacity-60 hover:opacity-80 transition-opacity duration-300 sm:scale-[0.96] origin-top"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 0.6, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.45, delay: 0.16 }}
-        >
-          <p className="text-sm font-semibold text-text-secondary/80 mb-1">
-            Competitors
-          </p>
-          <div className="mt-1 mb-3 flex items-baseline gap-1.5">
-            <span className="type-stat text-4xl md:text-5xl text-text-secondary line-through decoration-2 decoration-text-secondary/60">
-              {pricing.competitorPrice}
-            </span>
-            <span className="text-sm font-medium text-text-secondary/70">
-              /yr avg.
-            </span>
-          </div>
-          <p className="text-sm md:text-base text-text-secondary/80 mb-5 leading-relaxed">
-            What others charge for the same features.
-          </p>
-
-          <ul className="space-y-1.5 mb-5 flex-1">
-            {[
-              "Unlimited listening",
-              "Unlimited file uploads",
-              "All file types",
-              "Premium AI voices",
-              "Real-time highlighting",
-              "Cross-device sync",
-              "Priority support",
-              "Cancel anytime",
-            ].map((text) => (
-              <li key={text} className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-text-secondary/30 shrink-0" />
-                <span className="text-sm md:text-base text-text-secondary/70 line-through decoration-text-secondary/30">
-                  {text}
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="w-full py-1.5 rounded-lg text-sm font-semibold text-center text-text-secondary/80 border border-dashed border-text-secondary/30">
-            Overpriced
-          </div>
         </motion.div>
       </div>
+
+      <motion.div {...reveal(0.1)}>
+        <CompareBars pricing={pricing} />
+      </motion.div>
     </section>
   );
 }
