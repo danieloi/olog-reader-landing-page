@@ -1,18 +1,18 @@
 "use client";
 
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 const tiltSpring = { damping: 28, stiffness: 120, mass: 1.4 };
 
 export function FloatingPhone({
-  imageSrc,
-  altText,
+  children,
   reduced,
+  size,
 }: {
-  imageSrc: string;
-  altText: string;
+  children: ReactNode;
   reduced?: boolean;
+  size?: { width: number; height: number };
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [interacting, setInteracting] = useState(false);
@@ -25,7 +25,7 @@ export function FloatingPhone({
   const springRotateY = useSpring(rotateY, tiltSpring);
   const springScale = useSpring(scale, tiltSpring);
 
-  const amplitude = reduced ? 9 : 16;
+  const amplitude = reduced ? 6 : 10;
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const el = wrapRef.current;
@@ -39,7 +39,7 @@ export function FloatingPhone({
 
   const handleEnter = () => {
     setInteracting(true);
-    scale.set(reduced ? 1.03 : 1.06);
+    scale.set(reduced ? 1.02 : 1.03);
   };
 
   const handleLeave = () => {
@@ -54,8 +54,8 @@ export function FloatingPhone({
       ref={wrapRef}
       className="phone-3d-perspective"
       style={{
-        width: reduced ? "220px" : "280px",
-        height: reduced ? "475px" : "604px",
+        width: size ? `${size.width}px` : reduced ? "220px" : "280px",
+        height: size ? `${size.height}px` : reduced ? "475px" : "604px",
       }}
       onPointerMove={handlePointerMove}
       onPointerEnter={handleEnter}
@@ -73,19 +73,8 @@ export function FloatingPhone({
       >
         {/* Auto-rotation layer (CSS) — paused while interacting */}
         <div className="phone-3d-stage" data-interacting={interacting}>
-          {/* Back plate — receding shadow plinth */}
           <div className="phone-3d-plate" aria-hidden />
-          {/* Decorative frame ring */}
-          <div className="phone-3d-frame" aria-hidden />
-          {/* Phone image */}
-          <div className="phone-3d-screen">
-            <img
-              src={imageSrc}
-              alt={altText}
-              className="block w-full h-full object-contain rounded-[36px]"
-              draggable={false}
-            />
-          </div>
+          <div className="phone-3d-screen">{children}</div>
         </div>
       </motion.div>
     </div>
