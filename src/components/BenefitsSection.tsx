@@ -1,9 +1,10 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
-import { useTheme } from "next-themes";
-import { fileTypeItems } from "./icons";
+import { motion } from "framer-motion";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { FloatingPhone } from "./FloatingPhone";
+import { FEATURE_SCREENS } from "./phone/FeatureScreens";
+import { PhoneScreen, SheetStage, useClock, useInView, usePageVisible, useReducedMotionSafe } from "./phone/ReaderUI";
 
 type Voice = {
   name: string;
@@ -12,214 +13,87 @@ type Voice = {
   audio: string;
 };
 
-const benefits = [
-  {
-    label: "Smart Highlighting",
-    title: "Each word lights up in sync with the audio, helping you follow along and retain more",
-    video: "/highlight_as_you_read_light.mp4",
-    videoDark: "/highlight_as_you_read_dark.mp4",
-  },
-  {
-    label: "Speed Control",
-    title: "Listen at your speed — slow down for complex content or speed up to breeze through",
-    screenshot: "/read_at_your_pace.webp",
-    screenshotDark: "/read_at_your_pace_dark.webp",
-  },
-  {
-    label: "Sync Across Devices",
-    title: "Pick up right where you left off on any device — your progress stays in sync",
-    screenshot: "/sync_progress.webp",
-    screenshotDark: "/sync_progress_dark.webp",
-  },
-  {
-    label: "Listen to Anything",
-    title: "Upload PDFs, EPUBs, slides, or links and instantly turn them into natural speech",
-    iconGrid: true,
-  },
-  {
-    label: "Offline Mode",
-    title: "Listen to your documents anytime — even without an internet connection",
-    screenshot: "/offline_mode.webp",
-    screenshotDark: "/offline_mode_dark.webp",
-  },
-  {
-    label: "Natural Voices",
-    title: "The best most natural sounding voices in the world — pick from a huge list of voices",
-    voiceCard: true,
-    voices: [
-      
-      {
-        name: "Ashley",
-        description: "A warm, natural female voice.",
-        image: "/voices/avatars/Ashley.webp",
-        audio: "/voices/Ashley.mp3",
-      },
-      {
-        name: "Deborah",
-        description: "A warm, peaceful female voice with a calm tone.",
-        image: "/voices/avatars/Deborah.webp",
-        audio: "/voices/Deborah.mp3",
-      }
-      ,
-      {
-        name: "Ronald",
-        description: "Confident, British man with a deep, gravelly voice.",
-        image: "/voices/avatars/Ronald.webp",
-        audio: "/voices/Ronald.mp3",
-      },
-      {
-        name: "Timothy",
-        description: "Lively, upbeat American male voice",
-        image: "/voices/avatars/Timothy.webp",
-        audio: "/voices/Timothy.mp3",
-      },
-      {
-        name: "Blake",
-        description: "Rich, intimate male voice.",
-        image: "/voices/avatars/Blake.webp",
-        audio: "/voices/Blake.mp3",
-      },
-      { name:"Heart",
-        description: "English female voice",
-        image: "/voices/avatars/Heart.webp",
-        audio: "/voices/Heart.mp3",
-      },
-      
-
-      
-    ] as Voice[],
-  },
-
-  {
-    label: "Reflow Mode",
-    title: "Text automatically adapts to your screen size for a comfortable reading experience",
-    video: "/reflow-light.mp4",
-    videoDark: "/reflow-mode-dark.mp4",
-    hideMuteButton: true,
-  },
-  {
-    label: "Highlights & Notes",
-    title: "Highlight passages and jot down notes as you listen — your thoughts stay attached to the text",
-    screenshot: "/annotation-light.webp",
-    screenshotDark: "/annotation-dark.webp",
-  },
+const voices: Voice[] = [
+  { name: "Ashley", description: "A warm, natural female voice.", image: "/voices/avatars/Ashley.webp", audio: "/voices/Ashley.mp3" },
+  { name: "Deborah", description: "A warm, peaceful female voice with a calm tone.", image: "/voices/avatars/Deborah.webp", audio: "/voices/Deborah.mp3" },
+  { name: "Ronald", description: "Confident, British man with a deep, gravelly voice.", image: "/voices/avatars/Ronald.webp", audio: "/voices/Ronald.mp3" },
+  { name: "Timothy", description: "Lively, upbeat American male voice", image: "/voices/avatars/Timothy.webp", audio: "/voices/Timothy.mp3" },
+  { name: "Blake", description: "Rich, intimate male voice.", image: "/voices/avatars/Blake.webp", audio: "/voices/Blake.mp3" },
+  { name: "Heart", description: "English female voice", image: "/voices/avatars/Heart.webp", audio: "/voices/Heart.mp3" },
 ];
 
-function VolumeOnIcon() {
+const features = [
+  {
+    id: "highlight",
+    label: "Smart Highlighting",
+    title: "Each word lights up in sync with the audio, helping you follow along and retain more",
+  },
+  {
+    id: "speed",
+    label: "Speed Control",
+    title: "Listen at your speed — slow down for complex content or speed up to breeze through",
+  },
+  {
+    id: "sync",
+    label: "Sync Across Devices",
+    title: "Pick up right where you left off on any device — your progress stays in sync",
+  },
+  {
+    id: "formats",
+    label: "Listen to Anything",
+    title: "Upload PDFs, EPUBs, slides, or links and instantly turn them into natural speech",
+  },
+  {
+    id: "offline",
+    label: "Offline Mode",
+    title: "Listen to your documents anytime — even without an internet connection",
+  },
+  {
+    id: "voices",
+    label: "Natural Voices",
+    title: "The best most natural sounding voices in the world — pick from a huge list of voices",
+    voices: true,
+  },
+  {
+    id: "reflow",
+    label: "Reflow Mode",
+    title: "Text automatically adapts to your screen size for a comfortable reading experience",
+  },
+  {
+    id: "notes",
+    label: "Highlights & Notes",
+    title: "Highlight passages and jot down notes as you listen — your thoughts stay attached to the text",
+  },
+] as const;
+
+function FeaturePhone({ index, t, reduced }: { index: number; t: number; reduced: boolean }) {
+  const feature = features[index];
+  const screen = FEATURE_SCREENS[feature.id];
+  const loop = Math.floor(t / screen.duration);
+  const { Screen } = screen;
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    <PhoneScreen label={`${feature.label} in Olog Reader: ${screen.summary}`}>
+      <SheetStage screenKey={`${feature.id}-${loop}`} reduced={reduced}>
+        <Screen t={reduced ? screen.still : t % screen.duration} reduced={reduced} />
+      </SheetStage>
+    </PhoneScreen>
+  );
+}
+
+function PlayGlyph({ playing }: { playing: boolean }) {
+  return playing ? (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <rect x="6" y="5" width="4" height="14" rx="1" />
+      <rect x="14" y="5" width="4" height="14" rx="1" />
     </svg>
-  );
-}
-
-function VolumeOffIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-      <line x1="23" y1="9" x2="17" y2="15" />
-      <line x1="17" y1="9" x2="23" y2="15" />
-    </svg>
-  );
-}
-
-function VideoPlayer({ src, preloadSrc, showMuteButton = true }: { src: string; preloadSrc?: string; showMuteButton?: boolean }) {
-  const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const prevSrcRef = useRef(src);
-
-  // Preload the alternate theme video so it's cached before the switch
-  useEffect(() => {
-    if (!preloadSrc) return;
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "video";
-    link.href = preloadSrc;
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, [preloadSrc]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-
-    if (prevSrcRef.current !== src) {
-      const currentTime = video.currentTime;
-      const wasPlaying = !video.paused;
-      video.src = src;
-      video.currentTime = currentTime;
-      if (wasPlaying) video.play();
-      prevSrcRef.current = src;
-    } else if (!video.src) {
-      video.src = src;
-      video.play();
-    }
-  }, [src]);
-
-  return (
-    <div className="group/video absolute inset-0">
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted={isMuted}
-        playsInline
-        className="absolute inset-0 w-full h-full object-contain"
-      />
-      {showMuteButton && (
-        <button
-          onClick={() => setIsMuted((m) => !m)}
-          className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-black/50 text-primary backdrop-blur-sm md:opacity-0 md:group-hover/video:opacity-100 transition-opacity duration-200 hover:bg-primary/80 cursor-pointer"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? <VolumeOffIcon /> : <VolumeOnIcon />}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+  ) : (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M8 5v14l11-7z" />
     </svg>
   );
 }
 
-function PauseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <rect x="6" y="5" width="4" height="14" rx="1" />
-      <rect x="14" y="5" width="4" height="14" rx="1" />
-    </svg>
-  );
-}
-
-function VoiceShowcase({ voices }: { voices: Voice[] }) {
+function VoiceSamples({ className = "" }: { className?: string }) {
   const [playing, setPlaying] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -248,7 +122,7 @@ function VoiceShowcase({ voices }: { voices: Voice[] }) {
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-start gap-2 md:gap-3 p-1 md:p-2 overflow-y-auto scrollbar-hide">
+    <div className={`flex flex-wrap gap-1 ${className}`}>
       <audio ref={audioRef} preload="none" />
       {voices.map((v) => {
         const isPlaying = playing === v.name;
@@ -256,37 +130,21 @@ function VoiceShowcase({ voices }: { voices: Voice[] }) {
           <button
             key={v.name}
             type="button"
-            onClick={() => toggle(v)}
-            aria-label={isPlaying ? `Pause ${v.name}` : `Play sample of ${v.name}`}
-            className={`flex items-center gap-1 md:gap-2 rounded-2xl p-1 md:p-2  text-left transition-colors cursor-pointer ${
+            onClick={(e) => {
+              e.stopPropagation();
+              toggle(v);
+            }}
+            aria-label={isPlaying ? `Pause ${v.name}` : `Play a sample of ${v.name}, ${v.description}`}
+            className={`inline-flex items-center gap-1 h-5 pl-[4px] pr-[14px] rounded-full border text-sm font-semibold transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               isPlaying
-                ? "bg-primary/10 border border-primary/40"
-                : "bg-background-white/70 border border-border hover:border-primary/30"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background-white border-border text-text-primary hover:border-primary/40"
             }`}
           >
-            <img
-              src={v.image}
-              alt={`${v.name} — ${v.description} AI voice in Olog Reader`}
-              className="w-4 h-4 md:w-6 md:h-6 rounded-full object-cover shrink-0 bg-background-card"
-              onError={(e) => {
-                e.currentTarget.style.visibility = "hidden";
-              }}
-            />
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-text-primary text-base md:text-lg leading-tight truncate">
-                {v.name}
-              </p>
-              <p className="text-sm text-text-secondary leading-snug mt-1 line-clamp-2">
-                {v.description}
-              </p>
-            </div>
-            <span
-              className={`shrink-0 w-4 h-4 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-colors ${
-                isPlaying ? "bg-primary text-white" : "bg-primary/10 text-primary"
-              }`}
-            >
-              {isPlaying ? <PauseIcon /> : <PlayIcon />}
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={v.image} alt="" className="w-4 h-4 rounded-full object-cover bg-background-card" />
+            {v.name}
+            <PlayGlyph playing={isPlaying} />
           </button>
         );
       })}
@@ -294,135 +152,250 @@ function VoiceShowcase({ voices }: { voices: Voice[] }) {
   );
 }
 
-function FileTypeIconGrid() {
+function useFeatureClock(index: number, reduced: boolean) {
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(phoneRef);
+  const pageVisible = usePageVisible();
+  const t = useClock(inView && pageVisible && !reduced, index);
+  return { phoneRef, t };
+}
+
+function DesktopShowcase({ reduced }: { reduced: boolean }) {
+  const [active, setActive] = useState(0);
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const lockUntil = useRef(0);
+  const { phoneRef, t } = useFeatureClock(active, reduced);
+
+  useEffect(() => {
+    let raf = 0;
+    const measure = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (performance.now() < lockUntil.current) return;
+        const mid = window.innerHeight / 2;
+        let best = -1;
+        let bestDist = Infinity;
+        itemRefs.current.forEach((el, i) => {
+          if (!el) return;
+          const r = el.getBoundingClientRect();
+          if (r.height === 0) return;
+          const d = Math.abs(r.top + r.height / 2 - mid);
+          if (d < bestDist) {
+            bestDist = d;
+            best = i;
+          }
+        });
+        if (best >= 0) setActive(best);
+      });
+    };
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const select = (i: number) => {
+    setActive(i);
+    lockUntil.current = performance.now() + (reduced ? 150 : 1000);
+    itemRefs.current[i]?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+  };
+
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="grid grid-cols-3 gap-4 md:gap-6 md:p-6">
-        {fileTypeItems.map((item) => {
-          const Icon = item.Icon;
+    <div className="hidden md:grid grid-cols-[auto_minmax(0,1fr)] gap-10 lg:gap-14 max-w-6xl mx-auto">
+      <div className="relative">
+        <div ref={phoneRef} className="sticky top-[max(96px,calc(50vh-302px))] flex flex-col items-center">
+          <FloatingPhone>
+            <FeaturePhone index={active} t={t} reduced={reduced} />
+          </FloatingPhone>
+        </div>
+      </div>
+      <ol className="py-[20vh]">
+        {features.map((f, i) => {
+          const isActive = i === active;
           return (
-            <div key={item.label} className="flex flex-col items-center gap-1 md:gap-2">
-              <div className="w-14 h-14 md:w-18 md:h-18 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Icon className="w-7 h-7 md:w-9 md:h-9" />
-              </div>
-              <span className="text-lg md:text-lg font-medium text-text-secondary">
-                {item.label}
-              </span>
-            </div>
+            <li
+              key={f.id}
+              ref={(el) => {
+                itemRefs.current[i] = el;
+              }}
+              data-active={isActive}
+              onClick={() => select(i)}
+              className="group relative min-h-[60vh] flex flex-col justify-center pl-4 lg:pl-5 cursor-pointer"
+            >
+              <span aria-hidden className="absolute left-0 inset-y-0 w-[2px] bg-border" />
+              <span
+                aria-hidden
+                className={`absolute left-0 inset-y-[18%] w-[2px] rounded-full bg-primary origin-top transition-transform duration-500 ease-out ${
+                  isActive ? "scale-y-100" : "scale-y-0"
+                }`}
+              />
+              <p
+                className={`type-eyebrow flex items-center gap-[12px] transition-colors duration-300 ${
+                  isActive ? "text-primary-700" : "text-text-secondary"
+                }`}
+              >
+                {f.label}
+              </p>
+              <h3
+                className={`type-h3 mt-2 max-w-xl transition-[color,opacity] duration-300 ${
+                  isActive ? "text-text-primary opacity-100" : "text-text-secondary opacity-60 group-hover:opacity-90"
+                }`}
+              >
+                <button
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    select(i);
+                  }}
+                  className="[font:inherit] tracking-[inherit] text-left cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                >
+                  {f.title}
+                </button>
+              </h3>
+              {"voices" in f && <VoiceSamples className="mt-3 max-w-xl" />}
+            </li>
           );
         })}
+      </ol>
+    </div>
+  );
+}
+
+function MobileShowcase({ reduced }: { reduced: boolean }) {
+  const [active, setActive] = useState(0);
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const { phoneRef, t } = useFeatureClock(active, reduced);
+  const duration = FEATURE_SCREENS[features[active].id].duration;
+  const feature = features[active];
+
+  useEffect(() => {
+    if (!reduced && t >= duration) setActive((a) => (a + 1) % features.length);
+  }, [t, duration, reduced]);
+
+  useEffect(() => {
+    const row = chipsRef.current;
+    const chip = tabRefs.current[active];
+    if (!row || !chip) return;
+    row.scrollTo({
+      left: chip.offsetLeft - (row.clientWidth - chip.offsetWidth) / 2,
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, [active, reduced]);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const delta = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    const jump = e.key === "Home" ? 0 : e.key === "End" ? features.length - 1 : null;
+    if (!delta && jump === null) return;
+    e.preventDefault();
+    const next = jump ?? (active + delta + features.length) % features.length;
+    setActive(next);
+    tabRefs.current[next]?.focus();
+  };
+
+  return (
+    <div className="md:hidden">
+      <div
+        ref={chipsRef}
+        role="tablist"
+        aria-label="Olog Reader features"
+        className="flex gap-1 overflow-x-auto scrollbar-hide -mx-4 px-4 py-1"
+      >
+        {features.map((f, i) => {
+          const isActive = i === active;
+          return (
+            <button
+              key={f.id}
+              ref={(el) => {
+                tabRefs.current[i] = el;
+              }}
+              id={`feature-tab-${f.id}`}
+              role="tab"
+              type="button"
+              aria-selected={isActive}
+              aria-controls="feature-panel"
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => setActive(i)}
+              onKeyDown={onKeyDown}
+              className={`relative shrink-0 h-5 px-2 rounded-full overflow-hidden text-[15px] font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background-card text-text-secondary border border-border"
+              }`}
+            >
+              {f.label}
+              {isActive && !reduced && (
+                <span
+                  aria-hidden
+                  className="absolute left-[14px] right-[14px] bottom-[5px] h-[2px] rounded-full bg-primary-foreground/30 overflow-hidden"
+                >
+                  <span
+                    className="block h-full bg-primary-foreground origin-left"
+                    style={{ transform: `scaleX(${Math.min(1, t / duration)})`, transition: "transform 100ms linear" }}
+                  />
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div ref={phoneRef} className="flex justify-center mt-4">
+        <FloatingPhone reduced size={{ width: 248, height: 535 }}>
+          <FeaturePhone index={active} t={t} reduced={reduced} />
+        </FloatingPhone>
+      </div>
+
+      <div
+        id="feature-panel"
+        role="tabpanel"
+        aria-labelledby={`feature-tab-${feature.id}`}
+        className="mt-4 min-h-[9.5rem] text-center"
+      >
+        <motion.div
+          key={feature.id}
+          initial={reduced ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <p className="type-eyebrow text-primary-700">{feature.label}</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-[-0.02em] leading-snug text-text-primary text-balance">
+            {feature.title}
+          </h3>
+          {"voices" in feature && <VoiceSamples className="mt-3 justify-center" />}
+        </motion.div>
       </div>
     </div>
   );
 }
 
-function BenefitCard({
-  benefit: b,
-  index,
-  isDark,
-  toned,
-}: {
-  benefit: (typeof benefits)[number];
-  index: number;
-  isDark: boolean;
-  toned?: "primary" | "accent" | null;
-}) {
-  const imageSrc = isDark ? b.screenshotDark : b.screenshot;
-  const videoSrc = b.video ? (isDark && b.videoDark ? b.videoDark : b.video) : undefined;
-  const videoPreloadSrc = b.video && b.videoDark
-    ? (isDark ? b.video : b.videoDark)
-    : undefined;
-
-  const tonedBg =
-    toned === "primary"
-      ? "bg-primary/10 dark:bg-primary/15 border-primary/20"
-      : toned === "accent"
-      ? "bg-accent/15 dark:bg-accent/12 border-accent/25"
-      : "bg-background-card border-border";
-
-  const numberLabel = String(index + 1).padStart(2, "0");
-
-  return (
-    <motion.div
-      className={`group relative rounded-2xl md:rounded-3xl overflow-hidden border p-4 md:p-6 flex flex-col ${tonedBg}`}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.45, delay: index * 0.08 }}
-    >
-      <p className="font-mono text-xs md:text-sm uppercase tracking-[0.18em] text-text-secondary mb-2 md:mb-3">
-        <span className="text-primary">{numberLabel}</span>
-        <span className="mx-2 opacity-40">/</span>
-        {b.label}
-      </p>
-      <h3 className="text-lg md:text-2xl font-semibold text-text-primary leading-snug mb-4 md:mb-6">
-        {b.title}
-      </h3>
-
-      <div className="relative flex-1 min-h-[280px] md:min-h-[380px] rounded-xl overflow-hidden ">
-        {b.voiceCard && b.voices ? (
-          <VoiceShowcase voices={b.voices} />
-        ) : b.iconGrid ? (
-          <FileTypeIconGrid />
-        ) : videoSrc ? (
-          <VideoPlayer src={videoSrc} preloadSrc={videoPreloadSrc} showMuteButton={!b.hideMuteButton} />
-        ) : (
-            <img
-              key={imageSrc}
-              src={imageSrc}
-              alt={`Olog Reader ${b.label} — ${b.title}`}
-              className="absolute inset-0 w-full h-full object-contain "
-              onError={(e) => {
-                if (isDark && b.screenshot && e.currentTarget.src !== b.screenshot) {
-                  e.currentTarget.src = b.screenshot;
-                }
-              }}
-            />
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
 export function BenefitsSection() {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const reduced = useReducedMotionSafe();
 
   return (
     <section className="py-10 md:py-24 px-4">
       <motion.div
-        className="max-w-7xl mx-auto space-y-4 text-center mb-10 md:mb-16"
+        className="max-w-7xl mx-auto space-y-4 text-center mb-10 md:mb-4"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-3xl md:text-6xl font-bold text-text-primary leading-tight">
+        <h2 className="type-h2 text-text-primary">
           Work Harder? <br className="md:hidden" /> <span className="text-primary">Listen Smarter!</span>
         </h2>
-        <p className="text-lg md:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
+        <p className="type-lead text-text-secondary max-w-3xl mx-auto">
           Upload documents, paste links, or scan text. Our AI reads it aloud
           with the most natural sounding voices in the world while highlighting every word — so you never lose your place.
         </p>
       </motion.div>
-      <div className="max-w-7xl mx-auto flex flex-col gap-3 md:gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-4">
-          <BenefitCard benefit={benefits[0]} index={0} isDark={isDark} toned={null} />
-          <BenefitCard benefit={benefits[1]} index={1} isDark={isDark} toned="primary" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-3 md:gap-4">
-          <BenefitCard benefit={benefits[2]} index={2} isDark={isDark} toned="accent" />
-          <BenefitCard benefit={benefits[3]} index={3} isDark={isDark} toned={null} />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-4">
-          <BenefitCard benefit={benefits[4]} index={4} isDark={isDark} toned={null} />
-          <BenefitCard benefit={benefits[5]} index={5} isDark={isDark} toned="accent" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-3 md:gap-4">
-          <BenefitCard benefit={benefits[6]} index={6} isDark={isDark} toned="primary" />
-          <BenefitCard benefit={benefits[7]} index={7} isDark={isDark} toned={null} />
-        </div>
-      </div>
+      <DesktopShowcase reduced={reduced} />
+      <MobileShowcase reduced={reduced} />
     </section>
   );
 }
