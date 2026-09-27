@@ -72,7 +72,7 @@ function FeaturePhone({ index, t, reduced }: { index: number; t: number; reduced
   const loop = Math.floor(t / screen.duration);
   const { Screen } = screen;
   return (
-    <PhoneScreen label={`${feature.label} in Olog Reader: ${screen.summary}`}>
+    <PhoneScreen label={`${feature.label} in Olog Reader: ${screen.summary}`} overlayStatus>
       <SheetStage screenKey={`${feature.id}-${loop}`} reduced={reduced}>
         <Screen t={reduced ? screen.still : t % screen.duration} reduced={reduced} />
       </SheetStage>
