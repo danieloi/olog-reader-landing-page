@@ -112,14 +112,16 @@ export function PhoneScreen({
   label,
   children,
   className = "",
+  overlayStatus = false,
 }: {
   label: string;
   children: ReactNode;
   className?: string;
+  overlayStatus?: boolean;
 }) {
   return (
     <div className={`reader-demo ${className}`} role="img" aria-label={label}>
-      <div className="rd-screen" aria-hidden>
+      <div className="rd-screen" data-overlay-status={overlayStatus} aria-hidden>
         <StatusBar />
         {children}
       </div>

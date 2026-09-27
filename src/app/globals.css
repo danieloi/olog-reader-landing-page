@@ -617,6 +617,17 @@ html {
   --rd-word: rgba(255, 149, 0, 0.3);
   --rd-amber: #ff9500;
   --rd-chip: #eeeef0;
+  --rd-desk: color-mix(in srgb, var(--rd-ink) 7%, var(--rd-bg));
+  --rd-paper: #ffffff;
+  --rd-paper-ink: #1a1c24;
+  --rd-paper-body: #3a3d47;
+  --rd-paper-muted: #6b6f7a;
+  --rd-paper-rule: rgba(26, 28, 36, 0.12);
+  --rd-paper-edge: rgba(26, 28, 36, 0.08);
+  --rd-paper-fill: #f3f4f8;
+  --rd-bar: #bbc9fb;
+  --rd-bar-strong: #93a8f7;
+  --rd-status-h: calc(2.9em * 0.82);
   position: relative;
   width: 100%;
   height: 100%;
@@ -639,6 +650,16 @@ html {
   --rd-sent-edge: rgba(102, 130, 243, 0.42);
   --rd-word: rgba(255, 149, 0, 0.32);
   --rd-chip: #262932;
+  --rd-desk: #0c0d11;
+  --rd-paper: #1d2029;
+  --rd-paper-ink: #ecece6;
+  --rd-paper-body: #c4c6cc;
+  --rd-paper-muted: #8d919a;
+  --rd-paper-rule: rgba(236, 236, 230, 0.12);
+  --rd-paper-edge: rgba(236, 236, 230, 0.07);
+  --rd-paper-fill: #262a35;
+  --rd-bar: #3a4a86;
+  --rd-bar-strong: #4d63b8;
 }
 
 .rd-screen {
@@ -658,6 +679,20 @@ html {
   font-size: 0.82em;
   font-weight: 600;
   flex: none;
+}
+
+.rd-screen[data-overlay-status="true"] {
+  position: relative;
+}
+
+.rd-screen[data-overlay-status="true"] > .rd-status {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 6;
+}
+
+.rd-screen[data-overlay-status="true"] .fx-col {
+  padding-top: var(--rd-status-h);
 }
 
 .rd-island {
@@ -939,20 +974,20 @@ html {
 
 .rd-sheet:has(> .rd-page[data-format="pdf"]),
 .rd-sheet:has(> .rd-page[data-format="slides"]) {
-  background: color-mix(in srgb, var(--rd-ink) 7%, var(--rd-bg));
+  background: var(--rd-desk);
 }
 
 .rd-page[data-format="pdf"] {
   margin: 0.9em 0.8em 0;
   padding: 1.2em 1.1em 0.9em;
   border-radius: 0.25em;
-  background: #fff;
-  color: #1a1c24;
-  box-shadow: 0 0 0 1px rgba(26, 28, 36, 0.06), 0 0.5em 1.2em -0.5em rgba(0, 0, 0, 0.28);
+  background: var(--rd-paper);
+  color: var(--rd-paper-ink);
+  box-shadow: 0 0 0 1px var(--rd-paper-edge), 0 0.5em 1.2em -0.5em rgba(0, 0, 0, 0.28);
 }
 
 .rd-page[data-format="pdf"] .rd-kicker {
-  color: #3359ef;
+  color: var(--rd-blue);
   font-size: 0.64em;
 }
 
@@ -960,17 +995,12 @@ html {
   font-size: 1.22em;
   padding-bottom: 0.45em;
   margin-bottom: 0.6em;
-  border-bottom: 1px solid rgba(26, 28, 36, 0.12);
+  border-bottom: 1px solid var(--rd-paper-rule);
 }
 
 .rd-page[data-format="pdf"] .rd-body {
   font-size: 0.92em;
   line-height: 1.55;
-}
-
-.rd-page[data-format="pdf"] .rd-sent[data-active="true"] {
-  background: rgba(51, 89, 239, 0.1);
-  box-shadow: 0 0 0 1px rgba(51, 89, 239, 0.32);
 }
 
 .rd-figure {
@@ -984,24 +1014,24 @@ html {
   height: 4.4em;
   padding: 0.5em 0.9em 0;
   border-radius: 0.2em;
-  background: #f3f4f8;
-  border-bottom: 1px solid rgba(26, 28, 36, 0.25);
+  background: var(--rd-paper-fill);
+  border-bottom: 1px solid var(--rd-paper-rule);
 }
 
 .rd-figure-plot span {
   flex: 1;
   border-radius: 0.15em 0.15em 0 0;
-  background: #93a8f7;
+  background: var(--rd-bar-strong);
 }
 
 .rd-figure-plot span:last-child {
-  background: #3359ef;
+  background: var(--rd-blue);
 }
 
 .rd-figure figcaption {
   margin-top: 0.4em;
   font-size: 0.62em;
-  color: #6b6f7a;
+  color: var(--rd-paper-muted);
 }
 
 .rd-folio {
@@ -1013,7 +1043,7 @@ html {
 }
 
 .rd-page[data-format="pdf"] .rd-folio {
-  color: #6b6f7a;
+  color: var(--rd-paper-muted);
 }
 
 .rd-page[data-format="slides"] {
@@ -1033,11 +1063,11 @@ html {
   aspect-ratio: 16 / 9;
   padding: 0.7em 0.75em;
   border-radius: 0.5em;
-  background: #fff;
-  color: #1a1c24;
-  box-shadow: 0 0 0 1px rgba(26, 28, 36, 0.08), 0 0.5em 1.2em -0.5em rgba(0, 0, 0, 0.3);
+  background: var(--rd-paper);
+  color: var(--rd-paper-ink);
+  box-shadow: 0 0 0 1px var(--rd-paper-edge), 0 0.5em 1.2em -0.5em rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  border-top: 0.3em solid #3359ef;
+  border-top: 0.3em solid var(--rd-blue);
 }
 
 .rd-slide-title {
@@ -1078,7 +1108,7 @@ html {
   width: 0.35em;
   height: 0.35em;
   border-radius: 999px;
-  background: #3359ef;
+  background: var(--rd-blue);
 }
 
 .rd-slide-chart {
@@ -1086,17 +1116,17 @@ html {
   align-items: flex-end;
   gap: 0.25em;
   padding-bottom: 0.1em;
-  border-bottom: 1px solid rgba(26, 28, 36, 0.2);
+  border-bottom: 1px solid var(--rd-paper-rule);
 }
 
 .rd-slide-chart span {
   flex: 1;
   border-radius: 0.12em 0.12em 0 0;
-  background: #bbc9fb;
+  background: var(--rd-bar);
 }
 
 .rd-slide-chart span:last-child {
-  background: #ff9500;
+  background: var(--rd-amber);
 }
 
 .rd-thumbs {
@@ -1113,20 +1143,20 @@ html {
   aspect-ratio: 16 / 9;
   padding: 0.35em 0.4em;
   border-radius: 0.3em;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(26, 28, 36, 0.1);
-  border-top: 0.15em solid #bbc9fb;
+  background: var(--rd-paper);
+  box-shadow: 0 0 0 1px var(--rd-paper-edge);
+  border-top: 0.15em solid var(--rd-bar);
 }
 
 .rd-thumb[data-active="true"] {
   box-shadow: 0 0 0 1.5px var(--rd-blue);
-  border-top-color: #3359ef;
+  border-top-color: var(--rd-blue);
 }
 
 .rd-thumb-title {
   font-size: 0.55em;
   font-weight: 800;
-  color: #1a1c24;
+  color: var(--rd-paper-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1135,7 +1165,7 @@ html {
 .rd-thumb-line {
   height: 0.2em;
   border-radius: 999px;
-  background: rgba(26, 28, 36, 0.12);
+  background: var(--rd-paper-rule);
 }
 
 .rd-thumb-line--short {
@@ -1903,7 +1933,7 @@ html {
 }
 
 .fx-reflow-stage {
-  background: color-mix(in srgb, var(--rd-ink) 7%, var(--rd-bg));
+  background: var(--rd-desk);
 }
 
 .fx-reflow {
@@ -1925,9 +1955,9 @@ html {
   width: 100%;
   padding: 1.1em 1em;
   border-radius: 0.2em;
-  background: #fff;
-  color: #1a1c24;
-  box-shadow: 0 0.3em 1em -0.4em rgba(0, 0, 0, 0.3);
+  background: var(--rd-paper);
+  color: var(--rd-paper-ink);
+  box-shadow: 0 0 0 1px var(--rd-paper-edge), 0 0.3em 1em -0.4em rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
@@ -1936,7 +1966,7 @@ html {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #3359ef;
+  color: var(--rd-blue);
 }
 
 .fx-pdf-title {
@@ -1953,14 +1983,14 @@ html {
   font-size: 0.34em;
   line-height: 1.45;
   text-align: justify;
-  color: #3a3d47;
+  color: var(--rd-paper-body);
 }
 
 .fx-pdf-figure {
   height: 4.5em;
   margin: 0.7em 0;
   border-radius: 0.2em;
-  background: color-mix(in srgb, #3359ef 12%, #f2f3f7);
+  background: color-mix(in srgb, var(--rd-blue) 12%, var(--rd-paper-fill));
 }
 
 .fx-anchor {

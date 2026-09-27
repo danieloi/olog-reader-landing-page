@@ -17,7 +17,7 @@ export default $config({
         ? "ologreader.com"
         : `${$app.stage}-ologreader.com`;
 
-    new sst.aws.Nextjs("MyWeb", {
+    const web = new sst.aws.Nextjs("MyWeb", {
       domain,
       environment: {
         NEXT_PUBLIC_API_URL: "https://api.reader.olog.me/v1",
@@ -27,6 +27,9 @@ export default $config({
     if ($app.stage === "production") {
       new sst.aws.Nextjs("VoiceWeb", {
         domain: "voice.ologreader.com",
+        buildCommand: web.nodes.server?.apply((server) =>
+          server.arn.apply(() => "test -f .open-next/open-next.output.json"),
+        ),
         environment: {
           NEXT_PUBLIC_API_URL: "https://api.reader.olog.me/v1",
         },
