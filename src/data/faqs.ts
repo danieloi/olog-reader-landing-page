@@ -17,6 +17,11 @@ export const faqs: Faq[] = [
       "Olog Reader supports PDFs, EPUBs, PowerPoint files, Word documents, web links, scanned images, and plain text. Honestly, we doubt there's a format left we don't support.",
   },
   {
+    question: "Can I talk to Olog Reader about what I'm reading?",
+    answer:
+      "Yes. Tap “Talk about this page” or the mic in Ask AI and just speak. It answers out loud in real time, knows the page you're on, and can jump you to the part of the book you're asking about. Every conversation is saved to your chats. Free accounts get 2 minutes of voice chat a week to try it; Premium includes up to 3 hours a week.",
+  },
+  {
     question: "How natural do the voices sound?",
     answer:
       "We use the latest AI text-to-speech models to deliver voices that sound remarkably human — with natural pacing, intonation, and rhythm.",

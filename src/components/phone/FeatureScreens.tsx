@@ -668,6 +668,144 @@ function NotesScreen({ t, reduced }: ScreenProps) {
   );
 }
 
+const TALK = {
+  prompt: 400,
+  tap: 1400,
+  open: 1700,
+  listen: 2400,
+  think: 4500,
+  speak: 5100,
+  done: 9700,
+};
+const TALK_QUESTION = "Why do we remember less when we skim?";
+const TALK_ANSWER =
+  "Skimming skips the slow, word-by-word reading that builds memory. The author\u2019s fix: let a voice set the pace while your eyes follow along.";
+const QUESTION_WORD_MS = 260;
+const ANSWER_WORD_MS = 190;
+
+function wordsShown(text: string, elapsed: number, perWord: number) {
+  const words = text.split(" ");
+  const n = Math.max(0, Math.min(words.length, Math.floor(elapsed / perWord) + 1));
+  return elapsed < 0 ? "" : words.slice(0, n).join(" ");
+}
+
+function talkLevel(t: number, i: number) {
+  return 0.35 + 0.65 * Math.abs(Math.sin(t / 140 + i * 1.3) * Math.cos(t / 330 + i * 0.7));
+}
+
+function TalkOrb({ t, phase, reduced }: { t: number; phase: "connecting" | "listening" | "thinking" | "speaking"; reduced: boolean }) {
+  const live = phase === "listening" || phase === "speaking";
+  const swell = live && !reduced ? 1 + 0.08 * talkLevel(t, 2) : 1;
+  return (
+    <span className="fx-talk-orb" style={{ transform: `scale(${swell})` }}>
+      {live ? (
+        <span className="fx-talk-bars">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span key={i} style={{ height: `${reduced ? 50 : 22 + 78 * talkLevel(t, i)}%` }} />
+          ))}
+        </span>
+      ) : (
+        <span className="fx-talk-dots" data-paused={reduced}>
+          <span />
+          <span />
+          <span />
+        </span>
+      )}
+    </span>
+  );
+}
+
+function VoiceChatScreen({ t, reduced }: ScreenProps) {
+  const sheetOpen = t >= TALK.open;
+  const phase =
+    t < TALK.listen ? "connecting" : t < TALK.think ? "listening" : t < TALK.speak ? "thinking" : "speaking";
+  const label =
+    phase === "connecting"
+      ? "Connecting\u2026"
+      : phase === "listening"
+        ? "Listening\u2026"
+        : phase === "thinking"
+          ? "Thinking\u2026"
+          : "Speaking \u00b7 tap to interrupt";
+  const question = wordsShown(TALK_QUESTION, t - TALK.listen - 300, QUESTION_WORD_MS);
+  const answer = wordsShown(TALK_ANSWER, t - TALK.speak - 200, ANSWER_WORD_MS);
+  const pressed = t >= TALK.tap && t < TALK.open;
+  return (
+    <ScreenColumn>
+      <TopBar title={ARTICLE.label} />
+      <div className={`fx-body ${sheetOpen ? "fx-dimmed" : ""}`}>
+        <DocPage doc={ARTICLE} cursor={{ sentence: 2, word: 0 }} />
+      </div>
+      <Player page={ARTICLE.page} progress={0.24} total={ARTICLE.total} animate={false} playing={false} />
+      <AnimatePresence>
+        {!sheetOpen && t >= TALK.prompt && (
+          <motion.span
+            key="prompt"
+            className="fx-talk-prompt"
+            initial={reduced ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0, scale: pressed ? 0.94 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            <span className="fx-talk-prompt-icon" aria-hidden>
+              {[0, 1, 2, 3].map((i) => (
+                <span key={i} />
+              ))}
+            </span>
+            Talk about this page
+          </motion.span>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {sheetOpen && (
+          <>
+            <motion.div
+              key="scrim"
+              className="fx-scrim"
+              initial={reduced ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.div
+              key="sheet"
+              className="fx-bottom-sheet fx-talk-sheet"
+              initial={reduced ? false : { y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ duration: 0.55, ease: EASE }}
+            >
+              <span className="fx-grabber" />
+              <p className="fx-talk-title">Ask AI</p>
+              <span className="fx-talk-context">{ARTICLE.label} · Page 1</span>
+              <div className="fx-talk-thread">
+                {question && <p className="fx-talk-bubble fx-talk-user">{question}</p>}
+                {answer && <p className="fx-talk-bubble fx-talk-ai">{answer}</p>}
+              </div>
+              <div className="fx-talk-panel">
+                <TalkOrb t={t} phase={phase} reduced={reduced} />
+                <div className="fx-talk-status">
+                  <p className="fx-talk-label">{label}</p>
+                  <p className="fx-talk-topic">Talking about this document</p>
+                </div>
+                <span className="fx-talk-btn" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" />
+                  </svg>
+                </span>
+                <span className="fx-talk-btn fx-talk-end" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 9c-2.6 0-5.1.5-7.4 1.5-.8.3-1.3 1.1-1.3 2v2.3c0 .7.7 1.2 1.4 1l3-.9c.6-.2 1-.7 1-1.3v-1.4c1.1-.3 2.2-.4 3.3-.4s2.2.1 3.3.4v1.4c0 .6.4 1.1 1 1.3l3 .9c.7.2 1.4-.3 1.4-1v-2.3c0-.9-.5-1.7-1.3-2C17.1 9.5 14.6 9 12 9Z" />
+                  </svg>
+                </span>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </ScreenColumn>
+  );
+}
+
 export type FeatureScreen = {
   Screen: ComponentType<ScreenProps>;
   duration: number;
@@ -676,6 +814,12 @@ export type FeatureScreen = {
 };
 
 export const FEATURE_SCREENS: Record<string, FeatureScreen> = {
+  voicechat: {
+    Screen: VoiceChatScreen,
+    duration: 11000,
+    still: 8200,
+    summary: "Tapping \u201cTalk about this page\u201d while reading, then asking out loud why we remember less when we skim and hearing Ask AI answer about the article",
+  },
   highlight: {
     Screen: HighlightScreen,
     duration: 9000,
