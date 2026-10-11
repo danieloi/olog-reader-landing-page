@@ -668,20 +668,30 @@ function NotesScreen({ t, reduced }: ScreenProps) {
   );
 }
 
-const TALK = {
+export type TalkTiming = {
+  prompt: number;
+  tap: number;
+  open: number;
+  listen: number;
+  think: number;
+  speak: number;
+  questionWordMs: number;
+  answerWordMs: number;
+};
+
+const TALK: TalkTiming = {
   prompt: 400,
   tap: 1400,
   open: 1700,
   listen: 2400,
   think: 4500,
   speak: 5100,
-  done: 9700,
+  questionWordMs: 260,
+  answerWordMs: 190,
 };
 const TALK_QUESTION = "Why do we remember less when we skim?";
 const TALK_ANSWER =
   "Skimming skips the slow, word-by-word reading that builds memory. The author\u2019s fix: let a voice set the pace while your eyes follow along.";
-const QUESTION_WORD_MS = 260;
-const ANSWER_WORD_MS = 190;
 
 function wordsShown(text: string, elapsed: number, perWord: number) {
   const words = text.split(" ");
@@ -715,10 +725,10 @@ function TalkOrb({ t, phase, reduced }: { t: number; phase: "connecting" | "list
   );
 }
 
-function VoiceChatScreen({ t, reduced }: ScreenProps) {
-  const sheetOpen = t >= TALK.open;
+export function VoiceChatScreen({ t, reduced, timing = TALK }: ScreenProps & { timing?: TalkTiming }) {
+  const sheetOpen = t >= timing.open;
   const phase =
-    t < TALK.listen ? "connecting" : t < TALK.think ? "listening" : t < TALK.speak ? "thinking" : "speaking";
+    t < timing.listen ? "connecting" : t < timing.think ? "listening" : t < timing.speak ? "thinking" : "speaking";
   const label =
     phase === "connecting"
       ? "Connecting\u2026"
@@ -727,9 +737,9 @@ function VoiceChatScreen({ t, reduced }: ScreenProps) {
         : phase === "thinking"
           ? "Thinking\u2026"
           : "Speaking \u00b7 tap to interrupt";
-  const question = wordsShown(TALK_QUESTION, t - TALK.listen - 300, QUESTION_WORD_MS);
-  const answer = wordsShown(TALK_ANSWER, t - TALK.speak - 200, ANSWER_WORD_MS);
-  const pressed = t >= TALK.tap && t < TALK.open;
+  const question = wordsShown(TALK_QUESTION, t - timing.listen - 300, timing.questionWordMs);
+  const answer = wordsShown(TALK_ANSWER, t - timing.speak - 200, timing.answerWordMs);
+  const pressed = t >= timing.tap && t < timing.open;
   return (
     <ScreenColumn>
       <TopBar title={ARTICLE.label} />
@@ -738,7 +748,7 @@ function VoiceChatScreen({ t, reduced }: ScreenProps) {
       </div>
       <Player page={ARTICLE.page} progress={0.24} total={ARTICLE.total} animate={false} playing={false} />
       <AnimatePresence>
-        {!sheetOpen && t >= TALK.prompt && (
+        {!sheetOpen && t >= timing.prompt && (
           <motion.span
             key="prompt"
             className="fx-talk-prompt"
