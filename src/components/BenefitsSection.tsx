@@ -277,6 +277,8 @@ function DesktopShowcase({ reduced }: { reduced: boolean }) {
   );
 }
 
+const BROWSE_HOLD_MS = 3000;
+
 function MobileShowcase({ reduced }: { reduced: boolean }) {
   const [active, setActive] = useState(0);
   const chipsRef = useRef<HTMLDivElement>(null);
@@ -285,14 +287,24 @@ function MobileShowcase({ reduced }: { reduced: boolean }) {
   const duration = FEATURE_SCREENS[features[active].id].duration;
   const feature = features[active];
 
+  const touching = useRef(false);
+  const holdUntil = useRef(0);
+  const browsing = () => touching.current || performance.now() < holdUntil.current;
+  const hold = () => {
+    holdUntil.current = performance.now() + BROWSE_HOLD_MS;
+  };
+  const onRowScroll = () => {
+    if (browsing()) hold();
+  };
+
   useEffect(() => {
-    if (!reduced && t >= duration) setActive((a) => (a + 1) % features.length);
+    if (!reduced && t >= duration && !browsing()) setActive((a) => (a + 1) % features.length);
   }, [t, duration, reduced]);
 
   useEffect(() => {
     const row = chipsRef.current;
     const chip = tabRefs.current[active];
-    if (!row || !chip) return;
+    if (!row || !chip || browsing()) return;
     row.scrollTo({
       left: chip.offsetLeft - (row.clientWidth - chip.offsetWidth) / 2,
       behavior: reduced ? "auto" : "smooth",
@@ -316,6 +328,19 @@ function MobileShowcase({ reduced }: { reduced: boolean }) {
         role="tablist"
         aria-label="Olog Reader features"
         className="flex gap-1 overflow-x-auto scrollbar-hide -mx-4 px-4 py-1"
+        onTouchStart={() => {
+          touching.current = true;
+        }}
+        onTouchEnd={() => {
+          touching.current = false;
+          hold();
+        }}
+        onTouchCancel={() => {
+          touching.current = false;
+          hold();
+        }}
+        onWheel={hold}
+        onScroll={onRowScroll}
       >
         {features.map((f, i) => {
           const isActive = i === active;
@@ -331,7 +356,10 @@ function MobileShowcase({ reduced }: { reduced: boolean }) {
               aria-selected={isActive}
               aria-controls="feature-panel"
               tabIndex={isActive ? 0 : -1}
-              onClick={() => setActive(i)}
+              onClick={() => {
+                holdUntil.current = 0;
+                setActive(i);
+              }}
               onKeyDown={onKeyDown}
               className={`relative shrink-0 h-5 px-2 rounded-full overflow-hidden text-[15px] font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 isActive
