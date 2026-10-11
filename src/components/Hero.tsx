@@ -124,6 +124,16 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
+            <a
+              href="#benefits"
+              className="mb-3 md:mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-background-white/70 py-[5px] pl-[5px] pr-3 text-sm font-semibold text-text-primary backdrop-blur transition-colors hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <span className="rounded-full bg-primary px-2 py-[2px] text-xs font-bold uppercase tracking-wide text-primary-foreground">
+                New
+              </span>
+              Talk to your books in real time
+              <span aria-hidden className="text-text-secondary">&rarr;</span>
+            </a>
             <ReadAlongHeadline />
 
             <p className="type-lead mt-3 md:mt-4 max-w-[34rem] text-text-secondary">

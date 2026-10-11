@@ -2393,3 +2393,222 @@ html {
 header {
   transition: opacity 200ms ease;
 }
+
+/* Real-time voice chat screen */
+.fx-talk-prompt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10.15em;
+  z-index: 4;
+  margin: 0 auto;
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  height: 2.2em;
+  padding: 0 1em;
+  border-radius: 999px;
+  background: var(--rd-bg);
+  color: var(--rd-ink);
+  font-size: 0.78em;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--rd-hair), 0 0.6em 1.4em -0.5em rgba(10, 12, 18, 0.35);
+}
+
+.fx-talk-prompt-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.14em;
+  height: 1em;
+}
+
+.fx-talk-prompt-icon span {
+  width: 0.16em;
+  border-radius: 999px;
+  background: var(--rd-blue);
+}
+
+.fx-talk-prompt-icon span:nth-child(1),
+.fx-talk-prompt-icon span:nth-child(4) {
+  height: 0.45em;
+}
+
+.fx-talk-prompt-icon span:nth-child(2) {
+  height: 1em;
+}
+
+.fx-talk-prompt-icon span:nth-child(3) {
+  height: 0.7em;
+}
+
+.fx-talk-sheet {
+  top: 34%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1.4em;
+}
+
+.fx-talk-title {
+  font-size: 1.05em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.fx-talk-context {
+  align-self: center;
+  margin-top: 0.35em;
+  padding: 0.25em 0.7em;
+  border-radius: 999px;
+  background: var(--rd-chip);
+  color: var(--rd-muted);
+  font-size: 0.66em;
+  font-weight: 600;
+}
+
+.fx-talk-thread {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.6em;
+  padding: 0.8em 0 0.8em;
+  overflow: hidden;
+}
+
+.fx-talk-bubble {
+  max-width: 86%;
+  font-size: 0.82em;
+  line-height: 1.45;
+}
+
+.fx-talk-user {
+  align-self: flex-end;
+  padding: 0.55em 0.85em;
+  border-radius: 1.1em 1.1em 0.3em 1.1em;
+  background: var(--rd-blue);
+  color: #fff;
+}
+
+.fx-talk-ai {
+  align-self: flex-start;
+  color: var(--rd-ink);
+}
+
+.fx-talk-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.55em;
+  border-radius: 1em;
+  background: var(--rd-paper-fill);
+  box-shadow: inset 0 0 0 1px var(--rd-hair);
+}
+
+.fx-talk-orb {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.2em;
+  height: 2.2em;
+  border-radius: 999px;
+  background: var(--rd-blue);
+  transition: transform 90ms linear;
+}
+
+.fx-talk-bars {
+  display: flex;
+  align-items: center;
+  gap: 0.14em;
+  height: 1.1em;
+}
+
+.fx-talk-bars span {
+  width: 0.16em;
+  min-height: 0.16em;
+  border-radius: 999px;
+  background: #fff;
+  transition: height 90ms linear;
+}
+
+.fx-talk-dots {
+  display: flex;
+  gap: 0.2em;
+}
+
+.fx-talk-dots span {
+  width: 0.3em;
+  height: 0.3em;
+  border-radius: 999px;
+  background: #fff;
+  animation: fx-talk-dot 1s ease-in-out infinite;
+}
+
+.fx-talk-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.fx-talk-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.fx-talk-dots[data-paused="true"] span {
+  animation: none;
+}
+
+@keyframes fx-talk-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-0.12em);
+  }
+}
+
+.fx-talk-status {
+  flex: 1;
+  min-width: 0;
+}
+
+.fx-talk-label {
+  font-size: 0.72em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fx-talk-topic {
+  font-size: 0.64em;
+  color: var(--rd-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fx-talk-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 999px;
+  background: var(--rd-bg);
+  box-shadow: inset 0 0 0 1px var(--rd-hair);
+  color: var(--rd-ink);
+}
+
+.fx-talk-btn svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.fx-talk-end {
+  background: #e5484d;
+  box-shadow: none;
+  color: #fff;
+}

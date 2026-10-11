@@ -24,6 +24,12 @@ const voices: Voice[] = [
 
 const features = [
   {
+    id: "voicechat",
+    label: "Real-time Voice Chat",
+    title: "Talk to your reading assistant out loud — ask about the page you're on and hear the answer instantly",
+    isNew: true,
+  },
+  {
     id: "highlight",
     label: "Smart Highlighting",
     title: "Each word lights up in sync with the audio, helping you follow along and retain more",
@@ -239,6 +245,11 @@ function DesktopShowcase({ reduced }: { reduced: boolean }) {
                 }`}
               >
                 {f.label}
+                {"isNew" in f && (
+                  <span className="rounded-full bg-primary px-[8px] py-[2px] text-[11px] font-bold uppercase tracking-wide text-primary-foreground">
+                    New
+                  </span>
+                )}
               </p>
               <h3
                 className={`type-h3 mt-2 max-w-xl transition-[color,opacity] duration-300 ${

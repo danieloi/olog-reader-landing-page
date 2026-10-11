@@ -70,12 +70,14 @@ const FREE_FEATURES = [
   "Every file type",
   "Real-time highlighting",
   "Standard voices",
+  "Try real-time voice chat",
 ];
 
 const PREMIUM_FEATURES = [
   "Unlimited listening",
   "Unlimited documents",
   "Premium AI voices",
+  "Up to 3 hours of voice chat a week",
   "Offline listening",
   "Sync across devices",
   "Priority support",
