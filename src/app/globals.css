@@ -581,6 +581,7 @@ html {
   );
   transform: translateZ(-120px);
   filter: blur(24px);
+  pointer-events: none;
 }
 
 /* The screen / image surface */
