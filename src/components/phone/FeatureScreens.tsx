@@ -22,6 +22,7 @@ import {
   sentencesOf,
 } from "./ReaderUI";
 import { DOCS } from "./docs";
+import { FitBubble } from "./FitBubble";
 
 export type ScreenProps = { t: number; reduced: boolean };
 
@@ -788,7 +789,7 @@ export function VoiceChatScreen({ t, reduced, timing = TALK }: ScreenProps & { t
               <p className="fx-talk-title">Ask AI</p>
               <span className="fx-talk-context">{ARTICLE.label} · Page 1</span>
               <div className="fx-talk-thread">
-                {question && <p className="fx-talk-bubble fx-talk-user">{question}</p>}
+                {question && <FitBubble className="fx-talk-bubble fx-talk-user" text={question} />}
                 {answer && <p className="fx-talk-bubble fx-talk-ai">{answer}</p>}
               </div>
               <div className="fx-talk-panel">
