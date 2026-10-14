@@ -1,207 +1,203 @@
 "use client";
 
-import { motion } from "framer-motion";
-import BlurText from "./BlurText";
-import TiltedCard from "@/components/TiltedCard";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FloatingPhone } from "@/components/FloatingPhone";
+import { ReaderScreenDemo } from "@/components/ReaderScreenDemo";
+
+const STORE_URLS = {
+  ios: "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
+  android: "https://play.google.com/store/apps/details?id=me.olog.reader",
+} as const;
+
+const HEADLINE_LINES = [
+  { words: ["Read", "anywhere."], className: "text-text-primary" },
+  { words: ["Listen", "everywhere."], className: "text-primary" },
+];
+const HEADLINE_TEXT = HEADLINE_LINES.map((l) => l.words.join(" ")).join(" ");
+const WORD_COUNT = HEADLINE_LINES.reduce((n, l) => n + l.words.length, 0);
+
+const READ_START_DELAY = 900;
+const WORD_DURATION = 560;
+const LOOP_PAUSE = 4200;
+
+function useReadAlong(enabled: boolean) {
+  const [active, setActive] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!enabled) {
+      setActive(null);
+      return;
+    }
+    let timer: ReturnType<typeof setTimeout>;
+    const step = (i: number) => {
+      if (i >= WORD_COUNT) {
+        setActive(null);
+        timer = setTimeout(() => step(0), LOOP_PAUSE);
+        return;
+      }
+      setActive(i);
+      timer = setTimeout(() => step(i + 1), WORD_DURATION);
+    };
+    timer = setTimeout(() => step(0), READ_START_DELAY);
+    return () => clearTimeout(timer);
+  }, [enabled]);
+
+  return active;
+}
+
+function ReadAlongHeadline() {
+  const reduceMotion = useReducedMotion();
+  const active = useReadAlong(!reduceMotion);
+  let wordIndex = 0;
+
+  return (
+    <h1 className="type-display">
+      <span className="sr-only">{HEADLINE_TEXT}</span>
+      <span aria-hidden className="block">
+        {HEADLINE_LINES.map((line) => (
+          <span key={line.words.join(" ")} className={`block ${line.className}`}>
+            {line.words.map((word, wi) => {
+              const index = wordIndex++;
+              return (
+                <span key={word}>
+                  {wi > 0 && " "}
+                  <span className="hero-word">
+                    <AnimatePresence>
+                      {active === index && (
+                        <motion.span
+                          layoutId="hero-read-mark"
+                          className="hero-word-mark"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            layout: { type: "spring", stiffness: 420, damping: 38 },
+                            opacity: { duration: 0.25 },
+                          }}
+                        />
+                      )}
+                    </AnimatePresence>
+                    {word}
+                  </span>
+                </span>
+              );
+            })}
+          </span>
+        ))}
+      </span>
+    </h1>
+  );
+}
 
 export function Hero() {
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const referralCode = searchParams.get("referralCode");
 
-  // Mobile Layout Component
-  const MobileHeroLayout = () => (
-    <section className="relative overflow-hidden bg-transparent pt-6 sm:pt-7 md:pt-8">
-      <div className="max-w-[360px] sm:max-w-[480px] md:max-w-[640px] mx-auto px-3 sm:px-4 md:px-5 w-full py-6 sm:py-7 md:py-8 text-center">
-        <motion.div
-          className="space-y-6 sm:space-y-7 md:space-y-8 georama-text flex flex-col items-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          {/* Mobile Text Content - Now first */}
-          <div className="space-y-4 sm:space-y-5 md:space-y-6">
-            <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-text-primary leading-tight mx-auto text-center">
-              <BlurText
-                text={"Read\u00A0anywhere. Listen\u00A0everywhere."}
-                as="span"
-                className="justify-center text-primary"
-                groupByWord
-              />
-            </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-text-secondary max-w-[280px] sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-              Take your stories, notes, and textbooks on the go, listen hands
-              free, anytime you want.
-            </p>
 
-            {/* Mobile CTA - More prominent */}
-            <div className="pt-4 sm:pt-5 md:pt-6 space-y-3 sm:space-y-4">
-              <p className="text-base sm:text-lg font-semibold text-text-primary text-center">
-                Begin your first listen
-              </p>
-              <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-nowrap">
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                      "_blank"
-                    )
-                  }
-                  className="flex items-center justify-center hover:opacity-90 transition-opacity"
-                  aria-label="Download on the App Store"
-                >
-                  <img
-                    src="/black.svg"
-                    alt="Download on the App Store"
-                    className="h-10 w-auto sm:h-12 max-w-[120px]"
-                  />
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://play.google.com/store/apps/details?id=me.olog.reader",
-                      "_blank"
-                    )
-                  }
-                  className="flex items-center justify-center hover:opacity-90 transition-opacity"
-                  aria-label="Get it on Google Play"
-                >
-                  <img
-                    src="/GetItOnGooglePlay_Badge_Web_color_English.png"
-                    alt="Get it on Google Play"
-                    className="h-8 sm:h-10 w-auto object-contain max-w-[120px]"
-                    style={{ maxWidth: "135px" }}
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
+  const handleDownload = (platform: "ios" | "android") => {
+    if (referralCode) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/referral/deferred/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          referralCode,
+          platform,
+          userAgent: navigator.userAgent,
+        }),
+      }).catch(() => {});
+    }
+    window.open(STORE_URLS[platform], "_blank");
+  };
 
-          {/* Mobile Phone Mockup - Now second */}
-          <motion.div
-            className="flex justify-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-          >
-            <div className="relative">
-              <TiltedCard
-                imageSrc="/reader-screen.png"
-                altText="Olog Reader mobile app"
-                containerWidth={isMobile ? "180px" : "200px"}
-                containerHeight={isMobile ? "389px" : "432px"}
-                imageWidth={isMobile ? "180px" : "200px"}
-                imageHeight={isMobile ? "389px" : "432px"}
-                scaleOnHover={1.03}
-                rotateAmplitude={5}
-                showMobileWarning={false}
-                showTooltip={false}
-              />
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
-  );
-
-  // Desktop Layout Component (existing layout)
-  const DesktopHeroLayout = () => (
-    <section className="relative overflow-hidden bg-transparent pt-6 md:pt-8">
-      <div className="max-w-2xl md:max-w-4xl lg:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 w-full py-8 md:py-10 lg:py-12">
-        <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center">
-          {/* Left */}
+  return (
+    <section className="relative overflow-hidden bg-transparent min-h-[100svh] flex items-center pt-20 md:pt-24">
+      <div className="max-w-[1280px] mx-auto px-3 md:px-6 lg:px-10 w-full py-6 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-center gap-8 md:gap-10 lg:gap-12">
           <motion.div
             id="beta"
-            className="space-y-6 md:space-y-7 lg:space-y-8 georama-text"
+            className="relative w-full max-w-[40rem] mx-auto lg:max-w-[58rem] lg:mx-0"
             initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div className="space-y-4 md:space-y-2 lg:space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary leading-tight">
-                <BlurText
-                  text={"Read\u00A0anywhere. Listen\u00A0everywhere."}
-                  as="span"
-                  className="text-primary"
-                  groupByWord
-                />
-              </h1>
-              <p className="text-lg md:text-xl lg:text-2xl text-text-secondary max-w-md md:max-w-lg leading-relaxed">
-                Take your stories, notes, and textbooks on the go, listen hands
-                free, anytime you want.
-              </p>
+            <a
+              href="#benefits"
+              className="mb-3 md:mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-background-white/70 py-[5px] pl-[5px] pr-3 text-sm font-semibold text-text-primary backdrop-blur transition-colors hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <span className="rounded-full bg-primary px-2 py-[2px] text-xs font-bold uppercase tracking-wide text-primary-foreground">
+                New
+              </span>
+              Talk to your books in real time
+              <span aria-hidden className="text-text-secondary">&rarr;</span>
+            </a>
+            <ReadAlongHeadline />
 
-              <div className="pt-4 md:pt-5 lg:pt-6 space-y-3 md:space-y-4">
-                <p className="text-base md:text-lg font-semibold text-text-primary">
-                  Begin your first listen
-                </p>
-                <div className="flex gap-4 md:gap-5">
-                  <button
-                    onClick={() =>
-                      window.open(
-                        "https://apps.apple.com/us/app/olog-reader/id6744651101?itscg=30200&itsct=apps_box_link&mttnsubad=6744651101",
-                        "_blank"
-                      )
-                    }
-                    className="hover:opacity-90 transition-opacity"
-                    aria-label="Download on the App Store"
-                  >
-                    <img
-                      src="/black.svg"
-                      alt="Download on the App Store"
-                      className="h-8 w-auto md:max-h-[50px]"
-                    />
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        "https://play.google.com/store/apps/details?id=me.olog.reader",
-                        "_blank"
-                      )
-                    }
-                    className="hover:opacity-90 transition-opacity"
-                    aria-label="Get it on Google Play"
-                  >
-                    <img
-                      src="/GetItOnGooglePlay_Badge_Web_color_English.png"
-                      alt="Get it on Google Play"
-                      className="h-8 w-auto md:max-h-[50px]"
-                    />
-                  </button>
-                </div>
-              </div>
+            <p className="type-lead mt-3 md:mt-4 max-w-[34rem] text-text-secondary">
+              Your AI reading assistant with the most natural voices in the
+              world. Take your stories, notes, and textbooks anywhere —
+              hands-free, any time.
+            </p>
+
+            <div className="mt-4 md:mt-5 flex items-center gap-2 md:gap-3">
+              <button
+                onClick={() => handleDownload("ios")}
+                className="flex-none rounded-[10px] transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                aria-label="Download on the App Store"
+              >
+                <img
+                  src="/black.svg"
+                  alt="Download on the App Store"
+                  className="block h-[46px] w-auto md:h-[52px] dark:hidden"
+                />
+                <img
+                  src="/white.svg"
+                  alt=""
+                  aria-hidden
+                  className="hidden h-[46px] w-auto md:h-[52px] dark:block"
+                />
+              </button>
+              <button
+                onClick={() => handleDownload("android")}
+                className="flex-none rounded-[10px] transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                aria-label="Get it on Google Play"
+              >
+                <img
+                  src="/google_play_dark.webp"
+                  alt="Get it on Google Play"
+                  className="block h-[46px] w-auto md:h-[52px] dark:hidden"
+                />
+                <img
+                  src="/google_play_white.webp"
+                  alt=""
+                  aria-hidden
+                  className="hidden h-[46px] w-auto md:h-[52px] dark:block"
+                />
+              </button>
             </div>
+
+            <p className="mt-2 md:mt-3 flex flex-wrap items-center gap-x-[10px] gap-y-0.5 text-[0.9375rem] md:text-base font-medium text-text-secondary">
+              <span>Free on iOS &amp; Android</span>
+              <span aria-hidden className="hidden sm:block h-[4px] w-[4px] rounded-full bg-current opacity-50" />
+              <span>PDFs, EPUBs, slides, links &amp; scans</span>
+            </p>
           </motion.div>
 
-          {/* Right – phone mock */}
           <motion.div
-            className="flex justify-center md:justify-end"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+            className="shrink-0 flex justify-center relative py-2 lg:py-0"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
           >
-            <div className="relative">
-              <TiltedCard
-                imageSrc="/reader-screen.png"
-                altText="Olog Reader mobile app"
-                containerWidth="220px"
-                containerHeight="475px"
-                imageWidth="220px"
-                imageHeight="475px"
-                scaleOnHover={1.06}
-                rotateAmplitude={10}
-                showMobileWarning={false}
-                showTooltip={false}
-              />
-            </div>
+            <FloatingPhone reduced={isMobile}>
+              <ReaderScreenDemo label="Olog Reader on a phone, reading a news article, a blog post and an onboarding doc aloud, highlighting each sentence and word in sync" />
+            </FloatingPhone>
           </motion.div>
         </div>
       </div>
     </section>
   );
-
-  return isMobile ? <MobileHeroLayout /> : <DesktopHeroLayout />;
 }

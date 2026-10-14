@@ -1,0 +1,55 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "U4N2R6M7H7.me.olog.reader"
+        ],
+        "components": [
+          {
+            "/": "/refer",
+            "?": {
+              "referralCode": "?*"
+            }
+          },
+          {
+            "/": "/refer",
+            "?": {
+              "code": "?*"
+            }
+          },
+          {
+            "/": "/redeem",
+            "?": {
+              "code": "?*"
+            }
+          },
+          {
+            "/": "/redeem"
+          },
+          {
+            "/": "/open",
+            "?": {
+              "path": "?*"
+            }
+          },
+          {
+            "/": "/open"
+          },
+          {
+            "/": "/gift"
+          },
+          {
+            "/": "/join",
+            "?": {
+              "code": "?*"
+            }
+          },
+          {
+            "/": "/join"
+          }
+        ]
+      }
+    ]
+  }
+}
